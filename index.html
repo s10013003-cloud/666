@@ -3,173 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>門市系統 V25 (強效連線版)</title>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <title>智慧門市系統 V26 (連線診斷版)</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
     <style>
-        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --dark: #343a40; }
-        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f0f2f5; padding-bottom: 80px; }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; }
+        /* --- 視覺設定 --- */
+        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f0f2f5; padding-bottom: 100px; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; }
         
-        /* 連線狀態燈 */
-        #status-bar { background: #dc3545; color: white; text-align: center; padding: 5px; font-size: 12px; font-weight: bold; display: none; }
-        
+        /* 診斷面板 (新) */
+        #diag-box { background: #000; color: #0f0; padding: 10px; font-size: 12px; font-family: monospace; border-bottom: 2px solid green; }
+
         /* 導航 */
-        .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 3px solid #ddd; z-index: 1000; }
-        .nav div { flex: 1; padding: 15px 0; text-align: center; font-weight: bold; color: #666; cursor: pointer; }
+        .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 3px solid #ddd; z-index: 99; }
+        .nav div { flex: 1; padding: 15px 5px; text-align: center; font-weight: bold; color: #666; cursor: pointer; font-size: 14px; }
         .nav div.active { color: #007bff; border-bottom: 3px solid #007bff; background: #f0f8ff; }
 
-        /* 格子 */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
-        .box { border: 2px solid #ddd; padding: 15px 5px; text-align: center; border-radius: 8px; cursor: pointer; background: #fff; min-height: 60px; }
-        .box.ok { background: #d4edda !important; border-color: #28a745 !important; position: relative; }
-        .box.ok::after { content: "✅"; position: absolute; top: 5px; right: 5px; font-size: 12px; }
+        /* 區塊標題 */
+        .head { background: #e9ecef; padding: 10px; font-weight: bold; border-left: 5px solid #007bff; margin: 15px 0; }
+        
+        /* 格子系統 */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 10px; }
+        .box { border: 2px solid #ccc; padding: 15px 5px; text-align: center; border-radius: 8px; cursor: pointer; background: #fff; min-height: 60px; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+        .box.ok { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; position:relative;}
+        .box.ok::after { content:"✅"; position:absolute; top:2px; right:2px; font-size:12px; }
+        .box.alert { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+        
+        /* 外籍專區 */
         .foreign { background: #f3e5f5; border: 2px solid #9c27b0; color: #6a1b9a; font-weight: bold; }
-
-        /* 帳務表 */
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        td, th { border: 1px solid #ddd; padding: 5px; text-align: center; font-size: 14px; }
-        .inp-m { width: 70px; text-align: center; padding: 8px; font-size: 16px; border: 1px solid #999; }
-        .sub-txt { color: blue; font-weight: bold; font-size: 12px; }
-
-        /* 模型圖 */
-        #shelf-canvas { border: 2px solid #333; position: relative; width: 100%; height: 350px; background: #eee; overflow: hidden; }
-        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; }
-        .shape.done { background: #28a745 !important; color: white !important; }
-        .shape.selected { border: 3px solid red; z-index: 10; }
-
-        /* 通用 */
+        
+        /* 輸入框與按鈕 */
         input, select, button, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #999; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
         button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .btn-g { background: #28a745; } .btn-r { background: #dc3545; }
+        .btn-g { background: #28a745; } .btn-r { background: #dc3545; } .btn-o { background: #fd7e14; }
+
+        /* 帳務表格 */
+        table { width: 100%; border-collapse: collapse; }
+        td, th { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .money-inp { width: 100%; text-align: center; font-size: 18px; border: none; background: #f9f9f9; }
+
+        /* 隱藏與彈窗 */
         .hide { display: none !important; }
-        
-        /* 鈴鐺 & 圖片 */
-        #bell { position: fixed; top: 10px; right: 10px; font-size: 24px; background: white; border-radius: 50%; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2000; cursor: pointer; }
-        .badge { position: absolute; top: 0; right: 0; background: red; width: 10px; height: 10px; border-radius: 50%; display: none; }
-        .badge.show { display: block; }
-        #img-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; }
-        #img-modal img { max-width: 95%; max-height: 95%; }
+        .popup { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; display:none; justify-content:center; align-items:center; }
+        .popup-content { background:white; padding:20px; width:90%; border-radius:10px; max-height: 80vh; overflow-y: auto;}
     </style>
 </head>
 <body>
 
-<div id="status-bar">連線中...</div>
-<div id="bell" onclick="showNoti()">🔔<div id="badge" class="badge"></div></div>
-<div id="img-modal" onclick="this.style.display='none'"><img id="big-img"></div>
-
 <div class="container">
-    <div id="p-auth" style="padding:40px 20px; text-align:center;">
-        <h2>🏪 門市 V25 (強連線)</h2>
-        <div id="b-login">
-            <input id="lid" placeholder="帳號">
-            <input id="lpw" type="password" placeholder="密碼">
+    <div id="diag-box">系統啟動中...</div>
+
+    <div id="page-auth" style="padding:40px 20px; text-align:center;">
+        <h2>🏪 門市 V26 (診斷版)</h2>
+        <div id="box-login">
+            <input id="l-id" placeholder="帳號">
+            <input id="l-pw" type="password" placeholder="密碼">
             <button onclick="login()">登入</button>
-            <p onclick="swAuth(true)" style="color:blue; margin-top:15px; cursor:pointer;">註冊</p>
+            <p onclick="toReg(true)" style="color:blue; margin-top:20px;">沒有帳號？註冊</p>
         </div>
-        <div id="b-reg" class="hide">
-            <input id="rid" placeholder="設定帳號">
-            <input id="rnm" placeholder="姓名">
-            <select id="rsf"><option>早班</option><option>晚班</option><option>主管</option></select>
-            <input id="rpw" type="password" placeholder="設定密碼">
-            <button class="btn-g" onclick="reg()">確認註冊</button>
-            <p onclick="swAuth(false)" style="color:blue; margin-top:15px; cursor:pointer;">返回</p>
+        <div id="box-reg" class="hide">
+            <input id="r-name" placeholder="姓名">
+            <select id="r-shift"><option>早班</option><option>晚班</option><option>主管</option></select>
+            <input id="r-id" placeholder="設定帳號">
+            <input id="r-pw" type="password" placeholder="設定密碼">
+            <button class="btn-g" id="btn-reg-action" onclick="reg()">確認註冊</button>
+            <p onclick="toReg(false)" style="color:blue; margin-top:20px;">返回登入</p>
         </div>
     </div>
 
-    <div id="p-main" class="hide">
+    <div id="page-main" class="hide">
         <div style="background:#333; color:white; padding:10px; display:flex; justify-content:space-between;">
-            <span id="u-info">--</span>
-            <button onclick="location.reload()" style="width:auto; padding:5px 10px; background:#555;">登出</button>
+            <span id="user-display">--</span>
+            <button onclick="logout()" style="width:auto; padding:5px 10px; background:#555;">登出</button>
         </div>
 
         <div class="nav">
-            <div onclick="go('stock')" id="n-stock" class="active">補貨效期</div>
-            <div onclick="go('temp')" id="n-temp">冰箱</div>
-            <div onclick="go('count')" id="n-count">帳務</div>
-            <div onclick="go('svc')" id="n-svc">交接</div>
+            <div onclick="tab('stock')" class="active" id="nav-stock">補貨效期</div>
+            <div onclick="tab('temp')" id="nav-temp">冰箱</div>
+            <div onclick="tab('counter')" id="nav-counter">帳務</div>
+            <div onclick="tab('svc')" id="nav-svc">交接客服</div>
+            <div onclick="tab('mgr')" id="nav-mgr" class="hide">主管</div>
         </div>
 
-        <div id="v-stock">
-            <div style="padding:10px; background:#f3e5f5; color:#4a148c; font-weight:bold;">🔥 重點補貨</div>
+        <div id="view-stock">
+            <div class="head">🔥 重點檢查</div>
             <div class="grid">
-                <div class="box foreign" id="s-noodle" onclick="chk('s-noodle','外籍泡麵')">外籍泡麵</div>
-                <div class="box foreign" id="s-cookie" onclick="chk('s-cookie','外籍餅乾')">外籍餅乾</div>
+                <div class="box foreign" id="stk-noodle" onclick="check('stk-noodle','外籍泡麵')">外籍泡麵<br><small>待檢</small></div>
+                <div class="box foreign" id="stk-cookie" onclick="check('stk-cookie','外籍餅乾')">外籍餅乾<br><small>待檢</small></div>
             </div>
-            <div style="padding:10px; background:#eee; font-weight:bold;">📅 每日效期</div>
+
+            <div class="head">📅 每日效期</div>
             <div class="grid">
-                <div class="box" id="c-f" onclick="chk('c-f','生鮮效期')">生鮮效期</div>
-                <div class="box" id="c-d" onclick="chk('c-d','日配效期')">日配效期</div>
-                <div class="box" id="c-b" onclick="chk('c-b','麵包效期')">麵包效期</div>
+                <div class="box" id="chk-fresh" onclick="check('chk-fresh','生鮮效期')">生鮮效期</div>
+                <div class="box" id="chk-daily" onclick="check('chk-daily','日配效期')">日配效期</div>
+                <div class="box" id="chk-bread" onclick="check('chk-bread','麵包效期')">麵包效期</div>
             </div>
-            <div style="padding:10px; background:#eee; font-weight:bold;">🛒 每日補貨</div>
-            <div class="grid" id="daily-grid">
-                </div>
-            
-            <div style="padding:10px; background:#eee; font-weight:bold;">🗓️ 每月效期圖</div>
-            <div id="mgr-tool" class="hide" style="padding:5px;">
-                <button onclick="addBox()" style="width:auto;">+方塊</button>
-                <button onclick="saveMap()" class="btn-g" style="width:auto;">發布</button>
-                <div id="edit-bar" class="hide" style="margin-top:5px; background:#ddd; padding:5px;">
-                    選取中: <span id="sel-name"></span>
-                    <button onclick="renShape()" style="width:auto; font-size:12px;">改名</button>
+
+            <div class="head">🛒 每日補貨</div>
+            <div class="grid">
+                <div class="box" id="stk-cig" onclick="check('stk-cig','菸架補貨')">菸架</div>
+                <div class="box" id="stk-drink1" onclick="check('stk-drink1','冰箱飲料')">冰箱飲料</div>
+                <div class="box" id="stk-drink2" onclick="check('stk-drink2','層架飲料')">層架飲料</div>
+                <div class="box" id="stk-frozen" onclick="check('stk-frozen','冷凍補貨')">冷凍食品</div>
+                <div class="box" id="stk-trash" onclick="check('stk-trash','垃圾袋/免洗')">垃圾袋/免洗</div>
+                <div class="box" id="stk-tissue" onclick="check('stk-tissue','衛生紙')">衛生紙</div>
+            </div>
+
+            <div class="head">🗓️ 每月效期圖</div>
+            <div id="mgr-tools" class="hide" style="padding:10px;">
+                <button onclick="addMapBox()" style="width:auto;">+區塊</button>
+                <button onclick="saveMap()" class="btn-g" style="width:auto;">儲存設定</button>
+                <div style="margin-top:5px;">
                     <button onclick="copyShape()" style="width:auto; font-size:12px;">複製</button>
                     <button onclick="delShape()" class="btn-r" style="width:auto; font-size:12px;">刪除</button>
+                    <button onclick="renShape()" style="width:auto; font-size:12px;">改名</button>
                 </div>
             </div>
-            <div id="shelf-canvas"></div>
+            <div id="map-canvas" style="height:300px; background:#eee; position:relative; border:2px solid #333; margin:10px;"></div>
         </div>
 
-        <div id="v-temp" class="hide">
-            <div style="padding:10px; background:#e0f7fa;">❄️ 冷藏區</div>
-            <div class="grid" id="g-c"></div>
-            <div style="padding:10px; background:#e1f5fe;">🧊 冷凍區</div>
-            <div class="grid" id="g-f"></div>
+        <div id="view-temp" class="hide">
+            <div class="head">❄️ 冷藏區 (0 ~ 7度)</div>
+            <div class="grid">
+                <div class="box" id="f1" onclick="temp('f1','開放1','c')">開放 1<br><small>--</small></div>
+                <div class="box" id="f2" onclick="temp('f2','開放2','c')">開放 2<br><small>--</small></div>
+                <div class="box" id="f3" onclick="temp('f3','冷藏1','c')">冷藏 1<br><small>--</small></div>
+                <div class="box" id="f4" onclick="temp('f4','冷藏2','c')">冷藏 2<br><small>--</small></div>
+            </div>
+            <div class="head">🧊 冷凍區 (低於 -10度)</div>
+            <div class="grid">
+                <div class="box" id="f5" onclick="temp('f5','冷凍1','f')">冷凍 1<br><small>--</small></div>
+                <div class="box" id="f6" onclick="temp('f6','冷凍2','f')">冷凍 2<br><small>--</small></div>
+                <div class="box" id="f7" onclick="temp('f7','臥式1','f')">臥式 1<br><small>--</small></div>
+                <div class="box" id="f8" onclick="temp('f8','臥式2','f')">臥式 2<br><small>--</small></div>
+                <div class="box" id="f9" onclick="temp('f9','臥式3','f')">臥式 3<br><small>--</small></div>
+                <div class="box" id="f10" onclick="temp('f10','臥式4','f')">臥式 4<br><small>--</small></div>
+            </div>
         </div>
 
-        <div id="v-count" class="hide">
-            <div style="padding:10px; background:#fff3e0;">📥 進櫃 (上一班)</div>
-            <div style="padding:10px;">
-                收銀：<input id="in-c" disabled style="width:80px;"> 
-                庫存：<input id="in-s" disabled style="width:80px;">
-                <button id="btn-edit-in" class="hide" onclick="editIn()" style="width:auto; font-size:12px;">修改</button>
+        <div id="view-counter" class="hide">
+            <div class="head">📥 上一班留存 (進櫃)</div>
+            <div style="background:#e3f2fd; padding:10px;">
+                <label>收銀機留存：</label><input type="number" id="in-cash" disabled style="background:#fff;">
+                <label>庫存零錢：</label><input type="number" id="in-stock" disabled style="background:#fff;">
+                <button id="btn-unlock" class="hide" onclick="unlockIn()" style="margin-top:5px; width:auto; font-size:12px;">主管修改</button>
+                <button id="btn-save-in" class="hide btn-g" onclick="saveIn()">儲存修改</button>
             </div>
 
-            <div style="padding:10px; background:#e8f5e9;">🪙 離櫃點算</div>
+            <div class="head">🪙 本班離櫃點算</div>
             <table>
-                <tr><th>面額</th><th>收銀</th><th>庫存</th><th>小計</th></tr>
-                <tbody id="money-b"></tbody>
+                <tr><th>面額</th><th>收銀機(留)</th><th>庫存(金庫)</th></tr>
+                <tbody id="money-body"></tbody>
             </table>
-            <div style="text-align:right; padding:10px; font-weight:bold; color:blue;">總計: $<span id="all-sum">0</span></div>
+            <div style="text-align:right; font-weight:bold; color:blue; padding:10px;">離櫃總計：$<span id="total-money">0</span></div>
 
-            <div style="padding:10px; background:#eee;">📊 營收</div>
+            <div class="head">📞 電話卡 (進/銷/存)</div>
+            <div id="card-list"></div>
+
+            <div class="head">📊 營收數據</div>
             <div class="grid">
-                <input type="number" id="val-rev" placeholder="營業額">
-                <input type="number" id="val-vis" placeholder="來客數">
+                <input type="number" id="v-sales" placeholder="營業額">
+                <input type="number" id="v-visit" placeholder="來客數">
             </div>
+            <div class="grid" style="margin-top:5px;">
+                <input type="number" id="v-cr" placeholder="信用卡"><input type="number" id="v-tw" placeholder="台灣Pay">
+                <input type="number" id="v-ln" placeholder="LinePay"><input type="number" id="v-pt" placeholder="點數">
+                <input type="number" id="v-rf" placeholder="退款">
+            </div>
+
+            <div class="head">➕ 額外收支</div>
             <div class="grid">
-                <button class="btn-g" onclick="addEx('in')">+收入</button>
-                <button class="btn-r" onclick="addEx('out')">+支出</button>
+                <button class="btn-g" onclick="addExt('in')">新增收入</button>
+                <button class="btn-r" onclick="addExt('out')">新增支出</button>
             </div>
-            <div id="ex-list" style="padding:10px;"></div>
-            
-            <div style="text-align:center; padding:20px;">
-                <h3 id="diff-res">誤差：0</h3>
-                <button onclick="doCalc()" style="background:orange;">試算</button>
-                <button class="btn-g" onclick="subRep()">提交報表</button>
+            <div id="ext-list" style="padding:10px;"></div>
+
+            <div style="background:#333; color:white; padding:15px; text-align:center; margin-top:20px;">
+                <h2>誤差：<span id="diff-val">0</span></h2>
+                <button class="btn-o" onclick="doCalc()">試算誤差</button>
+                <button class="btn-g" onclick="submitReport()" style="margin-top:10px;">提交報表</button>
             </div>
         </div>
 
-        <div id="v-svc" class="hide">
-            <div class="grid">
-                <button onclick="pop('交接')">交接</button>
-                <button onclick="pop('客訂')">客訂</button>
-                <button onclick="pop('維修')">維修</button>
-                <button onclick="pop('售罄')">售罄</button>
+        <div id="view-svc" class="hide">
+            <div style="text-align:right; padding:5px;">
+                <button id="bell-btn" onclick="popSvc('通知')">🔔 <span id="bell-count" style="color:yellow">0</span></button>
             </div>
-            <div id="feed" style="margin-top:10px;"></div>
+            <div class="grid">
+                <button onclick="popSvc('交接')">📝 交接</button>
+                <button onclick="popSvc('客訂')">🛒 客訂</button>
+                <button onclick="popSvc('維修')">🔧 維修</button>
+                <button onclick="popSvc('售罄')">⚡ 售罄</button>
+                <button onclick="popSvc('報廢')">🗑️ 報廢</button>
+            </div>
+            <div id="feed" style="margin-top:20px;"></div>
         </div>
-        
+
         <div id="view-mgr" class="hide">
             <div class="head">🌟 評分</div>
             <select id="mgr-target"><option>選擇員工</option></select>
@@ -178,296 +209,348 @@
     </div>
 </div>
 
-<div id="pop-f" class="hide" style="position:fixed; top:20%; left:5%; width:90%; background:white; border:2px solid blue; padding:20px; z-index:3000;">
-    <h3 id="pop-t"></h3>
-    <div id="pop-i"></div>
-    <input type="file" id="pop-p" accept="image/*">
-    <button class="btn-g" onclick="send()">送出</button>
-    <button onclick="document.getElementById('pop-f').classList.add('hide')" style="background:#666;">取消</button>
+<div id="pop-svc" class="popup">
+    <div class="popup-content">
+        <h3 id="pop-title">--</h3>
+        <div id="pop-fields"></div>
+        <input type="file" id="pop-img" accept="image/*">
+        <button class="btn-g" onclick="sendSvc()">送出</button>
+        <button onclick="document.getElementById('pop-svc').style.display='none'" style="background:#666; margin-top:5px;">取消</button>
+    </div>
+</div>
+
+<div id="img-modal" class="popup" onclick="this.style.display='none'">
+    <img id="big-img" style="max-width:95%; max-height:95%;">
 </div>
 
 <script>
-// --- 1. Firebase 初始化 (強制長輪詢) ---
-const cfg = {
-    apiKey: "AIzaSyAiOKSjZq6TPc9O75NcxsQqFYhY2wziW1w",
-    authDomain: "join-home-f3070.firebaseapp.com",
-    projectId: "join-home-f3070",
-    storageBucket: "join-home-f3070.firebasestorage.app",
-    messagingSenderId: "590173788810",
-    appId: "1:590173788810:web:13986424ec8bf9a5f7eb73"
-};
-firebase.initializeApp(cfg);
-const db = firebase.firestore();
-
-// 關鍵修復：啟用長輪詢以解決 Offline 錯誤
-db.settings({ experimentalForceLongPolling: true });
-
-let me = null;
-let shapes = [];
-let selId = null;
-let exArr = [];
-
-// --- 2. 認證邏輯 ---
-function swAuth(x) {
-    document.getElementById('b-login').classList.toggle('hide', x);
-    document.getElementById('b-reg').classList.toggle('hide', !x);
-}
-
-function reg() {
-    const id = document.getElementById('r-id').value;
-    const nm = document.getElementById('r-name').value;
-    const pw = document.getElementById('r-pw').value;
-    const sf = document.getElementById('r-shift').value;
-    
-    if(!id||!nm||!pw) return alert("請填寫完整");
-    
-    document.getElementById('status-bar').innerText = "註冊中...";
-    document.getElementById('status-bar').style.display = "block";
-
-    db.collection('users').doc(id).set({name:nm, pw:pw, shift:sf, points:0})
-        .then(() => {
-            alert("✅ 註冊成功！請按確定返回登入。");
-            document.getElementById('status-bar').style.display = "none";
-            swAuth(false);
-        })
-        .catch(e => {
-            alert("註冊失敗: " + e.message);
-            document.getElementById('status-bar').innerText = "錯誤";
-        });
-}
-
-function login() {
-    const id = document.getElementById('lid').value;
-    const pw = document.getElementById('lpw').value;
-    document.getElementById('status-bar').style.display = "block";
-    document.getElementById('status-bar').style.background = "orange";
-    document.getElementById('status-bar').innerText = "登入連線中...";
-
-    db.collection('users').doc(id).get().then(s => {
-        if(s.exists && s.data().pw===pw) {
-            me = {...s.data(), id};
-            document.getElementById('status-bar').style.background = "green";
-            document.getElementById('status-bar').innerText = "✅ 連線正常";
-            setTimeout(() => document.getElementById('status-bar').style.display = "none", 2000);
-            init();
-        } else {
-            alert("帳密錯誤");
-            document.getElementById('status-bar').style.display = "none";
-        }
-    }).catch(e => {
-        alert("連線失敗，請檢查網路：" + e.message);
-    });
-}
-
-// --- 3. 初始化 ---
-function init() {
-    document.getElementById('p-auth').classList.add('hide');
-    document.getElementById('p-main').classList.remove('hide');
-    document.getElementById('u-info').innerText = me.name;
-    
-    if(me.shift==='主管') {
-        document.getElementById('mgr-tool').classList.remove('hide');
-        document.getElementById('btn-edit-in').classList.remove('hide');
-        document.getElementById('nav-mgr').classList.remove('hide'); 
-    }
-
-    // 生成補貨
-    const stocks = ['菸架','冰箱飲料','層架飲料','冷凍食品','垃圾袋/免洗','衛生紙'];
-    document.getElementById('daily-grid').innerHTML = stocks.map((s,i)=>`<div class="box" id="stk${i}" onclick="chk('stk${i}','${s}')">${s}<br><small>待檢</small></div>`).join('');
-
-    // 生成冰箱
-    const gc = document.getElementById('g-c');
-    const gf = document.getElementById('g-f');
-    for(let i=1; i<=4; i++) gc.innerHTML += `<div class="box" id="fc${i}" onclick="temp('fc${i}','冷藏${i}','c')">冷藏${i}</div>`;
-    for(let i=1; i<=6; i++) gf.innerHTML += `<div class="box" id="ff${i}" onclick="temp('ff${i}','冷凍${i}','f')">冷凍${i}</div>`;
-
-    // 生成錢幣
-    const mb = document.getElementById('money-b');
-    [500,100,50,10,5,1].forEach(u => {
-        mb.innerHTML += `<tr>
-            <td>${u}</td>
-            <td><input class="inp-m" id="mr${u}" oninput="calc()"></td>
-            <td><input class="inp-m" id="ms${u}" oninput="calc()"></td>
-            <td style="color:blue" id="sub${u}">0</td>
-        </tr>`;
-    });
-
-    listen();
-}
-
-function listen() {
-    db.collection('checks').onSnapshot(s => {
-        s.forEach(d => {
-            const el = document.getElementById(d.id);
-            if(el) {
-                el.className = 'box ok' + (d.id.includes('noodle')||d.id.includes('cookie') ? ' foreign' : '');
-                el.innerHTML = `${d.data().name}<br><small>✅ ${d.data().user}</small>`;
-            }
-        });
-    });
-
-    db.collection('settings').doc('map').onSnapshot(s => {
-        if(s.exists) drawMap(s.data().shapes || []);
-    });
-
-    db.collection('store').doc('now').onSnapshot(s => {
-        if(s.exists) {
-            document.getElementById('in-c').value = s.data().cash||0;
-            document.getElementById('in-s').value = s.data().stock||0;
-        }
-    });
-
-    db.collection('feeds').orderBy('time','desc').limit(20).onSnapshot(s => {
-        const d = document.getElementById('feed');
-        d.innerHTML = "";
-        let unread = 0;
-        s.forEach(doc => {
-            const b = doc.data();
-            if(!b.done) unread++;
-            d.innerHTML += `<div style="padding:10px; border-bottom:1px solid #ddd; background:${b.done?'#fff':'#fff8e1'}">
-                <b>[${b.type}] ${b.user}</b>: ${b.txt}
-                ${b.img ? `<br><img src="${b.img}" style="height:60px;" onclick="zoom('${b.img}')">` : ''}
-                ${!b.done ? `<button onclick="okFeed('${doc.id}')" style="font-size:10px;">完成</button>` : '✅'}
-            </div>`;
-        });
-        const badge = document.getElementById('badge');
-        if(unread>0) { badge.innerText=unread; badge.classList.add('show'); }
-        else badge.classList.remove('show');
-    });
-}
-
-// --- 功能 ---
-function go(t) {
-    document.querySelectorAll('.nav div').forEach(e=>e.classList.remove('active'));
-    document.getElementById('n-'+t).classList.add('active');
-    ['stock','temp','count','svc','mgr'].forEach(x=> {
-        const el = document.getElementById('v-'+x);
-        if(el) el.classList.add('hide');
-    });
-    document.getElementById('v-'+t).classList.remove('hide');
-}
-
-function chk(id, name) {
-    if(confirm(name+" 完成？")) db.collection('checks').doc(id).set({name, status:'ok', user:me.name});
-}
-
-function temp(id, name, type) {
-    const v = prompt(name+" 溫度：", type==='f'?'-':'');
-    if(!v) return;
-    if((type==='f' && parseFloat(v)>-10) || (type==='c' && (parseFloat(v)<0 || parseFloat(v)>7))) alert("🚨 溫度異常！");
-    db.collection('checks').doc(id).set({name, val:v, status:'ok', user:me.name});
-}
-
-function calc() {
-    let tot = 0;
-    [500,100,50,10,5,1].forEach(u => {
-        const r = Number(document.getElementById('mr'+u).value)||0;
-        const s = Number(document.getElementById('ms'+u).value)||0;
-        const sub = (r+s)*u;
-        document.getElementById('sub'+u).innerText = sub;
-        tot += sub;
-    });
-    document.getElementById('all-sum').innerText = tot;
-}
-
-function addEx(type) {
-    const a = prompt("金額"); const t = prompt("備註");
-    if(a) {
-        exArr.push({type, amt:Number(a), txt:t});
-        document.getElementById('ex-list').innerHTML += `<div>${type==='in'?'收':'支'} ${a} (${t})</div>`;
-    }
-}
-
-function doCalc() {
-    const inC = parseFloat(document.getElementById('in-c').value)||0;
-    const inS = parseFloat(document.getElementById('in-s').value)||0;
-    const out = parseFloat(document.getElementById('all-sum').innerText)||0;
-    const rev = parseFloat(document.getElementById('val-rev').value)||0;
-    // 額外
-    const ext = exArr.reduce((a,b) => a + (b.type==='in'?b.amt:-b.amt), 0);
-
-    const diff = ((inC + inS) - out + rev + ext) * -1;
-    document.getElementById('diff-val').innerText = diff;
-}
-
-function subRep() {
-    db.collection('reports').add({user:me.name, time:new Date()})
-      .then(() => { alert("✅ 提交成功"); location.reload(); })
-      .catch(e => alert("失敗:"+e));
-}
-
-// 交接
-let curT = "";
-function pop(t) {
-    curT = t;
-    document.getElementById('pop-f').classList.remove('hide');
-    document.getElementById('pop-t').innerText = t;
-    const f = document.getElementById('pop-i');
-    if(t==='交接') f.innerHTML = `<textarea id="pi-t"></textarea>`;
-    else f.innerHTML = `<input id="pi-1" placeholder="品名"><input id="pi-2" placeholder="備註/條碼">`;
-}
-
-function send() {
-    let txt = "";
-    if(document.getElementById('pi-t')) txt = document.getElementById('pi-t').value;
-    else txt = document.getElementById('pi-1').value + " " + document.getElementById('pi-2').value;
-    
-    const file = document.getElementById('pop-p').files[0];
-    const save = (url="") => {
-        db.collection('feeds').add({type:curT, txt, img:url, user:me.name, time:new Date(), done:false});
-        document.getElementById('pop-f').classList.add('hide');
+    // --- 1. Firebase 連線設定 ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAiOKSjZq6TPc9O75NcxsQqFYhY2wziW1w",
+        authDomain: "join-home-f3070.firebaseapp.com",
+        projectId: "join-home-f3070",
+        storageBucket: "join-home-f3070.firebasestorage.app",
+        messagingSenderId: "590173788810",
+        appId: "1:590173788810:web:13986424ec8bf9a5f7eb73"
     };
-    
-    if(file) {
-        const r = new FileReader();
-        r.onload = e => save(e.target.result);
-        r.readAsDataURL(file);
-    } else save();
-}
 
-function okFeed(id) { db.collection('feeds').doc(id).update({done:true}); }
-function zoom(src) { 
-    document.getElementById('big-img').src = src;
-    document.getElementById('img-modal').style.display = 'flex';
-}
-function showNoti() { go('svc'); }
+    const diag = document.getElementById('diag-box');
+    function log(msg) { diag.innerText = msg; console.log(msg); }
 
-// --- 模型圖 ---
-function drawMap(data) {
-    shapes = data;
-    const c = document.getElementById('shelf-canvas');
-    c.innerHTML = "";
-    shapes.forEach((s, i) => {
-        const d = document.createElement('div');
-        d.style.cssText = `position:absolute; left:${s.x}px; top:${s.y}px; border:2px solid #333; background:${s.done?'green':'#fff'}; color:${s.done?'#fff':'#000'}; padding:5px; font-size:10px; cursor:pointer; min-width:40px; text-align:center;`;
-        d.innerText = s.name;
+    let db;
+    try {
+        log("正在連接 Firebase...");
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        
+        // 嘗試啟用離線持久化，若失敗則忽略
+        db.enablePersistence().catch(err => {
+            if (err.code == 'failed-precondition') log("多視窗開啟，持久化停用");
+            else if (err.code == 'unimplemented') log("瀏覽器不支援持久化");
+        });
+        log("✅ 連線就緒 (若註冊無反應請檢查網路)");
+        document.getElementById('diag-box').style.color = '#0f0';
+    } catch(e) {
+        log("❌ 連線失敗: " + e.message);
+        document.getElementById('diag-box').style.color = 'red';
+    }
+
+    let me = null;
+    let shapes = [];
+    let selId = null;
+    let exArr = [];
+
+    // --- 2. 認證邏輯 ---
+    function swAuth(x) {
+        document.getElementById('box-login').classList.toggle('hide', x);
+        document.getElementById('box-reg').classList.toggle('hide', !x);
+    }
+
+    function reg() {
+        const btn = document.getElementById('btn-reg-action');
+        btn.innerText = "處理中...";
+        btn.disabled = true;
+
+        const id = document.getElementById('r-id').value;
+        const nm = document.getElementById('r-name').value;
+        const pw = document.getElementById('r-pw').value;
+        const sf = document.getElementById('r-shift').value;
+        
+        if(!id||!nm||!pw) {
+            btn.innerText = "確認註冊"; btn.disabled = false;
+            return alert("請填寫完整");
+        }
+        
+        db.collection('users').doc(id).set({name:nm, pw:pw, shift:sf, points:0})
+            .then(() => {
+                alert("✅ 註冊成功！請按確定返回登入。");
+                swAuth(false);
+                btn.innerText = "確認註冊"; btn.disabled = false;
+            })
+            .catch(e => {
+                alert("❌ 註冊失敗 (可能是網路問題): "+e);
+                btn.innerText = "確認註冊"; btn.disabled = false;
+            });
+    }
+
+    function login() {
+        const id = document.getElementById('l-id').value;
+        const pw = document.getElementById('l-pw').value;
+        log("正在驗證帳號...");
+        db.collection('users').doc(id).get().then(s => {
+            if(s.exists && s.data().pw===pw) {
+                me = {...s.data(), id};
+                log("登入成功");
+                init();
+            } else alert("帳密錯誤");
+        }).catch(e => {
+            alert("登入失敗，請檢查網路：" + e.message);
+        });
+    }
+
+    function logout() {
+        location.reload();
+    }
+
+    // --- 3. 啟動與生成 ---
+    function init() {
+        document.getElementById('page-auth').classList.add('hide');
+        document.getElementById('page-main').classList.remove('hide');
+        document.getElementById('user-display').innerText = `${me.name} (${me.shift})`;
         
         if(me.shift==='主管') {
-            d.onmousedown = e => {
-                selId = i;
-                document.getElementById('sel-name').innerText = s.name;
-                document.getElementById('edit-bar').classList.remove('hide');
-                const ox = e.clientX-s.x; const oy = e.clientY-s.y;
-                document.onmousemove = ev => { s.x=ev.clientX-ox; s.y=ev.clientY-oy; d.style.left=s.x+'px'; d.style.top=s.y+'px'; };
-                document.onmouseup = () => document.onmousemove = null;
-            };
-        } else {
-            d.onclick = () => { if(confirm("完成?")){ s.done=true; saveMap(); } };
+            document.getElementById('mgr-tools').classList.remove('hide');
+            document.getElementById('btn-unlock').classList.remove('hide');
+            document.getElementById('nav-mgr').classList.remove('hide');
         }
-        c.appendChild(d);
-    });
-}
 
-function addBox() { const n = prompt("名稱"); if(n) { shapes.push({name:n, x:50, y:50, done:false}); saveMap(); }}
-function saveMap() { db.collection('settings').doc('map').set({shapes}); }
-function delShape() { shapes.splice(selId, 1); saveMap(); document.getElementById('edit-bar').classList.add('hide'); }
-function copyShape() { const s=shapes[selId]; shapes.push({...s, x:s.x+20, y:s.y+20}); saveMap(); }
-function renShape() { const n=prompt("新名"); if(n){ shapes[selId].name=n; saveMap(); } }
+        // 生成錢幣
+        const mb = document.getElementById('money-body');
+        [500,100,50,10,5,1].forEach(u => {
+            mb.innerHTML += `<tr>
+                <td>${u}</td>
+                <td><input type="number" class="money-inp" id="mr${u}" oninput="calc()"></td>
+                <td><input type="number" class="money-inp" id="ms${u}" oninput="calc()"></td>
+                <td style="color:blue; font-weight:bold;" id="sub${u}">0</td>
+            </tr>`;
+        });
 
-function editIn() {
-    const v = prompt("新現金"); const s = prompt("新庫存");
-    if(v && s) db.collection('store').doc('now').set({cash:v, stock:s});
-}
+        // 生成電話卡
+        const cards = ["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"];
+        document.getElementById('card-list').innerHTML = cards.map(c => `
+            <div style="border:1px solid #ddd; padding:5px; margin-bottom:5px; border-radius:5px;">
+                <b>${c}</b>
+                <div style="display:flex; gap:5px;">
+                    <input type="number" id="ci-${c}" placeholder="進" style="font-size:12px;">
+                    <input type="number" id="cs-${c}" placeholder="銷" style="color:red; font-size:12px;">
+                    <input type="number" id="cl-${c}" placeholder="存" style="color:blue; font-size:12px;">
+                </div>
+            </div>
+        `).join('');
+
+        listen();
+    }
+
+    function listen() {
+        // 狀態
+        db.collection('checks').onSnapshot(s => {
+            s.forEach(d => {
+                const el = document.getElementById(d.id);
+                if(el) {
+                    el.className = 'box ok' + (d.id.includes('stk-noodle')||d.id.includes('stk-cookie') ? ' foreign' : '');
+                    el.innerHTML = `${d.data().name}<br><small>✅ ${d.data().user}</small>`;
+                }
+            });
+        });
+
+        // 地圖
+        db.collection('settings').doc('map').onSnapshot(s => {
+            if(s.exists) drawMap(s.data().shapes || []);
+        });
+
+        // 進櫃
+        db.collection('store').doc('status').onSnapshot(s => {
+            if(s.exists) {
+                const d = s.data();
+                document.getElementById('in-cash').value = d.cash || 0;
+                document.getElementById('in-stock').value = d.stock || 0;
+                if(d.cardsDetail) {
+                    for(let k in d.cardsDetail) {
+                        const el = document.getElementById(`ci-${k}`);
+                        if(el) el.value = d.cardsDetail[k];
+                    }
+                }
+            }
+        });
+
+        // 交接
+        db.collection('feeds').orderBy('time','desc').limit(20).onSnapshot(s => {
+            const div = document.getElementById('feed');
+            div.innerHTML = "";
+            let unread = 0;
+            s.forEach(doc => {
+                const b = doc.data();
+                if(!b.done) unread++;
+                div.innerHTML += `<div style="padding:10px; border-bottom:1px solid #ddd; background:${b.done?'#fff':'#fff8e1'}">
+                    <b>[${b.type}] ${b.user}</b> <button onclick="doneFeed('${doc.id}',${!b.done})" style="font-size:10px; float:right;">${b.done?'已完成':'打勾'}</button>
+                    <p style="margin:5px 0;">${b.txt}</p>
+                    ${b.img ? `<img src="${b.img}" style="width:80px; border:1px solid #ccc;" onclick="zoom('${b.img}')">` : ''}
+                </div>`;
+            });
+            document.getElementById('bell-count').innerText = unread;
+        });
+    }
+
+    // --- 功能函式 (掛載全域) ---
+    window.tab = (t) => {
+        document.querySelectorAll('.nav div').forEach(e=>e.classList.remove('active'));
+        document.getElementById('nav-'+t).classList.add('active');
+        ['stock','temp','counter','svc','mgr'].forEach(x=> document.getElementById('view-'+x).classList.add('hide'));
+        document.getElementById('view-'+t).classList.remove('hide');
+    };
+
+    window.check = async (id, name) => {
+        if(confirm(name+" 完成？")) db.collection('checks').doc(id).set({name, status:'ok', user:me.name, time:new Date()});
+    };
+
+    window.temp = async (id, name, type) => {
+        const v = prompt(name+" 溫度：", type==='f'?'-':'');
+        if(!v) return;
+        if((type==='f' && parseFloat(v)>-10) || (type==='c' && (parseFloat(v)<0 || parseFloat(v)>7))) alert("🚨 溫度異常！");
+        db.collection('checks').doc(id).set({name, val:v, status:'ok', user:me.name, time:new Date()});
+    };
+
+    window.calc = () => {
+        let tot = 0;
+        [500,100,50,10,5,1].forEach(u => {
+            const r = Number(document.getElementById('mr'+u).value)||0;
+            const s = Number(document.getElementById('ms'+u).value)||0;
+            const sub = (r+s)*u;
+            document.getElementById('sub'+u).innerText = sub;
+            tot += sub;
+        });
+        document.getElementById('total-money').innerText = tot;
+    };
+
+    window.addExt = (type) => {
+        const a = prompt("金額"); const t = prompt("備註");
+        if(a) {
+            exArr.push({type, amt:Number(a), txt:t});
+            document.getElementById('ext-list').innerHTML += `<div style="color:${type==='in'?'green':'red'}">${type==='in'?'收':'支'} ${a} (${t})</div>`;
+        }
+    };
+
+    window.doCalc = () => {
+        const inC = parseFloat(document.getElementById('in-cash').value)||0;
+        const inS = parseFloat(document.getElementById('in-stock').value)||0;
+        const out = parseFloat(document.getElementById('total-money').innerText)||0;
+        const rev = parseFloat(document.getElementById('v-sales').value)||0;
+        const ded = (parseFloat(document.getElementById('v-cr').value)||0) + 
+                    (parseFloat(document.getElementById('v-tw').value)||0) + 
+                    (parseFloat(document.getElementById('v-ln').value)||0) + 
+                    (parseFloat(document.getElementById('v-pt').value)||0) + 
+                    (parseFloat(document.getElementById('v-rf').value)||0);
+        const ext = exArr.reduce((a,b) => a + (b.type==='in'?b.amt:-b.amt), 0);
+
+        const diff = ((inC + inS) - out + (rev - ded) + ext) * -1;
+        document.getElementById('diff-val').innerText = diff;
+    };
+
+    window.submitReport = async () => {
+        const nextCash = parseFloat(document.getElementById('total-money').innerText);
+        let cardDetails = {};
+        ["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"].forEach(c => {
+            cardDetails[c] = parseFloat(document.getElementById(`cl-${c}`).value)||0;
+        });
+
+        await db.collection('store').doc('status').set({
+            cash: nextCash, stock: 0,
+            cardsDetail: cardDetails
+        });
+        await db.collection('reports').add({ diff: document.getElementById('diff-val').innerText, user:me.name, time:new Date() });
+        alert("✅ 報表提交成功！");
+        location.reload();
+    };
+
+    // 交接
+    let curT = "";
+    window.popSvc = (t) => {
+        curT = t;
+        document.getElementById('pop-svc').style.display = 'flex';
+        document.getElementById('pop-title').innerText = t;
+        const f = document.getElementById('pop-fields');
+        if(t==='交接') f.innerHTML = `<textarea id="pi-t" placeholder="請輸入交接事項..."></textarea>`;
+        else f.innerHTML = `<input id="pi-1" placeholder="品名/項目"><input id="pi-2" placeholder="備註/條碼">`;
+    };
+
+    window.sendSvc = () => {
+        let txt = "";
+        if(document.getElementById('pi-t')) txt = document.getElementById('pi-t').value;
+        else txt = document.getElementById('pi-1').value + " " + document.getElementById('pi-2').value;
+        
+        const file = document.getElementById('pop-img').files[0];
+        const save = (url="") => {
+            db.collection('feeds').add({type:curT, txt, img:url, user:me.name, time:new Date(), done:false});
+            document.getElementById('pop-svc').style.display='none';
+            alert("發送成功");
+        };
+        
+        if(file) {
+            const r = new FileReader();
+            r.onload = e => save(e.target.result);
+            r.readAsDataURL(file);
+        } else save();
+    };
+
+    window.doneFeed = (id, s) => db.collection('feeds').doc(id).update({done:s});
+    window.zoom = (src) => { document.getElementById('big-img').src = src; document.getElementById('img-modal').style.display = 'flex'; };
+
+    // 主管編輯進櫃
+    window.unlockIn = () => {
+        document.getElementById('in-cash').disabled = false;
+        document.getElementById('in-stock').disabled = false;
+        document.getElementById('btn-save-in').classList.remove('hide');
+    };
+    window.saveIn = async () => {
+        await db.collection('store').doc('status').update({
+            cash: parseFloat(document.getElementById('in-cash').value),
+            stock: parseFloat(document.getElementById('in-stock').value)
+        });
+        alert("更新成功");
+        location.reload();
+    };
+
+    // 模型圖
+    function drawMap(data) {
+        shapes = data;
+        const c = document.getElementById('map-canvas');
+        c.innerHTML = "";
+        shapes.forEach((s, i) => {
+            const d = document.createElement('div');
+            d.style.cssText = `position:absolute; left:${s.x}px; top:${s.y}px; border:2px solid #333; background:${s.done?'green':'#fff'}; color:${s.done?'#fff':'#000'}; padding:5px; font-size:10px; cursor:pointer; width:50px; height:40px; display:flex; align-items:center; justify-content:center;`;
+            d.innerText = s.name;
+            
+            if(me.shift==='主管') {
+                d.onmousedown = e => {
+                    selId = i;
+                    document.getElementById('sel-name').innerText = s.name;
+                    document.getElementById('edit-bar').classList.remove('hide');
+                    const ox = e.clientX-s.x; const oy = e.clientY-s.y;
+                    document.onmousemove = ev => { s.x=ev.clientX-ox; s.y=ev.clientY-oy; d.style.left=s.x+'px'; d.style.top=s.y+'px'; };
+                    document.onmouseup = () => document.onmousemove = null;
+                };
+            } else {
+                d.onclick = async () => { if(confirm("完成?")){ s.done=true; saveMap(); }};
+            }
+            c.appendChild(d);
+        });
+    }
+    window.addMapBox = () => { const n=prompt("名稱"); if(n) { shapes.push({name:n, x:50, y:50, done:false}); saveMap(); }};
+    window.saveMap = async () => { await db.collection('settings').doc('map').set({shapes}); alert("已儲存"); };
+    window.delShape = () => { shapes.splice(selId, 1); saveMap(); document.getElementById('edit-bar').classList.add('hide'); };
+    window.copyShape = () => { const s=shapes[selId]; shapes.push({...s, x:s.x+20, y:s.y+20}); saveMap(); };
+    window.renShape = () => { const n=prompt("新名"); if(n){ shapes[selId].name=n; saveMap(); }};
+
 </script>
 </body>
 </html>
