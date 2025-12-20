@@ -3,69 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧門市 V34 (主管修復版)</title>
+    <title>智慧門市 V34 (主管審核版)</title>
     <style>
         /* --- 核心樣式 --- */
-        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f0f2f5; padding-bottom: 100px; }
+        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f4f7f6; padding-bottom: 100px; }
         .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; }
         
         /* 導航 */
-        .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 3px solid #ddd; z-index: 100; }
-        .nav div { flex: 1; padding: 12px 0; text-align: center; font-weight: bold; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 3px solid #ddd; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .nav div { flex: 1; padding: 12px 0; text-align: center; font-weight: bold; color: #666; cursor: pointer; font-size: 14px; }
         .nav div.active { color: #007bff; border-bottom: 3px solid #007bff; background: #f0f8ff; }
 
-        /* 標題與按鈕列 */
+        /* 標題與按鈕 */
         .section-header { background: #e9ecef; padding: 10px; margin: 10px 0; font-weight: bold; border-left: 5px solid #007bff; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* 格子系統 */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 10px; }
-        .box { border: 2px solid #ccc; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; background: #fff; min-height: 60px; position: relative; display:flex; flex-direction:column; justify-content:center; align-items:center;}
-        .box.ok { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
-        .box.alert { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; animation: flash 0.5s; }
         
-        /* 刪除按鈕 (預設隱藏) */
-        .del-btn { position: absolute; top: -8px; right: -8px; background: red; color: white; width: 24px; height: 24px; border-radius: 50%; font-size: 14px; line-height: 24px; text-align: center; display: none; z-index: 10; border: 2px solid white; }
-        .editing .del-btn { display: block; } /* 編輯模式下顯示 */
-        .editing .box { border: 2px dashed #007bff; animation: shake 0.3s; }
-
-        /* 特殊區塊 */
-        .foreign { background: #f3e5f5; border: 2px solid #9c27b0; color: #6a1b9a; font-weight: bold; }
+        /* 萬用盒子 */
+        .box { border: 2px solid #ccc; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; background: #fff; min-height: 70px; display:flex; flex-direction:column; justify-content:center; align-items:center; position: relative; }
+        .box.ok { background: #d4edda !important; border-color: #28a745 !important; color: #155724; }
+        .box.alert { background: #f8d7da !important; border-color: #dc3545 !important; animation: flash 1s infinite; }
+        
+        /* 主管批改標記 */
+        .manager-note { display: block; font-size: 10px; color: #d63384; background: #fce4ec; padding: 2px 5px; border-radius: 4px; margin-top: 2px; border: 1px solid #f8bbd0; }
+        
+        /* 刪除按鈕 (管理模式) */
+        .del-btn { position: absolute; top: -5px; right: -5px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: none; z-index: 5; }
+        .editing .del-btn { display: block; }
+        .editing .box { border: 2px dashed blue; }
 
         /* 模型圖 */
         #shelf-canvas { border: 2px solid #333; position: relative; width: 95%; height: 350px; background: #eee; margin: 10px auto; overflow: hidden; }
-        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; text-align: center; padding: 2px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; text-align: center; padding: 2px; font-weight: bold; }
         .shape.done { background: #28a745 !important; color: white !important; }
-        .shape.selected { border: 4px solid red; z-index: 20; transform: scale(1.1); }
+        .shape.selected { border: 3px solid red; z-index: 10; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+
+        /* 鈴鐺 */
+        #bell { position: fixed; top: 10px; right: 10px; font-size: 24px; background: white; border-radius: 50%; padding: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 200; cursor: pointer; }
+        #badge { position: absolute; top: 0; right: 0; background: red; color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 11px; text-align: center; line-height: 18px; display: none; }
+        #noti-dropdown { position: fixed; top: 60px; right: 10px; width: 260px; background: white; border: 1px solid #ccc; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 199; display: none; max-height: 300px; overflow-y: auto; border-radius: 8px; font-size: 13px; }
 
         /* 通用元件 */
-        input, select, button, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #bbb; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
+        input, select, button, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #bbb; border-radius: 5px; box-sizing: border-box; font-size: 15px; }
+        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
         .btn-g { background: #28a745; } .btn-r { background: #dc3545; } .btn-o { background: #fd7e14; }
-        .btn-s { width: auto; padding: 5px 10px; font-size: 12px; margin-right: 5px; }
+        .btn-s { width: auto; padding: 3px 8px; font-size: 12px; margin-right: 3px; }
         .hide { display: none !important; }
         
-        /* 帳務表 */
-        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 10px; }
+        /* 帳務 */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 14px; }
         td, th { border: 1px solid #ddd; padding: 5px; text-align: center; }
-        .inp-money { width: 100%; text-align: center; padding: 8px; border: 1px solid #ccc; font-size: 16px; background: #f9f9f9; }
+        .inp-money { width: 100%; text-align: center; padding: 8px; border: 1px solid #ccc; background: #fff; }
 
         /* 圖片放大 */
-        #img-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        #img-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         #img-overlay.show { opacity: 1; pointer-events: auto; }
-        #big-img { max-width: 90%; max-height: 90%; border: 3px solid white; border-radius: 5px; }
+        #big-img { max-width: 95%; max-height: 95%; border: 2px solid white; transition: transform 0.3s; transform: scale(0.5); }
+        #img-overlay.show #big-img { transform: scale(1); }
 
         @keyframes flash { 0%, 100% {opacity: 1;} 50% {opacity: 0.5;} }
-        @keyframes shake { 0% {transform:rotate(0deg);} 25% {transform:rotate(1deg);} 75% {transform:rotate(-1deg);} }
     </style>
 </head>
 <body>
 
 <div id="img-overlay" onclick="closeZoom()"><img id="big-img"></div>
 
+<div id="bell" onclick="toggleNoti()">🔔<div id="badge">0</div></div>
+<div id="noti-dropdown"></div>
+
 <div class="container">
     <div id="page-auth" style="padding:40px 20px; text-align:center;">
-        <h2>🏪 門市系統 V34</h2>
+        <h2>🏪 門市 V34</h2>
         <div id="box-login">
             <input id="l-id" placeholder="帳號">
             <input id="l-pw" type="password" placeholder="密碼">
@@ -73,7 +80,7 @@
             <p onclick="swAuth(true)" style="color:blue; margin-top:20px; cursor:pointer;">沒有帳號？註冊</p>
         </div>
         <div id="box-reg" class="hide">
-            <input id="r-name" placeholder="真實姓名">
+            <input id="r-name" placeholder="姓名">
             <select id="r-shift"><option>早班</option><option>晚班</option><option>主管</option></select>
             <input id="r-id" placeholder="設定帳號">
             <input id="r-pw" type="password" placeholder="設定密碼">
@@ -83,7 +90,7 @@
     </div>
 
     <div id="page-main" class="hide">
-        <div style="background:#333; color:white; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="background:#333; color:white; padding:10px; display:flex; justify-content:space-between; align-items:center;">
             <span id="user-info">--</span>
             <button onclick="location.reload()" style="width:auto; padding:5px 10px; background:#555; font-size:12px;">登出</button>
         </div>
@@ -97,32 +104,25 @@
         </div>
 
         <div id="v-stock">
-            <div class="section-header" style="background:#f3e5f5; color:#4a148c;">🔥 重點補貨</div>
-            <div class="grid">
-                <div class="box foreign" id="stk_noodle" onclick="chk('stk_noodle','外籍泡麵')">外籍泡麵<br><small>待檢</small></div>
-                <div class="box foreign" id="stk_cookie" onclick="chk('stk_cookie','外籍餅乾')">外籍餅乾<br><small>待檢</small></div>
-            </div>
-
             <div class="section-header">
                 🛒 每日補貨 
-                <button id="btn-edit-stock" class="hide btn-s btn-o" onclick="toggleEdit('stock-grid')">管理模式</button>
+                <button id="btn-edit-stock" class="hide btn-s btn-o" onclick="toggleEdit('stock-list')">管理</button>
             </div>
-            
-            <div class="grid" id="stock-grid"></div>
-            
+            <div class="grid" id="stock-list"></div>
             <div id="add-stock-area" class="hide" style="padding:10px; text-align:center;">
-                <button class="btn-g" onclick="addItem('stock')" style="width:100%">+ 新增補貨項目</button>
+                <button class="btn-g" onclick="addItem('stock')" style="width:100%">+ 新增項目</button>
             </div>
 
             <div class="section-header">🗓️ 每月效期圖</div>
-            <div id="mgr-map-tool" class="hide" style="padding:5px; background:#e9ecef; border-bottom:1px solid #ccc;">
-                <button onclick="addMapShape()" class="btn-s btn-g">+ 新增方塊</button>
-                <button onclick="saveMapData()" class="btn-s btn-o">發布地圖</button>
-                <div id="map-edit-bar" class="hide" style="margin-top:5px; padding:5px; background:#fff; border:1px solid red;">
-                    <span style="color:red; font-weight:bold;">已選取: <span id="sel-name"></span></span><br>
+            <div id="mgr-map-tool" class="hide" style="padding:5px; background:#e9ecef;">
+                <button onclick="addMapShape()" class="btn-s">+方塊</button>
+                <button onclick="saveMapData()" class="btn-s btn-g">發布</button>
+                <div id="map-edit-bar" class="hide" style="margin-top:5px; padding:5px; background:#fff; border:1px solid #ccc;">
+                    <span style="font-size:12px;">選取: <b id="sel-name"></b></span>
                     <button onclick="renShape()" class="btn-s">改名</button>
                     <button onclick="copyShape()" class="btn-s">複製</button>
                     <button onclick="delShape()" class="btn-s btn-r">刪除</button>
+                    <button onclick="reviewMapItem()" class="btn-s btn-o">批改</button>
                 </div>
             </div>
             <div id="shelf-canvas"></div>
@@ -130,22 +130,22 @@
 
         <div id="v-temp" class="hide">
             <div class="section-header">
-                ❄️ 冰箱列表 
-                <button id="btn-edit-fridge" class="hide btn-s btn-o" onclick="toggleEdit('fridge-grid')">管理模式</button>
+                ❄️ 冰箱溫度 
+                <button id="btn-edit-fridge" class="hide btn-s btn-o" onclick="toggleEdit('fridge-list')">管理</button>
             </div>
-            <div class="grid" id="fridge-grid"></div>
+            <div class="grid" id="fridge-list"></div>
             <div id="add-fridge-area" class="hide" style="padding:10px;">
                 <button class="btn-g" onclick="addItem('fridge')" style="width:100%">+ 新增冰箱</button>
             </div>
         </div>
 
         <div id="v-count" class="hide">
-            <div class="section-header">📥 上一班留存 (進櫃)</div>
+            <div class="section-header">📥 進櫃 (上一班)</div>
             <div style="padding:10px; background:#e3f2fd;">
-                收銀：<input id="in-c" disabled style="width:100px; display:inline"> 
-                庫存：<input id="in-s" disabled style="width:100px; display:inline">
+                收銀：<input id="in-c" disabled style="width:80px; display:inline"> 
+                庫存：<input id="in-s" disabled style="width:80px; display:inline">
                 <div id="mgr-in-tools" class="hide" style="margin-top:5px;">
-                    <button class="btn-s btn-o" onclick="unlockIn()">修正金額</button>
+                    <button class="btn-s btn-o" onclick="unlockIn()">修改</button>
                     <button id="btn-save-in" class="hide btn-s btn-g" onclick="saveIn()">儲存</button>
                 </div>
             </div>
@@ -155,7 +155,7 @@
                 <tr><th>面額</th><th>收銀</th><th>庫存</th><th>小計</th></tr>
                 <tbody id="money-body"></tbody>
             </table>
-            <div style="text-align:right; font-weight:bold; color:blue; padding:10px; font-size:18px;">總計: $<span id="total-cash">0</span></div>
+            <div style="text-align:right; font-weight:bold; color:blue; padding:10px;">總計: $<span id="total-cash">0</span></div>
 
             <div class="section-header">📞 電話卡</div>
             <div id="card-list" class="grid"></div>
@@ -187,6 +187,7 @@
                 <button onclick="openForm('交接')">📝 交接</button>
                 <button onclick="openForm('客訂')">🛒 客訂</button>
                 <button onclick="openForm('維修')">🔧 維修</button>
+                <button onclick="openForm('售罄')">⚡ 售罄</button>
                 <button onclick="openForm('報廢')">🗑️ 報廢</button>
                 <button onclick="openForm('詢問')" class="btn-o">❓ 詢問</button>
             </div>
@@ -207,7 +208,7 @@
     </div>
 </div>
 
-<div id="modal-form" class="hide" style="position:fixed; top:5%; left:5%; width:90%; height:90%; background:white; border:2px solid #007bff; padding:15px; overflow-y:auto; z-index:3000;">
+<div id="modal-form" class="hide" style="position:fixed; top:5%; left:5%; width:90%; height:90%; background:white; border:2px solid #007bff; padding:15px; overflow-y:auto; z-index:3000; box-shadow:0 0 15px rgba(0,0,0,0.3);">
     <h3 id="modal-title">--</h3>
     <div id="modal-fields"></div>
     <div style="margin-top:10px;">
@@ -222,7 +223,7 @@
 </div>
 
 <script>
-// --- DB 核心 ---
+// --- DB: LocalStorage ---
 const DB = {
     get: (k) => JSON.parse(localStorage.getItem(k) || '{}'),
     set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
@@ -234,9 +235,9 @@ const DB = {
     }
 };
 
-// --- 初始化預設資料 (只執行一次) ---
+// --- 初始化資料 ---
 if(!localStorage.getItem('conf_stock')) {
-    localStorage.setItem('conf_stock', JSON.stringify(['菸架','冰箱飲料','層架飲料','冷凍食品','垃圾袋/免洗','衛生紙','牙膏/洗衣精']));
+    localStorage.setItem('conf_stock', JSON.stringify(['外籍餅乾','外籍泡麵','菸架','冰箱飲料','層架飲料','冷凍食品','垃圾袋/免洗','衛生紙','牙膏/洗衣精','一般餅乾/泡麵']));
 }
 if(!localStorage.getItem('conf_fridge')) {
     localStorage.setItem('conf_fridge', JSON.stringify([
@@ -268,13 +269,12 @@ function login() {
     if(u[id] && u[id].pw===pw) { me={...u[id], id}; init(); } else alert("帳密錯誤");
 }
 
-// --- 初始化畫面 ---
+// --- 初始化 ---
 function init() {
     document.getElementById('page-auth').classList.add('hide');
     document.getElementById('page-main').classList.remove('hide');
     document.getElementById('user-info').innerText = `${me.name} (${me.shift})`;
     
-    // 主管介面權限全開
     if(me.shift==='主管') {
         document.getElementById('nav-mgr').classList.remove('hide');
         document.getElementById('mgr-map-tool').classList.remove('hide');
@@ -283,29 +283,29 @@ function init() {
         document.getElementById('btn-edit-fridge').classList.remove('hide');
     }
 
-    renderDynamicItems();
+    renderItems(); // 補貨與冰箱
     
-    // 錢幣表
+    // 錢幣
     document.getElementById('money-body').innerHTML = [500,100,50,10,5,1].map(u=>`<tr><td>${u}</td><td><input type="number" class="inp-money" id="mr_${u}" oninput="calcCash()"></td><td><input type="number" class="inp-money" id="ms_${u}" oninput="calcCash()"></td><td style="color:blue" id="sub_${u}">0</td></tr>`).join('');
     
-    // 電話卡
+    // 8. 電話卡庫存
     const cards=["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"];
-    document.getElementById('card-list').innerHTML = cards.map(c=>`<div style="border:1px solid #ccc; padding:5px; border-radius:5px;"><b>${c}</b><div style="display:flex; gap:5px;"><input type="number" placeholder="銷" style="width:50%"><input type="number" placeholder="存" style="width:50%"></div></div>`).join('');
+    document.getElementById('card-list').innerHTML = cards.map(c=>`<div style="border:1px solid #ccc; padding:5px; border-radius:5px;"><b>${c}</b><div style="display:flex; gap:5px;"><input type="number" id="cd_s_${c}" placeholder="銷" style="width:50%"><input type="number" id="cd_l_${c}" placeholder="存" style="width:50%"></div></div>`).join('');
 
     renderAll();
 }
 
-// 動態渲染 (修復主管新增問題)
-function renderDynamicItems() {
+// 4. 冰箱與補貨列表渲染
+function renderItems() {
     const stocks = JSON.parse(localStorage.getItem('conf_stock'));
-    document.getElementById('stock-grid').innerHTML = stocks.map((s,i)=>`
+    document.getElementById('stock-list').innerHTML = stocks.map((s,i)=>`
         <div class="box" id="stk_${i}" onclick="chk('stk_${i}','${s}')">
             ${s}<br><small>待檢</small>
             <div class="del-btn" onclick="delItem('stock',${i}); event.stopPropagation();">X</div>
         </div>`).join('');
 
     const fridges = JSON.parse(localStorage.getItem('conf_fridge'));
-    document.getElementById('fridge-grid').innerHTML = fridges.map((f,i)=>`
+    document.getElementById('fridge-list').innerHTML = fridges.map((f,i)=>`
         <div class="box" id="ref_${i}" onclick="inputTemp('ref_${i}','${f.n}','${f.t}')">
             ${f.n}<br><small>待測</small>
             <div class="del-btn" onclick="delItem('fridge',${i}); event.stopPropagation();">X</div>
@@ -318,8 +318,9 @@ function renderAll() {
     for(let k in s) {
         const el=document.getElementById(k);
         if(el) {
-            el.className = `box ${s[k].alert?'alert':'ok'} ${k.includes('stk_noodle')||k.includes('stk_cookie')?'foreign':''}`;
-            el.innerHTML = `${s[k].name}<br><small>${s[k].alert?'⚠️ '+s[k].val : '✅ '+s[k].time}</small>`;
+            el.className = `box ${s[k].alert?'alert':'ok'} ${k.includes('外籍')?'foreign':''}`;
+            el.innerHTML = `${s[k].name}<br><small>${s[k].alert?'⚠️ '+s[k].val : '✅ '+s[k].user}</small>
+                ${s[k].mgrReply ? `<span class="manager-note">批: ${s[k].mgrReply}</span>` : ''}`;
             if(document.querySelector('.editing')) el.innerHTML += `<div class="del-btn" onclick="delItem('${k.includes('stk')?'stock':'fridge'}', ${k.split('_')[1]}); event.stopPropagation();">X</div>`;
         }
     }
@@ -327,11 +328,18 @@ function renderAll() {
     document.getElementById('in-c').value = store.cash || 0;
     document.getElementById('in-s').value = store.stock || 0;
     
+    // 電話卡進櫃
+    if(store.cards) {
+        for(let k in store.cards) {
+            let el = document.getElementById(`cd_l_${k}`);
+            if(el) el.placeholder = `上:${store.cards[k]}`;
+        }
+    }
+    
     renderFeed();
     drawMap();
 }
 
-// --- 分頁切換 ---
 function tab(t) {
     document.querySelectorAll('.nav div').forEach(e=>e.classList.remove('active'));
     document.getElementById('n-'+t).classList.add('active');
@@ -339,58 +347,68 @@ function tab(t) {
     document.getElementById('v-'+t).classList.remove('hide');
 }
 
-// --- 管理模式 (新增/刪除) ---
-function toggleEdit(id) {
-    const el = document.getElementById(id);
-    el.classList.toggle('editing');
-    const btn = id==='stock-grid' ? 'add-stock-area' : 'add-fridge-area';
-    document.getElementById(btn).classList.toggle('hide');
-}
-
-function addItem(type) {
-    const key = `conf_${type}`;
-    let list = JSON.parse(localStorage.getItem(key));
-    const n = prompt("名稱:");
-    if(!n) return;
-    
-    if(type==='fridge') {
-        const t = prompt("類型 (c=冷藏, f=冷凍)", "c");
-        list.push({n, t});
-    } else {
-        list.push(n);
-    }
-    localStorage.setItem(key, JSON.stringify(list));
-    renderDynamicItems(); // 重繪
-}
-
-function delItem(type, idx) {
-    if(!confirm("確定刪除?")) return;
-    const key = `conf_${type}`;
-    let list = JSON.parse(localStorage.getItem(key));
-    list.splice(idx, 1);
-    localStorage.setItem(key, JSON.stringify(list));
-    renderDynamicItems(); // 重繪
-}
-
-// --- 檢查與溫度 ---
+// 1. 主管審核 (Grade/Review)
 function chk(id, name) {
     if(document.getElementById(id).closest('.editing')) return;
-    if(confirm(`${name} 完成？`)) {
-        let s=DB.get('status'); s[id]={name, user:me.name, time:new Date().toLocaleTimeString()}; DB.set('status',s); renderAll();
+    let s=DB.get('status');
+    
+    // 如果是主管且已檢查，則進行批改
+    if(me.shift === '主管' && s[id] && s[id].user) {
+        const r = prompt(`員工 ${s[id].user} 於 ${s[id].time} 完成。\n請輸入主管評語/批改：`, s[id].mgrReply || "");
+        if(r !== null) {
+            s[id].mgrReply = r;
+            DB.set('status', s);
+            renderAll();
+        }
+    } else {
+        if(confirm(`${name} 完成？`)) {
+            s[id]={name, user:me.name, time:new Date().toLocaleTimeString()}; 
+            DB.set('status',s); renderAll();
+        }
     }
 }
 
 function inputTemp(id, name, type) {
     if(document.getElementById(id).closest('.editing')) return;
     const v=prompt(name+" 溫度：", type==='f'?'-':'');
-    if(!v) return alert("溫度不可空白！");
+    if(!v) return;
     const n=parseFloat(v);
     let alertFlag=false;
     if((type==='f' && n>-10) || (type==='c' && (n<0 || n>7))) { alert("🚨 溫度異常！"); alertFlag=true; }
-    let s=DB.get('status'); s[id]={name, user:me.name, val:v+"度", alert:alertFlag, time:new Date().toLocaleTimeString()}; DB.set('status',s); renderAll();
+    
+    let s=DB.get('status');
+    s[id]={name, user:me.name, val:v+"度", alert:alertFlag, time:new Date().toLocaleTimeString()};
+    DB.set('status',s); renderAll();
 }
 
-// --- 帳務 ---
+// 主管管理模式
+function toggleEdit(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('editing');
+    const btn = id==='stock-list' ? 'add-stock-area' : 'add-fridge-area';
+    document.getElementById(btn).classList.toggle('hide');
+}
+function addItem(type) {
+    const key = `conf_${type}`;
+    let list = JSON.parse(localStorage.getItem(key));
+    const n = prompt("名稱:"); if(!n) return;
+    if(type==='fridge') {
+        const t = prompt("類型 (c=冷藏, f=冷凍)", "c");
+        list.push({n, t});
+    } else list.push(n);
+    localStorage.setItem(key, JSON.stringify(list));
+    renderItems();
+}
+function delItem(type, idx) {
+    if(!confirm("刪除?")) return;
+    const key = `conf_${type}`;
+    let list = JSON.parse(localStorage.getItem(key));
+    list.splice(idx, 1);
+    localStorage.setItem(key, JSON.stringify(list));
+    renderItems();
+}
+
+// 帳務
 function calcCash() {
     let tot=0;
     [500,100,50,10,5,1].forEach(u=>{
@@ -407,37 +425,44 @@ function addEx(type) {
     const a=prompt("金額"), t=prompt("備註");
     if(a) { exArr.push({type, amt:Number(a), txt:t}); document.getElementById('ex-list').innerHTML += `<div style="color:${type==='in'?'green':'red'}">${type==='in'?'收':'支'} $${a} (${t})</div>`; }
 }
+// 5. 帳務權限解鎖
 function unlockIn() { document.getElementById('in-c').disabled=false; document.getElementById('in-s').disabled=false; document.getElementById('btn-save-in').classList.remove('hide'); }
 function saveIn() { DB.set('store', {cash:parseFloat(document.getElementById('in-c').value), stock:parseFloat(document.getElementById('in-s').value)}); alert("已更新"); location.reload(); }
 
-// --- 表單與圖片 ---
+// 6. 7. 表單欄位補齊
 let fType="";
 function openForm(t) {
     fType=t; document.getElementById('modal-form').classList.remove('hide');
     document.getElementById('modal-title').innerText=t;
     const f=document.getElementById('modal-fields');
     imgBase64=""; document.getElementById('preview-box').style.display='none';
-    if(t==='交接' || t==='詢問') f.innerHTML=`<textarea id="fi-1" placeholder="內容" style="height:100px"></textarea>`;
-    else f.innerHTML=`<input id="fi-1" placeholder="品名"><input id="fi-2" placeholder="備註/條碼">`;
+    
+    if(t==='客訂') f.innerHTML=`
+        <input id="fi-1" placeholder="品名"><input id="fi-2" placeholder="條碼">
+        <input id="fi-3" type="number" placeholder="數量"><input id="fi-4" type="number" placeholder="售價">
+        <hr><input id="fi-5" placeholder="客名"><input id="fi-6" placeholder="電話">
+        <input id="fi-7" placeholder="LINE ID"><input id="fi-8" placeholder="聯絡時間">`;
+    else if(t==='維修') f.innerHTML=`
+        <input id="fi-1" placeholder="品名"><input id="fi-2" placeholder="故障原因">
+        <input id="fi-3" type="date" placeholder="購買日"><input id="fi-4" placeholder="條碼">
+        <hr><input id="fi-5" placeholder="客名"><input id="fi-6" placeholder="電話">
+        <input id="fi-7" placeholder="LINE ID"><input id="fi-8" placeholder="聯絡時間">`;
+    else if(t==='報廢') f.innerHTML=`<input id="fi-1" placeholder="品名"><input id="fi-2" placeholder="條碼"><input id="fi-3" placeholder="數量">`;
+    else f.innerHTML=`<textarea id="fi-1" placeholder="內容..." style="height:100px"></textarea>`;
 }
 
 function previewImg() {
     const file = document.getElementById('modal-img').files[0];
     if(file) {
         const r = new FileReader();
-        r.onload = e => {
-            imgBase64 = e.target.result;
-            document.getElementById('preview-box').src = imgBase64;
-            document.getElementById('preview-box').style.display = 'block';
-        };
+        r.onload = e => { imgBase64 = e.target.result; document.getElementById('preview-box').src = imgBase64; document.getElementById('preview-box').style.display = 'block'; };
         r.readAsDataURL(file);
     }
 }
 
 function submitForm() {
-    // 14. 防呆
-    let txt=""; document.querySelectorAll('#modal-fields input, #modal-fields textarea').forEach(i=>{if(i.value) txt+=i.value+" ";});
-    if(!txt && !imgBase64) return alert("❌ 內容或圖片不可為空！");
+    let txt=""; document.querySelectorAll('#modal-fields input, #modal-fields textarea').forEach(i=>{if(i.value) txt+=i.placeholder+":"+i.value+" / ";});
+    if(!txt && !imgBase64) return alert("❌ 請勿留空！");
     DB.push('feeds', {type:fType, txt, img:imgBase64, user:me.name, time:new Date().toLocaleString(), done:false});
     alert("✅ 成功"); document.getElementById('modal-form').classList.add('hide'); renderFeed();
 }
@@ -445,24 +470,37 @@ function submitForm() {
 function renderFeed() {
     const fs=DB.arr('feeds');
     const d=document.getElementById('feed-list'); d.innerHTML="";
+    const noti=document.getElementById('noti-dropdown'); noti.innerHTML="";
+    let unread=0;
+    
     fs.forEach((b,i)=>{
+        if(!b.done) {
+            unread++;
+            noti.innerHTML += `<div class="noti-item">${b.type}: ${b.txt.substring(0,10)}...</div>`;
+        }
         d.innerHTML += `<div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-left:5px solid ${b.done?'green':'orange'}">
             <b>[${b.type}] ${b.user}</b> <small>${b.time}</small><br>${b.txt}
             ${b.img ? `<br><img src="${b.img}" style="width:60px; margin-top:5px;" onclick="zoom('${b.img}')">` : ''}
-            ${b.reply ? `<div style="background:#eee; padding:5px; margin-top:5px;">👮 ${b.reply}</div>` : ''}
+            ${b.mgrReply ? `<div style="background:#fce4ec; padding:5px; margin-top:5px; font-size:12px; color:#d63384;">👮 批改: ${b.mgrReply}</div>` : ''}
             <div style="text-align:right; margin-top:5px;">
                 ${!b.done ? `<button onclick="finishFeed(${i})" class="btn-s">完成</button>` : '✅'}
                 ${me.shift==='主管' ? `<button onclick="replyFeed(${i})" class="btn-s btn-o">批改</button>` : ''}
             </div>
         </div>`;
     });
+    // 8. 鈴鐺計數
+    const badge = document.getElementById('badge');
+    badge.innerText = unread;
+    badge.style.display = unread>0 ? 'block' : 'none';
 }
+
 function finishFeed(i) { let fs=DB.arr('feeds'); fs[i].done=true; localStorage.setItem('feeds',JSON.stringify(fs)); renderFeed(); }
-function replyFeed(i) { const r=prompt("批改/回覆："); if(r){ let fs=DB.arr('feeds'); fs[i].reply=r; localStorage.setItem('feeds',JSON.stringify(fs)); renderFeed(); }}
+function replyFeed(i) { const r=prompt("批改/回覆："); if(r){ let fs=DB.arr('feeds'); fs[i].mgrReply=r; localStorage.setItem('feeds',JSON.stringify(fs)); renderFeed(); }}
+function toggleNoti() { const n=document.getElementById('noti-dropdown'); n.style.display=n.style.display==='block'?'none':'block'; }
 function zoom(s){ document.getElementById('big-img').src=s; document.getElementById('img-overlay').classList.add('show'); }
 function closeZoom(){ document.getElementById('img-overlay').classList.remove('show'); }
 
-// --- 地圖 ---
+// 2. 3. 地圖 (主管批改)
 function drawMap() {
     const c=document.getElementById('shelf-canvas'); c.innerHTML="";
     shapes = DB.arr('map_shapes');
@@ -470,7 +508,13 @@ function drawMap() {
         const d=document.createElement('div');
         d.className = `shape ${s.done?'done':''} ${selShapeIdx===i?'selected':''}`;
         d.style.left=s.x+'px'; d.style.top=s.y+'px'; d.style.width="60px"; d.style.height="40px";
-        d.innerText=s.name;
+        
+        // 顯示檢查者與批改
+        let info = s.name;
+        if(s.done) info += `<br><span style='font-size:9px'>✅${s.checker||'某人'}</span>`;
+        if(s.mgrNote) info += `<br><span style='font-size:9px; color:purple'>批:${s.mgrNote}</span>`;
+        d.innerHTML = info;
+
         if(me.shift==='主管') {
             d.onclick=()=>{ selShapeIdx=i; document.getElementById('sel-name').innerText=s.name; document.getElementById('map-edit-bar').classList.remove('hide'); drawMap(); };
             d.onmousedown=e=>{
@@ -478,24 +522,28 @@ function drawMap() {
                 document.onmousemove=ev=>{ s.x=ev.clientX-ox; s.y=ev.clientY-oy; d.style.left=s.x+'px'; d.style.top=s.y+'px'; };
                 document.onmouseup=()=>document.onmousemove=null;
             };
-        } else d.onclick=()=>{ if(confirm("完成?")){ s.done=true; saveMapData(); } };
+        } else d.onclick=()=>{ 
+            if(confirm("完成?")){ 
+                s.done=true; s.checker=me.name; s.checkTime=new Date().toLocaleString(); 
+                saveMapData(); 
+            } 
+        };
         c.appendChild(d);
     });
 }
+// 2. 地圖功能全開
 function addMapShape(){ const n=prompt("名稱"); if(n){ shapes.push({name:n,x:50,y:50,done:false}); saveMapData(); }}
-function saveMapData(){ localStorage.setItem('map_shapes',JSON.stringify(shapes)); drawMap(); if(me.shift!=='主管') alert("已更新"); else alert("已發布"); }
+function saveMapData(){ localStorage.setItem('map_shapes',JSON.stringify(shapes)); drawMap(); if(me.shift==='主管') alert("已發布"); }
 function delShape(){ shapes.splice(selShapeIdx,1); saveMapData(); document.getElementById('map-edit-bar').classList.add('hide'); }
-function copyShape(){ const s=shapes[selShapeIdx]; shapes.push({...s, x:s.x+20, y:s.y+20}); saveMapData(); }
 function renShape(){ const n=prompt("新名"); if(n){ shapes[selShapeIdx].name=n; saveMapData(); }}
-
-// 評分
-function rate(span, val) {
-    // 簡單的視覺切換
-    const p = span.parentNode;
-    p.querySelectorAll('span').forEach((s,i) => {
-        s.style.color = (i < Array.from(p.children).indexOf(span) + 1) ? '#ffc107' : '#ddd';
-    });
+function copyShape(){ const s=shapes[selShapeIdx]; shapes.push({...s, x:s.x+20, y:s.y+20}); saveMapData(); }
+// 3. 批改地圖
+function reviewMapItem() {
+    const r = prompt("輸入批改意見：");
+    if(r) { shapes[selShapeIdx].mgrNote = r; saveMapData(); }
 }
+
+function rate(span,v) { span.parentNode.querySelectorAll('span').forEach((s,i)=>s.className=i<v?'gold':''); }
 </script>
 </body>
 </html>
