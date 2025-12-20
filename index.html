@@ -3,221 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>門市營運系統 V14</title>
+    <title>智慧店務系統 V15 (終極同步版)</title>
     <style>
-        /* --- 核心樣式 --- */
-        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; background: #f0f2f5; padding-bottom: 90px; }
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; }
+        /* --- 全局美化樣式 --- */
+        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --warning: #ffc107; --dark: #343a40; --light: #f8f9fa; }
+        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f0f2f5; color: #333; line-height: 1.5; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         
-        /* 頂部通知鈴鐺 */
-        #noti-bell { position: fixed; top: 15px; right: 15px; z-index: 1001; cursor: pointer; font-size: 24px; }
-        #noti-count { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; }
-
         /* 導航 */
-        .nav-tabs { display: flex; overflow-x: auto; background: #fff; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 100; }
-        .nav-item { flex: 0 0 auto; padding: 12px 15px; cursor: pointer; color: #666; font-weight: bold; border-bottom: 4px solid transparent; white-space: nowrap; font-size: 14px;}
-        .nav-item.active { color: #007bff; border-bottom-color: #007bff; background: #f8f9fa; }
+        .nav-tabs { display: flex; overflow-x: auto; background: #fff; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 1000; }
+        .nav-item { flex: 0 0 auto; padding: 14px 18px; cursor: pointer; color: #666; font-weight: bold; border-bottom: 3px solid transparent; }
+        .nav-item.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--light); }
 
-        /* 分類標籤 */
-        .section-header { background: #e9ecef; padding: 10px; margin: 15px -15px; font-weight: bold; border-left: 5px solid #007bff; display: flex; justify-content: space-between; }
-        
-        /* 冰箱格子樣式 */
-        .grid-box { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .zone { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px 5px; text-align: center; cursor: pointer; min-height: 60px; font-size: 14px; }
-        .zone.ok { background: #d4edda; border-color: #28a745; }
-        .zone.warning { background: #fff3cd; border-color: #dc3545; animation: flash 1s infinite; }
-        .highlight-foreign { background: linear-gradient(135deg, #6f42c1 0%, #4b2c84 100%) !important; color: #ffd700 !important; font-weight: bold; }
+        /* 通知鈴鐺 */
+        #noti-bell-container { position: fixed; top: 15px; right: 15px; z-index: 2000; }
+        .bell-btn { font-size: 24px; cursor: pointer; background: white; border-radius: 50%; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .noti-badge { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; }
+        .noti-dropdown { position: absolute; right: 0; top: 40px; width: 280px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; max-height: 400px; overflow-y: auto; }
+        .noti-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .noti-item:hover { background: #f9f9f9; }
 
-        /* 帳務表格樣式 */
-        .money-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
-        .money-table th { background: #f8f9fa; padding: 5px; border: 1px solid #ddd; }
-        .money-table td { padding: 5px; border: 1px solid #ddd; text-align: center; }
-        .money-table input { width: 60px; text-align: right; padding: 3px; }
+        /* 圖片放大效果 */
+        .img-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
+        .img-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; display:none; justify-content:center; align-items:center; }
+        .img-overlay img { max-width: 95%; max-height: 95%; }
 
-        /* 評分星星 */
-        .star { font-size: 25px; color: #ddd; cursor: pointer; }
-        .star.selected { color: #ffc107; }
+        /* 模型圖編輯器 */
+        #shelf-canvas { border: 2px solid var(--dark); position: relative; width: 100%; height: 350px; background: #eee; overflow: hidden; background-size: contain; background-repeat: no-repeat; }
+        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center; cursor: pointer; padding: 4px; box-sizing: border-box; }
+        .shape.done { background: rgba(40, 167, 69, 0.8) !important; color: white; }
+        .shape.selected { border: 3px solid var(--primary); z-index: 10; }
 
-        /* 模型圖 */
-        #shelf-canvas { border: 2px solid #333; position: relative; width: 100%; height: 350px; background: #eee; overflow: hidden; background-size: contain; background-repeat: no-repeat; }
-        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; font-size: 10px; padding: 2px; cursor: pointer; text-align: center; }
-        .shape.done { background: rgba(40, 167, 69, 0.7); color: white; }
+        /* 電話卡網格 */
+        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; background: var(--light); border-radius: 8px; }
+        .card-box { background: white; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .card-box label { font-size: 12px; font-weight: bold; color: var(--primary); }
+        .card-box input { width: 100%; padding: 5px; font-size: 14px; border: 1px solid #eee; }
 
-        /* 通用按鈕與輸入 */
-        input, select, button, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .btn-small { width: auto; padding: 5px 10px; font-size: 12px; }
+        /* 按鈕美化 */
+        button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
+        .btn-mgr { background: var(--dark); }
+        .btn-add { background: var(--success); }
+        .btn-del { background: var(--danger); }
+
+        /* 帳務細項 */
+        .money-row { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
+        .money-row input { width: 60px; text-align: right; }
+        .money-subtotal { width: 70px; text-align: right; font-weight: bold; color: var(--primary); }
+
+        .section-header { background: #e9ecef; padding: 10px; margin: 15px -15px; font-weight: bold; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
         .hidden { display: none !important; }
-        @keyframes flash { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        input, select, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-<div id="noti-bell" onclick="toggleNotiList()">
-    🔔<span id="noti-count" class="hidden">0</span>
+<div id="img-overlay" class="img-overlay" onclick="this.style.display='none'">
+    <img id="img-zoom" src="">
 </div>
 
-<div id="noti-list" class="hidden" style="position:fixed; top:50px; right:15px; width:250px; background:white; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:1002; border-radius:8px; padding:10px; max-height:400px; overflow-y:auto;">
-    <h4 style="margin:0 0 10px 0;">新通知提醒</h4>
-    <div id="noti-items-content">目前無新通知</div>
+<div id="noti-bell-container">
+    <div class="bell-btn" onclick="toggleNotiDropdown()">🔔<span id="noti-badge" class="noti-badge hidden">0</span></div>
+    <div id="noti-dropdown" class="noti-dropdown">
+        <div style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">最新交接/通知</div>
+        <div id="noti-content">目前沒有新消息</div>
+    </div>
 </div>
 
 <div class="container">
-    <div id="auth-screen">
-        <div style="text-align:center; padding:30px;">
-            <h2>🏪 門市智慧系統 V14</h2>
+    <div id="auth-screen" style="padding:30px; text-align:center;">
+        <div style="background:white; padding:30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.1);">
+            <h2 id="auth-title">🏪 智慧門市 V15</h2>
             <div id="login-area">
-                <input type="text" id="login-id" placeholder="帳號">
-                <input type="password" id="login-pw" placeholder="密碼">
-                <button onclick="handleLogin()">上班打卡</button>
-                <p style="font-size:12px; cursor:pointer;" onclick="toggleAuth(true)">註冊帳號</p>
+                <input type="text" id="login-id" placeholder="請輸入帳號">
+                <input type="password" id="login-pw" placeholder="請輸入密碼">
+                <button onclick="handleLogin()">登入打卡</button>
+                <p style="font-size:13px; color:#666; margin-top:15px;" onclick="toggleAuth(true)">初次使用？點此註冊</p>
             </div>
             <div id="register-area" class="hidden">
-                <input type="text" id="reg-name" placeholder="姓名">
+                <input type="text" id="reg-name" placeholder="真實姓名">
                 <select id="reg-shift"><option value="早班">早班</option><option value="晚班">晚班</option><option value="主管">主管</option></select>
-                <input type="text" id="reg-id" placeholder="設定帳號">
+                <input type="text" id="reg-id" placeholder="設定登入帳號">
                 <input type="password" id="reg-pw" placeholder="設定密碼">
-                <button onclick="handleRegister()" style="background:#28a745;">完成註冊</button>
-                <p style="font-size:12px; cursor:pointer;" onclick="toggleAuth(false)">返回登入</p>
+                <button onclick="handleRegister()" style="background:var(--success);">確認註冊</button>
+                <p style="font-size:13px; color:#666; margin-top:15px;" onclick="toggleAuth(false)">已有帳號？返回登入</p>
             </div>
         </div>
     </div>
 
     <div id="app-screen" class="hidden">
-        <div style="background:#333; color:white; padding:10px; margin:-15px -15px 10px -15px; display:flex; justify-content:space-between; align-items:center;">
-            <span><span id="display-info">--</span> 🏆<span id="display-points">0</span></span>
-            <button onclick="location.reload()" style="width:auto; padding:5px; font-size:10px;">登出</button>
+        <div style="background:var(--dark); color:white; padding:12px; margin:-15px -15px 10px -15px; display:flex; justify-content:space-between; align-items:center;">
+            <span><span id="display-info">--</span> 🏆 <span id="display-points">0</span></span>
+            <button onclick="location.reload()" style="width:auto; padding:5px 10px; background:#555; font-size:11px;">登出系統</button>
         </div>
 
         <div class="nav-tabs">
-            <div class="nav-item active" onclick="switchTab('temp')">🌡️ 冰箱</div>
-            <div class="nav-item" onclick="switchTab('stock')">📦 補貨效期</div>
-            <div class="nav-item" onclick="switchTab('counter')">💰 帳務</div>
-            <div class="nav-item" onclick="switchTab('handover')">🤝 交接/客服</div>
-            <div class="nav-item hidden" id="nav-mgr" onclick="switchTab('manager')">📊 主管評分</div>
+            <div class="nav-item active" onclick="switchTab('stock')">📦 補貨效期</div>
+            <div class="nav-item" onclick="switchTab('temp')">🌡️ 冰箱溫度</div>
+            <div class="nav-item" onclick="switchTab('counter')">💰 帳務會計</div>
+            <div class="nav-item" onclick="switchTab('handover')">🤝 交接客服</div>
+            <div class="nav-item hidden" id="nav-mgr" onclick="switchTab('manager')">📊 主管後台</div>
         </div>
 
-        <div id="tab-temp">
-            <div class="section-header">❄️ 冷藏 (0~7度)</div>
-            <div class="grid-box" id="chiller-grid"></div>
-            <div class="section-header">🧊 冷凍 (<-10度)</div>
-            <div class="grid-box" id="freezer-grid"></div>
-        </div>
-
-        <div id="tab-stock" class="hidden">
-            <div class="section-header">🔥 重點補貨 (外籍)</div>
-            <div class="grid-box">
-                <div class="zone highlight-foreign" id="s-for-noodle" onclick="checkStock('s-for-noodle','★外籍泡麵')">★外籍泡麵★<small>--</small></div>
-                <div class="zone highlight-foreign" id="s-for-cookie" onclick="checkStock('s-for-cookie','★外籍餅乾')">★外籍餅乾★<small>--</small></div>
-            </div>
-            <div class="section-header">📅 每日效期</div>
-            <div class="grid-box">
-                <div class="zone" id="c-fresh" onclick="checkStock('c-fresh','生鮮效期')">生鮮效期</div>
-                <div class="zone" id="c-daily" onclick="checkStock('c-daily','日配效期')">日配效期</div>
-                <div class="zone" id="c-bread" onclick="checkStock('c-bread','麵包效期')">麵包效期</div>
-            </div>
-            <div class="section-header">🛒 每日補貨</div>
-            <div class="grid-box">
-                <div class="zone" id="s-cig" onclick="checkStock('s-cig','菸架補貨')">菸架補貨</div>
-                <div class="zone" id="s-f-drink" onclick="checkStock('s-f-drink','冰箱飲料')">冰箱飲料</div>
-                <div class="zone" id="s-s-drink" onclick="checkStock('s-s-drink','層架飲料')">層架飲料</div>
-                <div class="zone" id="s-frozen" onclick="checkStock('s-frozen','冷凍食品')">冷凍食品</div>
-                <div class="zone" id="s-trash" onclick="checkStock('s-trash','垃圾袋/免洗')">垃圾袋/免洗</div>
-                <div class="zone" id="s-tissue" onclick="checkStock('s-tissue','衛生紙')">衛生紙</div>
-            </div>
-            <div class="section-header">🗓️ 每月效期圖案</div>
-            <div id="mgr-map-ctrl" class="hidden">
-                <input type="file" id="map-bg-up" onchange="mapBgUpload(event)">
-                <div style="display:flex; gap:5px;">
-                    <button onclick="addMapShape()" class="btn-small">新增區塊</button>
-                    <button onclick="saveMapData()" class="btn-small" style="background:green;">儲存配置</button>
+        <div id="tab-stock">
+            <div class="section-header">🗓️ 每月效期模型圖 (即時同步)</div>
+            <div id="mgr-map-tools" class="hidden" style="margin-bottom:10px;">
+                <input type="file" id="map-bg-up" onchange="uploadMapBg(event)" style="font-size:12px;">
+                <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                    <button onclick="addShape()" class="btn-add" style="flex:1; font-size:12px;">+新區塊</button>
+                    <button onclick="copyShape()" class="btn-mgr" style="flex:1; font-size:12px;">複製</button>
+                    <button onclick="deleteShape()" class="btn-del" style="flex:1; font-size:12px;">刪除</button>
+                    <button onclick="renameShape()" class="btn-mgr" style="flex:1; font-size:12px;">改名</button>
                 </div>
+                <button onclick="saveGlobalMap()" style="background:var(--success); margin-top:5px;">📢 發佈模型圖給所有人</button>
             </div>
             <div id="shelf-canvas"></div>
+            
+            <div class="section-header">📅 每日效期</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;">
+                <div class="zone" id="c-f" onclick="quickCheck('c-f','生鮮效期')">生鮮</div>
+                <div class="zone" id="c-d" onclick="quickCheck('c-d','日配效期')">日配</div>
+                <div class="zone" id="c-b" onclick="quickCheck('c-b','麵包效期')">麵包</div>
+            </div>
+            <div class="section-header">🛒 補貨檢查</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div class="zone highlight-foreign" id="s-for-n" onclick="quickCheck('s-for-n','★外籍泡麵')">★外籍泡麵★</div>
+                <div class="zone highlight-foreign" id="s-for-c" onclick="quickCheck('s-for-c','★外籍餅乾')">★外籍餅乾★</div>
+                <div class="zone" onclick="quickCheck('s-c','菸架')">菸架</div>
+                <div class="zone" onclick="quickCheck('s-d','冰箱飲料')">冰箱飲料</div>
+                <div class="zone" onclick="quickCheck('s-sd','層架飲料')">層架飲料</div>
+                <div class="zone" onclick="quickCheck('s-fr','冷凍食品')">冷凍食品</div>
+                <div class="zone" onclick="quickCheck('s-tr','垃圾袋/免洗')">垃圾袋/免洗</div>
+                <div class="zone" onclick="quickCheck('s-ts','衛生紙')">衛生紙</div>
+            </div>
+        </div>
+
+        <div id="tab-temp" class="hidden">
+            <div id="temp-alert" class="hidden" style="background:var(--danger); color:white; padding:10px; border-radius:8px; margin-bottom:10px; font-weight:bold; animation:flash 1s infinite;">
+                🚨 現在是檢查時間，請立即輸入各冰箱溫度！
+            </div>
+            <div class="section-header">🌡️ 冰箱溫度紀錄 (時間點檢核)</div>
+            <div id="fridge-list" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                </div>
         </div>
 
         <div id="tab-counter" class="hidden">
-            <div class="section-header">📥 進櫃資訊 (主管可編輯)</div>
-            <div id="in-data-area" style="background:#e3f2fd; padding:10px; border-radius:5px;">
+            <div class="section-header">📥 進櫃資訊 <button id="btn-mgr-edit-in" class="hidden" onclick="enableInEdit()" style="width:auto; padding:2px 8px; font-size:10px;">主管編輯</button></div>
+            <div id="in-data-box" style="background:var(--light); padding:10px; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between;">收銀現金: <input type="number" id="in-cash" disabled></div>
+                <div style="display:flex; justify-content:space-between;">庫存零錢: <input type="number" id="in-stock" disabled></div>
+                <button id="btn-in-save" class="hidden" onclick="saveInEdit()" style="background:var(--success);">儲存進櫃設定</button>
+            </div>
+
+            <div class="section-header">🪙 離櫃點算 (收銀機 / 庫存)</div>
+            <div id="money-detail-table" style="background:white; border:1px solid #ddd;">
                 </div>
-            
-            <div class="section-header">🪙 離櫃點算 (全細項)</div>
-            <table class="money-table">
-                <thead><tr><th>面額</th><th>收銀機(留)</th><th>庫存(金庫)</th><th>小計</th></tr></thead>
-                <tbody id="out-money-rows"></tbody>
-            </table>
-            <div style="text-align:right; font-weight:bold; color:#007bff;">本班總現：$<span id="out-total-sum">0</span></div>
-
-            <div class="section-header">📞 電話卡盤點</div>
-            <div id="card-area-v14"></div>
-
-            <div class="section-header">📊 營收數據</div>
-            <div class="grid-box">
-                <div><small>營業額</small><input type="number" id="v-turnover" oninput="calcAvgSales()"></div>
-                <div><small>來客數</small><input type="number" id="v-visitors" oninput="calcAvgSales()"></div>
-                <div><small>客單價</small><input type="number" id="v-avg" readonly style="background:#eee;"></div>
-            </div>
-            <div class="grid-box" style="margin-top:10px;">
-                <input type="number" id="v-credit" placeholder="信用卡">
-                <input type="number" id="v-twpay" placeholder="台灣Pay">
-                <input type="number" id="v-linepay" placeholder="LINE PAY">
-                <input type="number" id="v-points" placeholder="點數">
-                <input type="number" id="v-refund" placeholder="現金退款">
-                <input type="number" id="v-thousands" placeholder="千鈔抽離(張)">
+            <div style="text-align:right; font-weight:bold; padding:10px; color:var(--primary);">
+                離櫃總金額：$<span id="out-money-total">0</span>
             </div>
 
-            <div class="section-header">➕ 額外收支統計</div>
-            <div id="extra-container"></div>
-            <button onclick="addExtraRow()" style="background:#6c757d; font-size:12px;">+ 新增一筆收支</button>
+            <div class="section-header">📞 電話卡盤點 (美化版)</div>
+            <div class="card-grid" id="card-inputs">
+                </div>
 
-            <div style="margin-top:20px; text-align:center; background:#333; color:white; padding:15px; border-radius:10px;">
-                <h3>結算誤差：<span id="v-diff">0</span> 元</h3>
-                <button onclick="calcFinalDiff()" style="background:#ffc107; color:black;">🧮 試算誤差</button>
-                <button onclick="submitReportV14()" style="background:#28a745; margin-top:10px;">✅ 提交正式報表</button>
+            <div class="section-header">📊 營收數據 (自動算客單)</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div><small>營業額</small><input type="number" id="sales-total" oninput="calcAvg()"></div>
+                <div><small>來客數</small><input type="number" id="sales-visitors" oninput="calcAvg()"></div>
+                <div><small>客單價</small><input type="number" id="sales-avg" readonly style="background:#eee;"></div>
+            </div>
+            <div class="section-header">🔻 扣項與收支</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                <input type="number" id="sales-credit" placeholder="信用卡">
+                <input type="number" id="sales-tw" placeholder="台灣Pay">
+                <input type="number" id="sales-line" placeholder="LINE Pay">
+                <input type="number" id="sales-pts" placeholder="使用點數">
+                <input type="number" id="sales-ref" placeholder="現金退款">
+                <input type="number" id="sales-1000" placeholder="千鈔張數">
+            </div>
+            <div style="margin-top:10px;">
+                <button onclick="openExtraPopup('in')" style="width:48%; background:var(--success);">+ 額外收入</button>
+                <button onclick="openExtraPopup('out')" style="width:48%; background:var(--danger);">+ 額外支出</button>
+                <div id="extra-list-box" style="font-size:12px; margin-top:5px;"></div>
+            </div>
+
+            <div style="margin-top:20px; text-align:center; background:var(--dark); color:white; padding:15px; border-radius:10px;">
+                <h3>結算誤差：<span id="final-diff">0</span> 元</h3>
+                <button onclick="calculateAccounting()" style="background:var(--warning); color:black;">🧮 執行試算</button>
+                <button onclick="submitDailyReport()" style="background:var(--success); margin-top:10px;">✅ 提交日報表</button>
             </div>
         </div>
 
         <div id="tab-handover" class="hidden">
-            <div class="section-header">📝 交接/客服按鈕區</div>
+            <div class="section-header">📝 交接事項與回報</div>
             <div class="grid-box">
-                <button onclick="openForm('task','交接事項')">📝 交接</button>
-                <button onclick="openForm('preorder','客訂預購')">🛒 客訂</button>
-                <button onclick="openForm('repair','電器維修')">🔧 維修</button>
-                <button onclick="openForm('soldout','商品售罄')">⚡ 售罄</button>
-                <button onclick="openForm('scrap','商品報廢')">🗑️ 報廢</button>
-            </div>
-            
-            <div id="form-popup" class="hidden" style="background:#fff; border:2px solid #007bff; padding:15px; border-radius:10px; margin-top:10px;">
-                <h3 id="form-title">--</h3>
-                <div id="form-fields"></div>
-                <input type="file" id="form-img" accept="image/*" capture="camera">
-                <button onclick="submitUniversalForm()" style="margin-top:10px;">確認送出</button>
-                <button onclick="closeForm()" style="background:#666; margin-top:5px;">取消</button>
+                <button onclick="openSvcForm('交接')">📝 新交接</button>
+                <button onclick="openSvcForm('客訂')">🛒 客訂預購</button>
+                <button onclick="openSvcForm('維修')">🔧 維修資料</button>
+                <button onclick="openSvcForm('售罄')">⚡ 商品售罄</button>
+                <button onclick="openSvcForm('報廢')">🗑️ 報廢紀錄</button>
             </div>
 
-            <div id="global-list-display" style="margin-top:15px;"></div>
+            <div id="svc-popup" class="hidden" style="background:#fff; border:2px solid var(--primary); padding:15px; border-radius:10px; margin-top:10px;">
+                <h3 id="svc-title">--</h3>
+                <div id="svc-fields"></div>
+                <input type="file" id="svc-img" accept="image/*" capture="camera">
+                <button onclick="submitUniversalSvc()" style="margin-top:10px;">確認送出資料</button>
+                <button onclick="closeSvcPopup()" style="background:#666; margin-top:5px;">取消</button>
+            </div>
+
+            <div id="global-feed" style="margin-top:20px;">
+                </div>
         </div>
 
         <div id="tab-manager" class="hidden">
-            <div class="section-header">🌟 員工每日評比</div>
-            <select id="mgr-eval-target"><option value="">選擇員工</option></select>
-            <div id="mgr-stars-area">
-                <div class="report-row">工作效率: <span class="stars" data-id="eff"></span></div>
-                <div class="report-row">補貨完成: <span class="stars" data-id="stk"></span></div>
-                <div class="report-row">環境整理: <span class="stars" data-id="env"></span></div>
-                <div class="report-row">顧客回饋: <span class="stars" data-id="fed"></span></div>
+            <div class="section-header">🌟 員工每日評分 (連動積分)</div>
+            <select id="mgr-target-user"><option value="">選擇員工</option></select>
+            <div id="mgr-rating-box" style="background:var(--light); padding:15px; border-radius:10px;">
+                <div class="money-row">工作效率: <span class="stars" data-key="eff"></span></div>
+                <div class="money-row">補貨度: <span class="stars" data-key="stk"></span></div>
+                <div class="money-row">環境整理: <span class="stars" data-key="env"></span></div>
+                <div class="money-row">顧客回饋: <span class="stars" data-key="fed"></span></div>
+                <button onclick="submitMgrRating()" style="background:var(--success); margin-top:10px;">儲存評分並發放積分</button>
             </div>
-            <button onclick="saveManagerEval()" style="background:#28a745; margin-top:10px;">儲存評分並發送積分</button>
             
-            <div class="section-header">📈 歷史誤差與統計</div>
-            <div id="mgr-history-area"></div>
+            <div class="section-header">📈 門市績效與誤差統計</div>
+            <div id="mgr-stats-panel" style="font-size:12px;">載入數據中...</div>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, query, orderBy, limit, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAiOKSjZq6TPc9O75NcxsQqFYhY2wziW1w",
@@ -237,12 +256,12 @@
     window.handleRegister = async () => {
         const id = document.getElementById('reg-id').value;
         const name = document.getElementById('reg-name').value;
-        if(!id || !name) return;
-        await setDoc(doc(db, "users", id), {
-            name, shift: document.getElementById('reg-shift').value,
-            pw: document.getElementById('reg-pw').value, points: 0
-        });
-        alert("註冊成功！請登入");
+        const pw = document.getElementById('reg-pw').value;
+        const shift = document.getElementById('reg-shift').value;
+        if(!id || !name || !pw) return alert("請填寫所有欄位");
+        
+        await setDoc(doc(db, "users", id), { name, pw, shift, points: 0, created: serverTimestamp() });
+        alert("🎉 註冊成功！請使用您的帳號登入。");
         window.toggleAuth(false);
     };
 
@@ -252,319 +271,336 @@
         const snap = await getDoc(doc(db, "users", id));
         if(snap.exists() && snap.data().pw === pw) {
             window.user = { ...snap.data(), id };
-            startApp();
-        } else alert("登入失敗");
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            initV15App();
+        } else alert("登入失敗，請檢查帳號密碼");
     };
 
-    function startApp() {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app-screen').classList.remove('hidden');
+    // --- 初始化 UI ---
+    function initV15App() {
         document.getElementById('display-info').innerText = `${window.user.name} (${window.user.shift})`;
         if(window.user.shift === '主管') {
             document.getElementById('nav-mgr').classList.remove('hidden');
-            document.getElementById('mgr-map-ctrl').classList.remove('hidden');
+            document.getElementById('mgr-map-tools').classList.remove('hidden');
+            document.getElementById('btn-mgr-edit-in').classList.remove('hidden');
         }
-        initUI();
-        startListeners();
-    }
-
-    // --- 初始化 UI ---
-    function initUI() {
-        // 冰箱
-        const fridges = [
-            {id:'f1', n:'開放1', t:'chiller'}, {id:'f2', n:'開放2', t:'chiller'},
-            {id:'f3', n:'冷藏1', t:'chiller'}, {id:'f4', n:'冷藏2', t:'chiller'},
-            {id:'f5', n:'冷凍1', t:'freezer'}, {id:'f6', n:'冷凍2', t:'freezer'},
-            {id:'f7', n:'臥式1', t:'freezer'}, {id:'f8', n:'臥式2', t:'freezer'},
-            {id:'f9', n:'臥式3', t:'freezer'}, {id:'f10', n:'臥式4', t:'freezer'}
-        ];
-        fridges.forEach(f => {
-            const html = `<div class="zone" id="${f.id}" onclick="checkTempV14('${f.id}','${f.n}','${f.t}')">${f.n}<br><small>待測</small></div>`;
-            document.getElementById(f.t==='chiller'?'chiller-grid':'freezer-grid').innerHTML += html;
-        });
-
-        // 帳務明細 (收銀機 + 庫存)
-        const moneyT = document.getElementById('out-money-rows');
-        [500,100,50,10,5,1].forEach(u => {
-            moneyT.innerHTML += `<tr><td>${u}元</td><td><input type="number" id="m-reg-${u}" oninput="calcMoneyV14()"></td><td><input type="number" id="m-res-${u}" oninput="calcMoneyV14()"></td><td class="subtotal" id="m-sub-${u}">$0</td></tr>`;
-        });
-
-        // 電話卡
-        const cards = ["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"];
-        document.getElementById('card-area-v14').innerHTML = cards.map(c => 
-            `<div style="display:flex; gap:5px; font-size:11px;">
-                <label style="width:60px;">${c}</label>
-                <input type="number" id="card-in-${c}" placeholder="進">
-                <input type="number" id="card-sold-${c}" placeholder="銷">
-                <input type="number" id="card-left-${c}" placeholder="存">
-            </div>`).join('');
-
-        // 星星評分生成
-        document.querySelectorAll('.stars').forEach(s => {
-            for(let i=1;i<=5;i++) s.innerHTML += `<span class="star" onclick="rateStar(this, ${i})">★</span>`;
-        });
         
-        loadLastShiftV14();
+        // 生成 10 台冰箱
+        const fridges = [
+            {id:'f1',n:'開放1',t:'chiller'},{id:'f2',n:'開放2',t:'chiller'},
+            {id:'f3',n:'冷藏1',t:'chiller'},{id:'f4',n:'冷藏2',t:'chiller'},
+            {id:'f5',n:'冷凍1',t:'freezer'},{id:'f6',n:'冷凍2',t:'freezer'},
+            {id:'f7',n:'臥式1',t:'freezer'},{id:'f8',n:'臥式2',t:'freezer'},
+            {id:'f9',n:'臥式3',t:'freezer'},{id:'f10',n:'臥式4',t:'freezer'}
+        ];
+        document.getElementById('fridge-list').innerHTML = fridges.map(f => `
+            <div class="zone" id="${f.id}" onclick="inputTemp('${f.id}','${f.n}','${f.t}')">${f.n}<br><small>待量測</small></div>
+        `).join('');
+
+        // 生成錢幣點算
+        const units = [500,100,50,10,5,1];
+        document.getElementById('money-detail-table').innerHTML = units.map(u => `
+            <div class="money-row">
+                <label>${u}元</label>
+                <div style="display:flex; gap:5px;">
+                    <input type="number" id="m-reg-${u}" placeholder="機" oninput="calcV15Money()">
+                    <input type="number" id="m-res-${u}" placeholder="庫" oninput="calcV15Money()">
+                </div>
+                <div class="money-subtotal" id="m-sub-${u}">$0</div>
+            </div>
+        `).join('');
+
+        // 生成電話卡
+        const cards = ["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"];
+        document.getElementById('card-inputs').innerHTML = cards.map(c => `
+            <div class="card-box">
+                <label>${c}</label>
+                <input type="number" id="c-in-${c}" placeholder="進櫃" style="font-size:10px;">
+                <input type="number" id="c-sold-${c}" placeholder="販售" style="color:red; font-size:10px;">
+                <input type="number" id="c-left-${c}" placeholder="離櫃" style="color:blue; font-size:10px;">
+            </div>
+        `).join('');
+
+        // 生成星級評等
+        document.querySelectorAll('.stars').forEach(s => {
+            for(let i=1;i<=5;i++) s.innerHTML += `<span class="star" onclick="rateStar(this, ${i})" style="font-size:20px; cursor:pointer; color:#ddd;">★</span>`;
+        });
+
+        startV15Listeners();
+        checkTimeAlert();
+        setInterval(checkTimeAlert, 60000); // 每一分鐘檢查一次提醒
     }
 
-    // --- 監聽器 ---
-    function startListeners() {
-        // 任務監聽
-        onSnapshot(query(collection(db, "tasks"), orderBy("time", "desc"), limit(20)), (snap) => {
-            const list = document.getElementById('global-list-display');
-            list.innerHTML = "<h4>即時清單</h4>";
-            let newCount = 0;
-            snap.forEach(d => {
-                const t = d.data();
-                if(!t.done) newCount++;
-                list.innerHTML += `<div style="background:#fff; border:1px solid #ddd; padding:8px; margin-bottom:5px; border-left:5px solid ${t.done?'#28a745':'#ffc107'}">
-                    <b>[${t.type}] ${t.user}</b>: ${t.content || t.msg} 
-                    ${t.img ? `<br><img src="${t.img}" class="preview-img">` : ''}
-                    <div style="text-align:right;"><button onclick="markDoneV14('${d.id}')" class="btn-small">${t.done?'已完成':'點擊完成'}</button></div>
-                </div>`;
-            });
-            if(newCount > 0) {
-                document.getElementById('noti-count').innerText = newCount;
-                document.getElementById('noti-count').classList.remove('hidden');
+    // --- 即時監聽與核心邏輯 ---
+    function startV15Listeners() {
+        // 模型圖即時同步 (這解決了看不到的問題)
+        onSnapshot(doc(db, "settings", "global_map"), (snap) => {
+            if(snap.exists()) renderMapV15(snap.data());
+        });
+
+        // 進櫃資訊監聽
+        onSnapshot(doc(db, "store_status", "current"), (snap) => {
+            if(snap.exists()){
+                const d = snap.data();
+                document.getElementById('in-cash').value = d.cash || 0;
+                document.getElementById('in-stock').value = d.stock || 0;
+                // 自動填入電話卡進櫃
+                if(d.cards){
+                    for(let key in d.cards) {
+                        const el = document.getElementById(`c-in-${key}`);
+                        if(el) el.value = d.cards[key];
+                    }
+                }
             }
         });
-        
-        // 冰箱監聽
-        const ids = ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','s-for-noodle','s-for-cookie','c-fresh','c-daily','c-bread','s-cig','s-f-drink','s-s-drink','s-frozen','s-trash','s-tissue'];
+
+        // 交接與客服 Feed (即時看到所有人的內容)
+        onSnapshot(query(collection(db, "broadcasts"), orderBy("time", "desc"), limit(20)), (snap) => {
+            const feed = document.getElementById('global-feed');
+            const notiList = document.getElementById('noti-content');
+            feed.innerHTML = ""; notiList.innerHTML = "";
+            let unread = 0;
+            
+            snap.forEach(d => {
+                const b = d.data();
+                if(!b.done) unread++;
+                const itemHtml = `
+                    <div style="background:white; border-radius:8px; padding:12px; margin-bottom:10px; border-left:5px solid ${b.done?'var(--success)':'var(--warning)'}; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <b>[${b.type}] ${b.user}</b>
+                            <div style="display:flex; gap:5px;">
+                                <button onclick="markBdone('${d.id}', ${!b.done})" style="width:auto; padding:2px 8px; font-size:10px; background:${b.done?'#666':'var(--success)'}">${b.done?'取消勾選':'完成打勾'}</button>
+                                ${window.user.shift==='主管' || window.user.name === b.user ? `<button onclick="deleteB('${d.id}')" style="width:auto; padding:2px 8px; font-size:10px; background:var(--danger);">刪除</button>` : ''}
+                            </div>
+                        </div>
+                        <div style="margin:5px 0; font-size:14px;">${b.content}</div>
+                        ${b.img ? `<img src="${b.img}" class="img-thumb" onclick="zoomImg('${b.img}')">` : ''}
+                        <div style="font-size:10px; color:#999; text-align:right;">${new Date(b.time?.toDate()).toLocaleString()}</div>
+                    </div>
+                `;
+                feed.innerHTML += itemHtml;
+                if(!b.done) notiList.innerHTML += `<div class="noti-item" onclick="switchTab('handover')">🔔 <b>${b.type}</b>: ${b.content.substring(0,15)}...</div>`;
+            });
+            
+            if(unread > 0){
+                document.getElementById('noti-badge').innerText = unread;
+                document.getElementById('noti-badge').classList.remove('hidden');
+            } else {
+                document.getElementById('noti-badge').classList.add('hidden');
+                notiList.innerHTML = "<div style='padding:10px; color:#999;'>無待辦事項</div>";
+            }
+        });
+
+        // 格子狀態監聽
+        const ids = ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','c-f','c-d','c-b','s-for-n','s-for-c'];
         ids.forEach(id => {
             onSnapshot(doc(db, "checks", id), (snap) => {
                 if(snap.exists()){
                     const d = snap.data();
                     const el = document.getElementById(id);
-                    if(el) {
+                    if(el){
                         el.className = `zone ${d.status==='異常'?'warning':'ok'} ${id.includes('for')?'highlight-foreign':''}`;
                         el.querySelector('small').innerText = `✅ ${d.val} (${d.user})`;
                     }
                 }
             });
         });
-
-        // 模型圖監聽
-        onSnapshot(doc(db, "settings", "map"), (snap) => { if(snap.exists()) renderMapV14(snap.data()); });
-        
-        // 積分監聽
-        onSnapshot(doc(db, "users", window.user.id), (snap) => { document.getElementById('display-points').innerText = snap.data().points || 0; });
-        
-        // 載入評分目標
-        getDocs(collection(db, "users")).then(snap => {
-            const sel = document.getElementById('mgr-eval-target');
-            snap.forEach(d => sel.innerHTML += `<option value="${d.id}">${d.data().name}</option>`);
-        });
     }
 
-    // --- 核心功能函數 ---
-    window.checkTempV14 = async (id, name, type) => {
-        const val = prompt(`${name} 溫度檢查：`, type==='freezer'?'-':'');
+    // --- 核心操作函數 ---
+    window.inputTemp = async (id, name, type) => {
+        const val = prompt(`${name} 溫度：`, type==='freezer'?'-':'');
         if(val === null) return;
+        if(val === "") return alert("警告：請確實輸入溫度，不可空白！");
+        
         const num = parseFloat(val);
         let status = "正常";
-        if(type==='freezer' && num > -10) { alert("⚠️ 警告：冷凍溫度異常！已發出通知！"); status="異常"; }
+        if(type==='freezer' && num > -10) { alert("⚠️ 嚴重警告：冷凍溫度高於-10度！已通知主管。"); status="異常"; }
         if(type==='chiller' && (num < 0 || num > 7)) { alert("⚠️ 警告：冷藏溫度異常！"); status="異常"; }
         
-        await setDoc(doc(db, "checks", id), { val: val+"度", status, user: window.user.name, time: new Date() });
-        await addDoc(collection(db, "logs"), { type: '冰箱', item: name, val: num, status, user: window.user.name, timestamp: new Date() });
+        await setDoc(doc(db, "checks", id), { val: val+"度", status, user: window.user.name, time: serverTimestamp() });
+        await addDoc(collection(db, "logs"), { item: name, val: num, status, user: window.user.name, time: serverTimestamp() });
     };
 
-    window.checkStock = async (id, name) => {
-        if(confirm(`${name} 檢查完成？`)) {
-            await setDoc(doc(db, "checks", id), { val: "OK", status: "正常", user: window.user.name, time: new Date() });
-            addPointsV14(5);
-        }
-    };
-
-    window.calcMoneyV14 = () => {
-        let total = 0;
-        [500,100,50,10,5,1].forEach(u => {
-            const reg = (parseFloat(document.getElementById(`m-reg-${u}`).value) || 0);
-            const res = (parseFloat(document.getElementById(`m-res-${u}`).value) || 0);
-            const sub = (reg + res) * u;
-            document.getElementById(`m-sub-${u}`).innerText = "$" + sub;
-            total += sub;
-        });
-        document.getElementById('out-total-sum').innerText = total;
-    };
-
-    window.submitUniversalForm = async () => {
-        const title = document.getElementById('form-title').innerText;
-        const file = document.getElementById('form-img').files[0];
-        const fields = document.querySelectorAll('#form-fields input, #form-fields textarea');
+    window.submitUniversalSvc = async () => {
+        const title = document.getElementById('svc-title').innerText;
+        const file = document.getElementById('svc-img').files[0];
+        const fields = document.querySelectorAll('#svc-fields input, #svc-fields textarea');
         let content = "";
-        fields.forEach(f => content += `${f.placeholder}: ${f.value} / `);
+        fields.forEach(f => { if(f.value) content += `[${f.placeholder}: ${f.value}] `; });
         
-        const sendData = async (imgUrl = "") => {
-            await addDoc(collection(db, "tasks"), {
-                type: title, content, img: imgUrl, user: window.user.name, shift: window.user.shift, time: new Date(), done: false
+        const save = async (base64Img = "") => {
+            await addDoc(collection(db, "broadcasts"), {
+                type: title, content, img: base64Img, user: window.user.name, time: serverTimestamp(), done: false
             });
-            alert("發送成功！");
-            closeForm();
-            addPointsV14(10);
+            alert("✅ 回報成功！所有同事都會收到通知。");
+            closeSvcPopup();
         };
 
         if(file) {
             const reader = new FileReader();
-            reader.onload = (e) => sendData(e.target.result);
+            reader.onload = (e) => save(e.target.result);
             reader.readAsDataURL(file);
-        } else sendData();
+        } else save();
     };
 
-    window.saveManagerEval = async () => {
-        const target = document.getElementById('mgr-eval-target').value;
-        if(!target) return alert("請選擇員工");
-        let totalStars = 0;
-        document.querySelectorAll('.stars').forEach(s => {
-            totalStars += (s.querySelectorAll('.star.selected').length);
-        });
-        const bonus = totalStars * 10;
-        const userRef = doc(db, "users", target);
-        const snap = await getDoc(userRef);
-        await updateDoc(userRef, { points: (snap.data().points || 0) + bonus });
-        alert(`評分儲存成功！${target} 已增加 ${bonus} 積分。`);
+    window.saveGlobalMap = async () => {
+        await setDoc(doc(db, "settings", "global_map"), { shapes: window.vShapes, bg: window.mapBg || "" });
+        alert("📢 模型圖已發佈，所有人現在都能看到了！");
     };
 
-    async function loadLastShiftV14() {
-        const snap = await getDoc(doc(db, "store_status", "latest"));
-        const area = document.getElementById('in-data-area');
-        const isMgr = window.user.shift === '主管';
-        if(snap.exists()){
-            const d = snap.data();
-            window.lastData = d;
-            area.innerHTML = `
-                進櫃現金：${isMgr ? `<input id="in-cash-val" value="${d.cash || 0}">` : `<b>${d.cash || 0}</b>`} <br>
-                進櫃庫存：${isMgr ? `<input id="in-stock-val" value="${d.stock || 0}">` : `<b>${d.stock || 0}</b>`}
-            `;
-        } else area.innerHTML = "尚未有任何資料，請手動輸入試算";
-    }
+    window.markBdone = async (id, status) => { await updateDoc(doc(db, "broadcasts", id), { done: status }); };
+    window.deleteB = async (id) => { if(confirm("確定刪除此消息？")) await deleteDoc(doc(db, "broadcasts", id)); };
 
-    function addPointsV14(pts) {
-        updateDoc(doc(db, "users", window.user.id), { points: (window.user.points || 0) + pts });
+    // 提醒時間檢核
+    function checkTimeAlert() {
+        const targetTimes = ["10:00","12:30","14:30","16:30","18:30","20:30","22:00"];
+        const now = new Date();
+        const curTimeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+        
+        if(targetTimes.includes(curTimeStr)) {
+            document.getElementById('temp-alert').classList.remove('hidden');
+            alert("⏰ 冰箱檢查時間到！請確實量測並輸入數據。");
+        }
     }
 </script>
 
 <script>
-    // --- 一般介面邏輯 ---
-    function switchTab(t) {
-        document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('tab-'+t).classList.remove('hidden');
-        event.currentTarget.classList.add('active');
-    }
+    // --- 一般介面邏輯 (與 Firebase 無關) ---
+    window.vShapes = [];
+    let selectedShapeId = null;
 
     function toggleAuth(reg) {
         document.getElementById('login-area').classList.toggle('hidden', reg);
         document.getElementById('register-area').classList.toggle('hidden', !reg);
     }
 
-    function calcAvgSales() {
-        const t = parseFloat(document.getElementById('v-turnover').value) || 0;
-        const v = parseFloat(document.getElementById('v-visitors').value) || 0;
-        if(v > 0) document.getElementById('v-avg').value = Math.round(t/v);
+    function switchTab(t) {
+        document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        event.currentTarget.classList.add('active');
+        document.getElementById('noti-dropdown').style.display = 'none';
     }
 
-    let extraRows = [];
-    function addExtraRow() {
-        const amt = prompt("金額：");
-        const note = prompt("備註：");
-        if(amt) {
-            extraRows.push({amt: parseFloat(amt), note});
-            document.getElementById('extra-container').innerHTML += `<div style="font-size:12px;">${note}: $${amt}</div>`;
-        }
+    function toggleNotiDropdown() {
+        const d = document.getElementById('noti-dropdown');
+        d.style.display = d.style.display === 'block' ? 'none' : 'block';
     }
 
-    function calcFinalDiff() {
-        const inCash = parseFloat(document.getElementById('in-cash-val')?.value || window.lastData?.cash || 0);
-        const inStock = parseFloat(document.getElementById('in-stock-val')?.value || window.lastData?.stock || 0);
-        const outTotal = parseFloat(document.getElementById('out-total-sum').innerText);
-        const turnover = parseFloat(document.getElementById('v-turnover').value) || 0;
-        const deduct = (parseFloat(document.getElementById('v-credit').value)||0) + 
-                       (parseFloat(document.getElementById('v-twpay').value)||0) +
-                       (parseFloat(document.getElementById('v-linepay').value)||0) +
-                       (parseFloat(document.getElementById('v-points').value)||0) +
-                       (parseFloat(document.getElementById('v-refund').value)||0);
-        const thousands = (parseFloat(document.getElementById('v-thousands').value)||0) * 1000;
-        const extras = extraRows.reduce((a,b)=>a+b.amt,0);
-        
-        // 公式：(((進櫃+進庫)-(離櫃)+營業額-扣項-千鈔+額外收支)*-1)
-        const diff = ((inCash + inStock - outTotal + turnover - deduct - thousands + extras) * -1);
-        document.getElementById('v-diff').innerText = diff;
+    function zoomImg(src) {
+        document.getElementById('img-zoom').src = src;
+        document.getElementById('img-overlay').style.display = 'flex';
     }
 
-    function openForm(type, title) {
-        document.getElementById('form-popup').classList.remove('hidden');
-        document.getElementById('form-title').innerText = title;
-        const fields = document.getElementById('form-fields');
-        fields.innerHTML = "";
-        if(type==='preorder' || type==='repair' || type==='soldout' || type==='scrap') {
-            fields.innerHTML = `<input id="f-pname" placeholder="品名"> <input id="f-barcode" placeholder="條碼">`;
-            if(type==='preorder') fields.innerHTML += `<input id="f-qty" placeholder="數量"> <input id="f-cname" placeholder="客名"> <input id="f-phone" placeholder="電話">`;
-        } else {
-            fields.innerHTML = `<textarea id="f-msg" placeholder="請描述交接內容..."></textarea>`;
-        }
-    }
-    function closeForm() { document.getElementById('form-popup').classList.add('hidden'); }
-
-    function rateStar(el, count) {
-        const parent = el.parentNode;
-        parent.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('selected', i < count));
-    }
-
-    // 模型圖 3.0 邏輯
-    let shapes = [];
-    window.addMapShape = () => {
-        const name = prompt("區域名稱：");
-        if(!name) return;
-        shapes.push({ id:Date.now(), name, x:50, y:50, w:60, h:40, done:false });
-        renderMapV14({ shapes });
+    // 帳務計算
+    window.calcV15Money = () => {
+        let total = 0;
+        [500,100,50,10,5,1].forEach(u => {
+            const val = (parseFloat(document.getElementById(`m-reg-${u}`).value)||0) + (parseFloat(document.getElementById(`m-res-${u}`).value)||0);
+            const sub = val * u;
+            document.getElementById(`m-sub-${u}`).innerText = "$" + sub;
+            total += sub;
+        });
+        document.getElementById('out-money-total').innerText = total;
     };
-    function renderMapV14(data) {
-        shapes = data.shapes || [];
+
+    window.calcAvg = () => {
+        const t = parseFloat(document.getElementById('sales-total').value)||0;
+        const v = parseFloat(document.getElementById('sales-visitors').value)||0;
+        if(v > 0) document.getElementById('sales-avg').value = Math.round(t/v);
+    };
+
+    // 模型圖 編輯邏輯
+    function renderMapV15(data) {
+        window.vShapes = data.shapes || [];
         const canvas = document.getElementById('shelf-canvas');
         canvas.innerHTML = "";
         if(data.bg) canvas.style.backgroundImage = `url(${data.bg})`;
-        shapes.forEach(s => {
+        
+        window.vShapes.forEach(s => {
             const div = document.createElement('div');
-            div.className = `shape ${s.done?'done':''}`;
-            div.style.left = s.x+"px"; div.style.top = s.y+"px";
-            div.style.width = s.w+"px"; div.style.height = s.h+"px";
-            div.innerHTML = `<div>${s.name}${s.done?'<br>✅':''}</div>`;
+            div.className = `shape ${s.done?'done':''} ${selectedShapeId === s.id ? 'selected' : ''}`;
+            div.style.left = s.x + "px"; div.style.top = s.y + "px";
+            div.style.width = s.w + "px"; div.style.height = s.h + "px";
+            div.innerText = s.name + (s.done ? '\n✅' : '');
             
-            if(window.user.shift === '主管') {
+            if(window.user.shift === '主管'){
                 div.onmousedown = (e) => {
+                    selectedShapeId = s.id;
                     let ox = e.clientX - s.x; let oy = e.clientY - s.y;
-                    document.onmousemove = (ev) => { s.x=ev.clientX-ox; s.y=ev.clientY-oy; div.style.left=s.x+"px"; div.style.top=s.y+"px"; };
-                    document.onmouseup = () => document.onmousemove = null;
-                };
-                div.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    if(confirm("要刪除這個區塊嗎？")) { shapes = shapes.filter(x => x.id !== s.id); renderMapV14({shapes}); }
+                    document.onmousemove = (ev) => {
+                        s.x = ev.clientX - ox; s.y = ev.clientY - oy;
+                        div.style.left = s.x + "px"; div.style.top = s.y + "px";
+                    };
+                    document.onmouseup = () => { document.onmousemove = null; renderMapV15({shapes:window.vShapes, bg:window.mapBg}); };
                 };
             } else {
                 div.onclick = async () => {
                     if(confirm(`確認【${s.name}】檢查完成？`)) {
-                        s.done = true; s.user = window.user.name; s.time = new Date().toLocaleTimeString();
-                        await window.setDoc(window.doc(window.db, "settings", "map"), { shapes });
+                        s.done = true; s.time = new Date().toLocaleTimeString();
+                        await window.setDoc(window.doc(window.db, "settings", "global_map"), { shapes: window.vShapes, bg: window.mapBg });
                     }
                 };
             }
             canvas.appendChild(div);
         });
     }
-    window.saveMapData = async () => {
-        await window.setDoc(window.doc(window.db, "settings", "map"), { shapes, bg: window.mapBgData || "" });
-        alert("配置已儲存");
+
+    window.addShape = () => {
+        const name = prompt("區域名稱：");
+        if(!name) return;
+        window.vShapes.push({ id:Date.now(), name, x:30, y:30, w:60, h:40, done:false });
+        renderMapV15({shapes:window.vShapes, bg:window.mapBg});
     };
-    window.mapBgUpload = (e) => {
+    window.deleteShape = () => {
+        if(!selectedShapeId) return alert("請先點選圖形");
+        window.vShapes = window.vShapes.filter(s => s.id !== selectedShapeId);
+        selectedShapeId = null;
+        renderMapV15({shapes:window.vShapes, bg:window.mapBg});
+    };
+    window.renameShape = () => {
+        if(!selectedShapeId) return alert("請先點選圖形");
+        const s = window.vShapes.find(x => x.id === selectedShapeId);
+        const nn = prompt("新名稱：", s.name);
+        if(nn) s.name = nn;
+        renderMapV15({shapes:window.vShapes, bg:window.mapBg});
+    };
+    window.copyShape = () => {
+        if(!selectedShapeId) return alert("請先點選圖形");
+        const s = window.vShapes.find(x => x.id === selectedShapeId);
+        window.vShapes.push({...s, id:Date.now(), x: s.x+10, y: s.y+10});
+        renderMapV15({shapes:window.vShapes, bg:window.mapBg});
+    };
+
+    window.uploadMapBg = (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => {
-            window.mapBgData = ev.target.result;
+            window.mapBg = ev.target.result;
             document.getElementById('shelf-canvas').style.backgroundImage = `url(${ev.target.result})`;
         };
         reader.readAsDataURL(e.target.files[0]);
     };
+
+    // 客服表單
+    window.openSvcForm = (type) => {
+        document.getElementById('svc-popup').classList.remove('hidden');
+        document.getElementById('svc-title').innerText = type;
+        const f = document.getElementById('svc-fields');
+        f.innerHTML = "";
+        if(type==='客訂'){
+            f.innerHTML = `<input id="f-p" placeholder="品名"> <input id="f-b" placeholder="條碼"> <input id="f-q" placeholder="數量"> <input id="f-c" placeholder="客名"> <input id="f-ph" placeholder="電話"> <input id="f-l" placeholder="LINE ID"> <input id="f-t" placeholder="方便聯絡時間">`;
+        } else if(type==='維修'){
+            f.innerHTML = `<input id="f-p" placeholder="電器名"> <input id="f-b" placeholder="條碼"> <input id="f-d" type="date" placeholder="購買日"> <input id="f-c" placeholder="客名"> <input id="f-ph" placeholder="電話">`;
+        } else if(type==='售罄' || type==='報廢'){
+            f.innerHTML = `<input id="f-p" placeholder="品名"> <input id="f-b" placeholder="條碼">`;
+        } else {
+            f.innerHTML = `<textarea id="f-msg" placeholder="請描述內容..."></textarea>`;
+        }
+    };
+    window.closeSvcPopup = () => document.getElementById('svc-popup').classList.add('hidden');
+
 </script>
 </body>
 </html>
