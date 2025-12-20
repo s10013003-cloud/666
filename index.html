@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>門市營運中樞 V10</title>
+    <style>
+        /* --- 核心樣式 --- */
+        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; background: #f0f2f5; padding-bottom: 90px;}
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; }
+        
+        /* 1. 導航與分頁 */
+        .nav-tabs { display: flex; overflow-x: auto; background: #fff; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 100; }
+        .nav-item { flex: 0 0 auto; padding: 15px 20px; cursor: pointer; color: #666; font-weight: bold; border-bottom: 4px solid transparent; white-space: nowrap;}
+        .nav-item.active { color: #007bff; border-bottom-color: #007bff; background: #f8f9fa; }
+
+        /* 2. 外籍食品特殊標記 (重要) */
+        .highlight-foreign { 
+            background: linear-gradient(135deg, #6f42c1 0%, #4b2c84 100%) !important; 
+            color: #ffd700 !important; 
+            border: 2px solid #ffd700 !important;
+            animation: glow 1.5s infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 5px #6f42c1; }
+            to { box-shadow: 0 0 15px #ffd700; }
+        }
+
+        /* 3. 每月效期模型圖 (畫布樣式) */
+        #shelf-canvas-container { position: relative; width: 100%; border: 2px dashed #ccc; background: #fff; margin-top: 10px; }
+        canvas { width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+        .canvas-controls { display: flex; gap: 5px; margin-top: 5px; }
+
+        /* 通用元件 */
+        .section-header { background: #e9ecef; padding: 10px; margin: 15px -15px; font-weight: bold; border-left: 5px solid #007bff; }
+        .grid-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .zone { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px 5px; text-align: center; cursor: pointer; min-height: 70px; }
+        .zone.ok { background: #d4edda; border-color: #28a745; }
+        .zone.warning { background: #fff3cd; border-color: #dc3545; }
+        .hidden { display: none !important; }
+        input, select, button { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; }
+        button { background: #007bff; color: white; border: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="login-screen">
+        <div style="text-align:center; padding:50px 0;">
+            <h2>🏪 門市系統 V10</h2>
+            <select id="login-role">
+                <option value="morning">🌞 早班 (1111)</option>
+                <option value="evening">🌙 晚班 (2222)</option>
+                <option value="manager">👨‍💼 主管 (8888)</option>
+            </select>
+            <input type="password" id="login-pwd" placeholder="密碼">
+            <input type="text" id="login-name" placeholder="請輸入姓名">
+            <button onclick="window.login()">登入並開始同步</button>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden">
+        <div class="nav-tabs">
+            <div class="nav-item active" onclick="window.switchTab('temp')">🌡️ 冰箱溫度</div>
+            <div class="nav-item" onclick="window.switchTab('stock')">📦 補貨效期</div>
+            <div class="nav-item" onclick="window.switchTab('monthly')">🗓️ 每月模型圖</div>
+            <div class="nav-item" onclick="window.switchTab('counter')">💰 帳務報表</div>
+        </div>
+
+        <div id="tab-temp">
+            <div class="section-header">❄️ 冷藏冰箱 (0~7度)</div>
+            <div class="grid-box">
+                <div class="zone" id="f-open-1" onclick="window.checkTemp('f-open-1','開放式1','chiller')">開放式 1<br><small>待檢查</small></div>
+                <div class="zone" id="f-chiller-1" onclick="window.checkTemp('f-chiller-1','冷藏1','chiller')">冷藏 1<br><small>待檢查</small></div>
+            </div>
+            <div class="section-header">🧊 冷凍冰箱 (<-10度)</div>
+            <div class="grid-box">
+                <div class="zone" id="f-freezer-1" onclick="window.checkTemp('f-freezer-1','冷凍1','freezer')">冷凍 1<br><small>待檢查</small></div>
+                <div class="zone" id="f-chest-1" onclick="window.checkTemp('f-chest-1','臥式1','freezer')">臥式 1<br><small>待檢查</small></div>
+            </div>
+        </div>
+
+        <div id="tab-stock" class="hidden">
+            <div class="section-header">🛒 每日補貨與效期</div>
+            <div class="grid-box">
+                <div class="zone" id="stk-drink" onclick="window.checkStock('stk-drink','飲料補貨')">飲料補貨</div>
+                <div class="zone" id="stk-cig" onclick="window.checkStock('stk-cig','菸架補貨')">菸架補貨</div>
+                <div class="zone highlight-foreign" id="stk-for-noodle" onclick="window.checkStock('stk-for-noodle','★ 外籍泡麵')">★ 外籍泡麵 ★</div>
+                <div class="zone highlight-foreign" id="stk-for-cookie" onclick="window.checkStock('stk-for-cookie','★ 外籍餅乾')">★ 外籍餅乾 ★</div>
+            </div>
+        </div>
+
+        <div id="tab-monthly" class="hidden">
+            <div class="section-header">🗓️ 每月效期模型圖</div>
+            <div id="shelf-canvas-container">
+                <canvas id="shelfCanvas"></canvas>
+            </div>
+            
+            <div id="manager-draw-tools" class="hidden">
+                <div class="canvas-controls">
+                    <button onclick="window.clearCanvas()" style="background:#dc3545;">清除重畫</button>
+                    <button onclick="window.saveCanvas()" style="background:#28a745;">儲存模型圖</button>
+                </div>
+                <p style="font-size:12px; color:red;">* 主管請在此畫出店內貨架圖，員工點擊圓圈處即可標記完成。</p>
+            </div>
+
+            <div style="margin-top:10px;">
+                <p>完成狀態：<span id="canvas-status">請主管先上傳模型圖</span></p>
+                <button onclick="window.markShelfDone()" style="background:#6f42c1;">點擊此處標記選中區域完成</button>
+            </div>
+        </div>
+
+        <div id="tab-counter" class="hidden">
+            <div class="section-header">💰 營業日報表</div>
+            <p>此處請參照前版填寫營業額、扣項、誤差等... (為了穩定度，本版先優化資料庫連線)</p>
+            <button onclick="window.submitReport()" style="background:#28a745;">提交今日報表到雲端</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAiOKSjZq6TPc9O75NcxsQqFYhY2wziW1w",
+        authDomain: "join-home-f3070.firebaseapp.com",
+        projectId: "join-home-f3070",
+        storageBucket: "join-home-f3070.firebasestorage.app",
+        messagingSenderId: "590173788810",
+        appId: "1:590173788810:web:13986424ec8bf9a5f7eb73",
+        measurementId: "G-M4169BDVH5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db; window.doc = doc; window.setDoc = setDoc; window.getDoc = getDoc; window.addDoc = addDoc;
+
+    // --- 畫布邏輯 (模型圖) ---
+    const canvas = document.getElementById('shelfCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+
+    canvas.width = 400; canvas.height = 300;
+    ctx.strokeStyle = "#333"; ctx.lineWidth = 2;
+
+    // 監聽雲端模型圖
+    onSnapshot(doc(db, "settings", "shelf_map"), (snap) => {
+        if(snap.exists()){
+            const img = new Image();
+            img.src = snap.data().image;
+            img.onload = () => ctx.drawImage(img, 0, 0);
+            document.getElementById('canvas-status').innerText = "模型圖已載入，請點擊位置檢查。";
+        }
+    });
+
+    // 繪圖事件
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', drawing);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('touchstart', (e) => startDraw(e.touches[0]));
+    canvas.addEventListener('touchmove', (e) => drawing(e.touches[0]));
+    canvas.addEventListener('touchend', stopDraw);
+
+    function startDraw(e) { if(window.role !== 'manager') return; isDrawing = true; drawing(e); }
+    function drawing(e) {
+        if(!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.pageX) - rect.left;
+        const y = (e.clientY || e.pageY) - rect.top;
+        ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+    }
+    function stopDraw() { isDrawing = false; ctx.beginPath(); }
+
+    window.clearCanvas = () => ctx.clearRect(0,0,canvas.width,canvas.height);
+    window.saveCanvas = async () => {
+        const dataUrl = canvas.toDataURL();
+        await setDoc(doc(db, "settings", "shelf_map"), { image: dataUrl, updatedBy: window.userName });
+        alert("模型圖已成功上傳雲端！");
+    };
+
+    // 監聽狀態
+    const allIds = ['f-open-1','f-chiller-1','f-freezer-1','f-chest-1','stk-drink','stk-cig','stk-for-noodle','stk-for-cookie'];
+    allIds.forEach(id => {
+        onSnapshot(doc(db, "checks", id), (snap) => {
+            if(snap.exists()) {
+                const d = snap.data();
+                const el = document.getElementById(id);
+                if(el){
+                    el.className = `zone ${d.status==='異常'?'warning':'ok'} ${id.includes('for')?'highlight-foreign':''}`;
+                    el.querySelector('small').innerText = `✅ ${d.val} (${d.checker})`;
+                }
+            }
+        });
+    });
+
+</script>
+
+<script>
+    // --- 應用程式邏輯 ---
+    window.role = ""; window.userName = "";
+
+    window.login = function() {
+        const r = document.getElementById('login-role').value;
+        const p = document.getElementById('login-pwd').value;
+        const n = document.getElementById('login-name').value;
+        
+        const pwds = { "morning":"1111", "evening":"2222", "manager":"8888" };
+        if(p !== pwds[r]) return alert("密碼錯誤！");
+        if(!n) return alert("請輸入姓名");
+
+        window.role = r; window.userName = n;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.remove('hidden');
+        
+        if(r === 'manager') document.getElementById('manager-draw-tools').classList.remove('hidden');
+    };
+
+    window.switchTab = (t) => {
+        document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        event.currentTarget.classList.add('active');
+    };
+
+    window.checkTemp = async (id, name, type) => {
+        let val = prompt(`${name} 溫度檢查：`);
+        if(!val) return;
+        let num = parseFloat(val);
+        let status = "正常";
+        if(type==='freezer' && num > -10) { alert("⚠️ 高溫警告！"); status="異常"; }
+        
+        // 記錄到雲端
+        await window.setDoc(window.doc(window.db, "checks", id), {
+            val: val+"度", status, checker: window.userName, time: new Date()
+        });
+        // 紀錄 Log
+        await window.addDoc(window.collection(window.db, "logs"), {
+            item: name, val: val, checker: window.userName, time: new Date()
+        });
+    };
+
+    window.checkStock = async (id, name) => {
+        if(confirm(`${name} 檢查完成？`)) {
+            await window.setDoc(window.doc(window.db, "checks", id), {
+                val: "已完成", status: "正常", checker: window.userName, time: new Date()
+            });
+        }
+    };
+
+    window.markShelfDone = async () => {
+        const pos = prompt("請輸入檢查的貨架區塊名稱 (例如: 泡麵區):");
+        if(pos) {
+            await window.addDoc(window.collection(window.db, "monthly_checks"), {
+                area: pos, checker: window.userName, date: new Date()
+            });
+            alert(`${pos} 效期檢查已記錄！`);
+        }
+    };
+</script>
+</body>
+</html>
