@@ -3,115 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧門市系統 V20</title>
+    <title>智慧門市系統 V21</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
-        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --dark: #343a40; }
+        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --purple: #6f42c1; }
         body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f0f2f5; padding-bottom: 80px; }
         .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; }
-        
-        /* 認證介面樣式 */
-        .auth-box { padding: 40px 20px; text-align: center; }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        
-        /* 頁籤導航 */
         .nav-tabs { display: flex; overflow-x: auto; background: #fff; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 1000; }
-        .nav-item { flex: 0 0 auto; padding: 15px 20px; cursor: pointer; font-weight: bold; border-bottom: 3px solid transparent; color: #666; white-space: nowrap; }
-        .nav-item.active { color: var(--primary); border-bottom-color: var(--primary); background: #f8f9fa; }
-
-        /* 狀態格子 */
+        .nav-item { flex: 0 0 auto; padding: 15px 20px; cursor: pointer; font-weight: bold; color: #666; white-space: nowrap; }
+        .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: #f8f9fa; }
+        .section-header { background: #e9ecef; padding: 10px; font-weight: bold; border-left: 5px solid var(--primary); margin: 10px 0; }
         .grid-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        .zone { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 15px 5px; text-align: center; cursor: pointer; min-height: 80px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .zone.ok { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
-        .zone.warning { background: #fff3cd !important; border-color: #dc3545 !important; animation: flash 1s infinite; }
-        .highlight-foreign { background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); border: 2px solid #6f42c1; color: #4a148c; font-weight: bold; }
-
-        /* 帳務細項樣式 */
+        .zone { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 15px 5px; text-align: center; cursor: pointer; min-height: 70px; }
+        .zone.ok { background: #d4edda !important; border-color: #28a745 !important; }
+        .zone.warning { background: #fff3cd !important; border-color: #dc3545 !important; }
+        .highlight-foreign { background: #f3e5f5; border: 2px solid var(--purple); color: var(--purple); font-weight: bold; }
         .money-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .money-table td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-        .money-table input { width: 90px; height: 45px; font-size: 22px; text-align: center; border: 1px solid #999; border-radius: 4px; }
-        
-        /* 模型圖 */
-        #shelf-canvas { border: 2px solid #333; position: relative; width: 100%; height: 380px; background: #eee; overflow: hidden; background-size: contain; background-repeat: no-repeat; }
-        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; text-align: center; font-size: 11px; cursor: pointer; padding: 5px; }
-        .shape.done { background: #28a745 !important; color: white !important; font-weight: bold; }
-
-        input, select, button, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .money-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .money-table input { width: 80px; height: 35px; font-size: 18px; text-align: center; }
+        #shelf-canvas { border: 2px solid #333; position: relative; width: 100%; height: 350px; background: #eee; background-size: contain; background-repeat: no-repeat; }
+        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; text-align: center; font-size: 11px; cursor: pointer; }
+        .shape.done { background: #28a745 !important; color: white !important; }
+        input, select, button, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .btn-success { background: var(--success); }
         .hidden { display: none !important; }
-        @keyframes flash { 0%, 100% {opacity: 1;} 50% {opacity: 0.7;} }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="auth-screen" class="auth-box">
-        <div class="card">
-            <h2>🏪 智慧門市系統 V20</h2>
-            <p id="conn-status" style="color:red; font-size:12px;">正在連接雲端資料庫...</p>
-            
+    <div id="auth-screen" style="padding:40px 20px; text-align:center;">
+        <div style="background:white; padding:25px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+            <h2>🏪 智慧門市系統 V21</h2>
             <div id="login-area">
                 <input type="text" id="l-id" placeholder="帳號">
                 <input type="password" id="l-pw" placeholder="密碼">
-                <button id="btn-login" onclick="window.doLogin()" class="hidden">登入打卡</button>
-                <p id="toggle-reg" onclick="window.toggleAuth(true)" style="color:blue; cursor:pointer; margin-top:15px;" class="hidden">初次使用？點此註冊帳號</p>
+                <button onclick="doLogin()">登入打卡</button>
+                <p onclick="toggleAuth(true)" style="color:blue; cursor:pointer; margin-top:15px;">註冊帳號</p>
             </div>
-
             <div id="register-area" class="hidden">
-                <input type="text" id="r-name" placeholder="真實姓名">
-                <select id="r-shift">
-                    <option value="早班">早班</option>
-                    <option value="晚班">晚班</option>
-                    <option value="主管">主管</option>
-                </select>
+                <input type="text" id="r-name" placeholder="姓名">
+                <select id="r-shift"><option value="早班">早班</option><option value="晚班">晚班</option><option value="主管">主管</option></select>
                 <input type="text" id="r-id" placeholder="設定帳號">
                 <input type="password" id="r-pw" placeholder="設定密碼">
-                <button class="btn-success" onclick="window.doRegister()">完成註冊並返回</button>
-                <p onclick="window.toggleAuth(false)" style="color:blue; cursor:pointer; margin-top:15px;">已有帳號？返回登入</p>
+                <button style="background:var(--success);" onclick="doRegister()">確認註冊</button>
+                <p onclick="toggleAuth(false)" style="color:blue; cursor:pointer; margin-top:15px;">返回登入</p>
             </div>
         </div>
     </div>
 
     <div id="app-screen" class="hidden">
-        <div style="background:var(--dark); color:white; padding:12px; display:flex; justify-content:space-between; align-items:center;">
-            <span>👤 <span id="user-info">--</span></span>
-            <button onclick="location.reload()" style="width:auto; padding:5px 10px; font-size:11px;">登出系統</button>
-        </div>
         <div class="nav-tabs">
-            <div class="nav-item active" onclick="window.switchTab('stock')">📦 補貨效期</div>
-            <div class="nav-item" onclick="window.switchTab('temp')">🌡️ 冰箱</div>
-            <div class="nav-item" onclick="window.switchTab('counter')">💰 帳務</div>
-            <div class="nav-item" onclick="window.switchTab('handover')">🤝 交接客服</div>
-            <div id="nav-mgr" class="nav-item hidden" onclick="window.switchTab('manager')">📊 主管</div>
+            <div class="nav-item active" onclick="tab('stock')">📦 補貨效期</div>
+            <div class="nav-item" onclick="tab('temp')">🌡️ 冰箱</div>
+            <div class="nav-item" onclick="tab('counter')">💰 帳務</div>
+            <div class="nav-item" onclick="tab('handover')">🤝 交接客服</div>
         </div>
-        <div id="tab-stock" class="p-10">
-            <div class="section-header" style="background:#f3e5f5; padding:10px;">🔥 重點檢查</div>
+
+        <div id="tab-stock">
+            <div class="section-header">🔥 重點檢查 (外籍)</div>
             <div class="grid-box">
-                <div class="zone highlight-foreign" id="s-for-n" onclick="window.checkSimple('s-for-n','外籍泡麵')">★外籍泡麵★<br><small>待檢</small></div>
-                <div class="zone highlight-foreign" id="s-for-c" onclick="window.checkSimple('s-for-c','外籍餅乾')">★外籍餅乾★<br><small>待檢</small></div>
+                <div class="zone highlight-foreign" id="s-for-n" onclick="quickCheck('s-for-n','外籍泡麵')">★外籍泡麵★<br><small>待檢</small></div>
+                <div class="zone highlight-foreign" id="s-for-c" onclick="quickCheck('s-for-c','外籍餅乾')">★外籍餅乾★<br><small>待檢</small></div>
+            </div>
+            <div class="section-header">📅 每日效期</div>
+            <div class="grid-box">
+                <div class="zone" id="c-f" onclick="quickCheck('c-f','生鮮效期')">生鮮效期</div>
+                <div class="zone" id="c-d" onclick="quickCheck('c-d','日配效期')">日配效期</div>
+                <div class="zone" id="c-b" onclick="quickCheck('c-b','麵包效期')">麵包效期</div>
+            </div>
+            <div class="section-header">🗓️ 每月效期模型圖</div>
+            <div id="mgr-map-tools" class="hidden">
+                <button onclick="addMapBox()">+新增區塊</button>
+                <button onclick="saveGlobalMap()" style="background:green;">發布地圖</button>
             </div>
             <div id="shelf-canvas"></div>
         </div>
+
         <div id="tab-temp" class="hidden">
+            <div class="section-header">🌡️ 冰箱溫度檢查</div>
             <div id="f-grid" class="grid-box"></div>
         </div>
+
         <div id="tab-counter" class="hidden">
-            <div id="in-data-area"></div>
+            <div class="section-header">🪙 離櫃零錢點算</div>
             <table class="money-table" id="m-table"></table>
-            <div style="text-align:center; padding:20px; background:#333; color:white; margin-top:20px;">
-                <h3 id="diff-show">誤差：0</h3>
-                <button onclick="window.doV20Calc()" style="background:orange; color:black;">🧮 試算誤差</button>
-                <button onclick="window.doV20Submit()" style="background:green; margin-top:10px;">✅ 提交正式報表</button>
+            <div style="text-align:right; font-weight:bold; color:blue; padding:10px;">總現：$<span id="out-sum">0</span></div>
+            <div class="section-header">📊 營收數據</div>
+            <input type="number" id="v-rev" placeholder="營業額">
+            <input type="number" id="v-vis" placeholder="來客數">
+            <button onclick="doCalcV21()" style="background:orange; color:black;">試算誤差</button>
+            <h2 id="diff-res" style="text-align:center;">誤差：0</h2>
+            <button onclick="doSubmitV21()" style="background:green;">提交正式報表</button>
+        </div>
+
+        <div id="tab-handover" class="hidden">
+            <div class="grid-box">
+                <button onclick="svc('交接')">📝 交接</button>
+                <button onclick="svc('客訂')">🛒 客訂</button>
+                <button onclick="svc('維修')">🔧 維修</button>
             </div>
+            <div id="svc-pop" class="hidden" style="background:#f8f9fa; border:2px solid var(--primary); padding:10px;">
+                <h4 id="svc-t">--</h4>
+                <textarea id="svc-c" placeholder="內容..."></textarea>
+                <button onclick="submitSvcV21()">確認送出</button>
+            </div>
+            <div id="feed" style="margin-top:15px;"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- 1. Firebase 初始化 ---
-    const config = {
+    // --- 1. Firebase ---
+    const cfg = {
         apiKey: "AIzaSyAiOKSjZq6TPc9O75NcxsQqFYhY2wziW1w",
         authDomain: "join-home-f3070.firebaseapp.com",
         projectId: "join-home-f3070",
@@ -119,97 +124,149 @@
         messagingSenderId: "590173788810",
         appId: "1:590173788810:web:13986424ec8bf9a5f7eb73"
     };
+    firebase.initializeApp(cfg);
+    const db = firebase.firestore();
 
-    try {
-        firebase.initializeApp(config);
-        var db = firebase.firestore();
-        document.getElementById('conn-status').innerText = "✅ 雲端連線正常";
-        document.getElementById('conn-status').style.color = "green";
-        document.getElementById('btn-login').classList.remove('hidden');
-        document.getElementById('toggle-reg').classList.remove('hidden');
-    } catch (e) {
-        document.getElementById('conn-status').innerText = "❌ 連線失敗，請重新整理頁面";
+    // --- 2. 認證 (修正註冊彈窗) ---
+    function toggleAuth(reg) {
+        document.getElementById('login-area').classList.toggle('hidden', reg);
+        document.getElementById('register-area').classList.toggle('hidden', !reg);
     }
 
-    // --- 2. 註冊與登入邏輯 ---
-    window.toggleAuth = function(isReg) {
-        document.getElementById('login-area').classList.toggle('hidden', isReg);
-        document.getElementById('register-area').classList.toggle('hidden', !isReg);
-        if(isReg) {
-            document.getElementById('auth-title').innerText = "🆕 註冊新帳號";
-        } else {
-            document.getElementById('auth-title').innerText = "🏪 智慧門市系統 V20";
-        }
-    };
-
-    window.doRegister = async function() {
+    async function doRegister() {
         const id = document.getElementById('r-id').value;
         const name = document.getElementById('r-name').value;
         const pw = document.getElementById('r-pw').value;
         const shift = document.getElementById('r-shift').value;
-        if(!id || !name || !pw) return alert("請完整填寫姓名、帳號與密碼！");
-
-        try {
-            await db.collection("users").doc(id).set({
-                name: name,
-                pw: pw,
-                shift: shift,
-                points: 0
-            });
-            alert("🎉 註冊成功！系統將為您返回登入畫面，請輸入帳密登入。");
-            window.toggleAuth(false);
-        } catch (e) {
-            alert("註冊失敗：" + e.message);
-        }
-    };
-
-    window.doLogin = async function() {
-        const id = document.getElementById('l-id').value;
-        const pw = document.getElementById('l-pw').value;
-        if(!id || !pw) return alert("請輸入帳號密碼");
-
-        try {
-            const snap = await db.collection("users").doc(id).get();
-            if (snap.exists && snap.data().pw === pw) {
-                window.user = { ...snap.data(), id: id };
-                alert("打卡成功！歡迎上班，" + window.user.name);
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('user-info').innerText = window.user.name + " (" + window.user.shift + ")";
-                startAppV20();
-            } else {
-                alert("❌ 帳號不存在或密碼錯誤");
-            }
-        } catch (e) {
-            alert("登入系統發生錯誤：" + e.message);
-        }
-    };
-
-    // --- 3. 核心功能 (簡化載入) ---
-    function startAppV20() {
-        // 生成錢幣表格
-        const mT = document.getElementById('m-table');
-        [500,100,50,10,5,1].forEach(u => {
-            mT.innerHTML += `<tr><td>${u}元</td><td><input type="number" id="m-reg-${u}" oninput="calcSum()"></td><td><input type="number" id="m-res-${u}" oninput="calcSum()"></td></tr>`;
-        });
+        if(!id || !pw) return alert("請填寫帳密");
         
-        // 載入冰箱
-        const fG = document.getElementById('f-grid');
-        for(let i=1; i<=10; i++) {
-            fG.innerHTML += `<div class="zone" onclick="alert('請錄入溫度')">冰箱 ${i}<br><small>待測</small></div>`;
-        }
+        await db.collection("users").doc(id).set({ name, pw, shift, points:0 });
+        // 🚨 這裡強制彈窗確認
+        alert("註冊成功！請點擊確認後返回登入畫面。");
+        toggleAuth(false);
     }
 
-    window.switchTab = function(t) {
+    async function doLogin() {
+        const id = document.getElementById('l-id').value;
+        const pw = document.getElementById('l-pw').value;
+        const snap = await db.collection("users").doc(id).get();
+        if(snap.exists && snap.data().pw === pw) {
+            window.user = { ...snap.data(), id };
+            startApp();
+        } else alert("帳密錯誤");
+    }
+
+    // --- 3. 核心功能 ---
+    function startApp() {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.remove('hidden');
+        if(window.user.shift === '主管') document.getElementById('mgr-map-tools').classList.remove('hidden');
+
+        // 生成 10 冰箱
+        const fg = document.getElementById('f-grid');
+        for(let i=1; i<=10; i++){
+            fg.innerHTML += `<div class="zone" id="f${i}" onclick="inputT('f${i}','冰箱${i}')">冰箱${i}<br><small>待測</small></div>`;
+        }
+        // 錢幣
+        const mt = document.getElementById('m-table');
+        [500,100,50,10,5,1].forEach(u => {
+            mt.innerHTML += `<tr><td>${u}元</td><td><input type="number" id="mr${u}" oninput="calcV21()"></td><td><input type="number" id="ms${u}" oninput="calcV21()"></td></tr>`;
+        });
+        syncV21();
+    }
+
+    function syncV21() {
+        db.collection("settings").doc("global_map").onSnapshot(s => { if(s.exists) renderMapV21(s.data()); });
+        db.collection("broadcasts").orderBy("time","desc").limit(10).onSnapshot(s => {
+            const f = document.getElementById('feed'); f.innerHTML = "";
+            s.forEach(d => { f.innerHTML += `<div style="background:#eee; padding:10px; margin-bottom:5px;"><b>${d.data().type}</b>: ${d.data().content}</div>`; });
+        });
+        const ids = ['s-for-n','s-for-c','c-f','c-d','c-b'];
+        ids.forEach(id => {
+            db.collection("checks").doc(id).onSnapshot(s => {
+                if(s.exists){
+                    const el = document.getElementById(id);
+                    el.className = `zone ok ${id.includes('for')?'highlight-foreign':''}`;
+                    el.querySelector('small').innerText = `✅ ${s.data().user}`;
+                }
+            });
+        });
+    }
+
+    // --- 4. 點擊動作 (全域掛載) ---
+    window.inputT = async (id, name) => {
+        const v = prompt(`${name} 溫度：`, '-');
+        if(!v) return;
+        const n = parseFloat(v);
+        let s = "正常";
+        if(n > -10) { alert("🚨 警告：溫度異常！"); s="異常"; }
+        await db.collection("checks").doc(id).set({ val:v+"度", status:s, user:window.user.name });
+    };
+
+    window.quickCheck = async (id, name) => {
+        if(confirm(`${name} 檢查完成？`)) {
+            await db.collection("checks").doc(id).set({ user:window.user.name, time:new Date() });
+        }
+    };
+
+    window.calcV21 = () => {
+        let total = 0;
+        [500,100,50,10,5,1].forEach(u => {
+            total += ((Number(document.getElementById('mr'+u).value)||0) + (Number(document.getElementById('ms'+u).value)||0)) * u;
+        });
+        document.getElementById('out-sum').innerText = total;
+    };
+
+    window.doCalcV21 = () => {
+        const rev = Number(document.getElementById('v-rev').value)||0;
+        const out = Number(document.getElementById('out-sum').innerText)||0;
+        document.getElementById('diff-res').innerText = "誤差：" + (rev - out);
+    };
+
+    window.doSubmitV21 = async () => {
+        await db.collection("reports").add({ user:window.user.name, time:new Date() });
+        alert("✅ 提交成功");
+        location.reload();
+    };
+
+    let curS = "";
+    window.svc = (t) => { curS=t; document.getElementById('svc-pop').classList.remove('hidden'); document.getElementById('svc-t').innerText=t; };
+    window.submitSvcV21 = async () => {
+        await db.collection("broadcasts").add({ type:curS, content:document.getElementById('svc-c').value, time:new Date() });
+        alert("✅ 已發送");
+        document.getElementById('svc-pop').classList.add('hidden');
+    };
+
+    // --- 5. 模型圖 ---
+    window.vS = [];
+    function renderMapV21(d) {
+        window.vS = d.shapes || [];
+        const c = document.getElementById('shelf-canvas'); c.innerHTML = "";
+        window.vS.forEach(s => {
+            const div = document.createElement('div');
+            div.className = `shape ${s.done?'done':''}`;
+            div.style.left = s.x+"px"; div.style.top = s.y+"px"; div.style.width="60px"; div.style.height="40px";
+            div.innerText = s.name;
+            if(window.user.shift==='主管'){
+                div.onmousedown = (e) => {
+                    let ox = e.clientX-s.x; let oy = e.clientY-s.y;
+                    document.onmousemove = (ev) => { s.x=ev.clientX-ox; s.y=ev.clientY-oy; div.style.left=s.x+"px"; div.style.top=s.y+"px"; };
+                    document.onmouseup = () => document.onmousemove = null;
+                };
+            } else {
+                div.onclick = async () => { if(confirm("完成？")){ s.done=true; await db.collection("settings").doc("global_map").set({shapes:window.vS}); }};
+            }
+            c.appendChild(div);
+        });
+    }
+    window.addMapBox = () => { const n = prompt("名稱"); if(n){ window.vS.push({id:Date.now(), name:n, x:30, y:30, done:false}); renderMapV21({shapes:window.vS}); }};
+    window.saveGlobalMap = async () => { await db.collection("settings").doc("global_map").set({shapes:window.vS}); alert("已發布"); };
+
+    window.tab = (t) => {
         document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         document.getElementById('tab-'+t).classList.remove('hidden');
-    };
-
-    window.checkSimple = function(id, name) {
-        if(confirm("確認 " + name + " 檢查完畢？")) {
-            document.getElementById(id).classList.add('ok');
-        }
+        event.currentTarget.classList.add('active');
     };
 </script>
 </body>
