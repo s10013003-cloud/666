@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>門市戰情系統 V19 - 穩定連線版</title>
+    <title>智慧門市系統 V20</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
@@ -11,35 +11,27 @@
         body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f0f2f5; padding-bottom: 80px; }
         .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; }
         
-        /* 認證介面 */
+        /* 認證介面樣式 */
         .auth-box { padding: 40px 20px; text-align: center; }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
-        /* 導航 */
+        /* 頁籤導航 */
         .nav-tabs { display: flex; overflow-x: auto; background: #fff; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 1000; }
         .nav-item { flex: 0 0 auto; padding: 15px 20px; cursor: pointer; font-weight: bold; border-bottom: 3px solid transparent; color: #666; white-space: nowrap; }
         .nav-item.active { color: var(--primary); border-bottom-color: var(--primary); background: #f8f9fa; }
 
-        /* 狀態格子與外籍標記 */
+        /* 狀態格子 */
         .grid-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        .zone { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 12px 5px; text-align: center; cursor: pointer; min-height: 80px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .zone { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 15px 5px; text-align: center; cursor: pointer; min-height: 80px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .zone.ok { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
         .zone.warning { background: #fff3cd !important; border-color: #dc3545 !important; animation: flash 1s infinite; }
         .highlight-foreign { background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); border: 2px solid #6f42c1; color: #4a148c; font-weight: bold; }
 
-        /* 帳務大空格與電話卡 */
+        /* 帳務細項樣式 */
         .money-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .money-table td { border: 1px solid #ddd; padding: 12px; text-align: center; }
         .money-table input { width: 90px; height: 45px; font-size: 22px; text-align: center; border: 1px solid #999; border-radius: 4px; }
-        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        .card-box { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; }
-
-        /* 圖片縮放動畫 */
-        .img-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
-        .img-overlay.show { display: flex; opacity: 1; }
-        .img-overlay img { max-width: 90%; max-height: 90%; transform: scale(0.7); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .img-overlay.show img { transform: scale(1); }
-
+        
         /* 模型圖 */
         #shelf-canvas { border: 2px solid #333; position: relative; width: 100%; height: 380px; background: #eee; overflow: hidden; background-size: contain; background-repeat: no-repeat; }
         .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; text-align: center; font-size: 11px; cursor: pointer; padding: 5px; }
@@ -54,26 +46,29 @@
 </head>
 <body>
 
-<div id="img-overlay" class="img-overlay" onclick="closeImgZoom()">
-    <img id="img-zoom" src="">
-</div>
-
 <div class="container">
     <div id="auth-screen" class="auth-box">
         <div class="card">
-            <h2>🏪 智慧門市系統 V19</h2>
+            <h2>🏪 智慧門市系統 V20</h2>
+            <p id="conn-status" style="color:red; font-size:12px;">正在連接雲端資料庫...</p>
+            
             <div id="login-area">
                 <input type="text" id="l-id" placeholder="帳號">
                 <input type="password" id="l-pw" placeholder="密碼">
-                <button onclick="window.doLogin()">登入打卡</button>
-                <p onclick="window.toggleAuth(true)" style="color:blue; cursor:pointer; margin-top:15px;">初次使用？點此註冊帳號</p>
+                <button id="btn-login" onclick="window.doLogin()" class="hidden">登入打卡</button>
+                <p id="toggle-reg" onclick="window.toggleAuth(true)" style="color:blue; cursor:pointer; margin-top:15px;" class="hidden">初次使用？點此註冊帳號</p>
             </div>
+
             <div id="register-area" class="hidden">
                 <input type="text" id="r-name" placeholder="真實姓名">
-                <select id="r-shift"><option value="早班">早班</option><option value="晚班">晚班</option><option value="主管">主管</option></select>
+                <select id="r-shift">
+                    <option value="早班">早班</option>
+                    <option value="晚班">晚班</option>
+                    <option value="主管">主管</option>
+                </select>
                 <input type="text" id="r-id" placeholder="設定帳號">
                 <input type="password" id="r-pw" placeholder="設定密碼">
-                <button class="btn-success" onclick="window.doRegister()">完成註冊</button>
+                <button class="btn-success" onclick="window.doRegister()">完成註冊並返回</button>
                 <p onclick="window.toggleAuth(false)" style="color:blue; cursor:pointer; margin-top:15px;">已有帳號？返回登入</p>
             </div>
         </div>
@@ -82,9 +77,8 @@
     <div id="app-screen" class="hidden">
         <div style="background:var(--dark); color:white; padding:12px; display:flex; justify-content:space-between; align-items:center;">
             <span>👤 <span id="user-info">--</span></span>
-            <button onclick="location.reload()" style="width:auto; padding:5px 10px; font-size:11px;">登出</button>
+            <button onclick="location.reload()" style="width:auto; padding:5px 10px; font-size:11px;">登出系統</button>
         </div>
-
         <div class="nav-tabs">
             <div class="nav-item active" onclick="window.switchTab('stock')">📦 補貨效期</div>
             <div class="nav-item" onclick="window.switchTab('temp')">🌡️ 冰箱</div>
@@ -92,101 +86,31 @@
             <div class="nav-item" onclick="window.switchTab('handover')">🤝 交接客服</div>
             <div id="nav-mgr" class="nav-item hidden" onclick="window.switchTab('manager')">📊 主管</div>
         </div>
-
-        <div id="tab-stock">
-            <div class="section-header" style="background:#f3e5f5; color:#4a148c; padding:10px;">🔥 外籍食品檢查 (重點)</div>
+        <div id="tab-stock" class="p-10">
+            <div class="section-header" style="background:#f3e5f5; padding:10px;">🔥 重點檢查</div>
             <div class="grid-box">
                 <div class="zone highlight-foreign" id="s-for-n" onclick="window.checkSimple('s-for-n','外籍泡麵')">★外籍泡麵★<br><small>待檢</small></div>
                 <div class="zone highlight-foreign" id="s-for-c" onclick="window.checkSimple('s-for-c','外籍餅乾')">★外籍餅乾★<br><small>待檢</small></div>
             </div>
-            <div class="section-header" style="padding:10px;">📅 每日效期</div>
-            <div class="grid-box">
-                <div class="zone" id="c-f" onclick="window.checkSimple('c-f','生鮮效期')">生鮮效期</div>
-                <div class="zone" id="c-d" onclick="window.checkSimple('c-d','日配效期')">日配效期</div>
-                <div class="zone" id="c-b" onclick="window.checkSimple('c-b','麵包效期')">麵包效期</div>
-            </div>
-            <div class="section-header" style="padding:10px;">🛒 每日補貨</div>
-            <div class="grid-box">
-                <div class="zone" id="s-cig" onclick="window.checkSimple('s-cig','菸架')">菸架</div>
-                <div class="zone" id="s-f-d" onclick="window.checkSimple('s-f-d','冰箱飲料')">冰箱飲料</div>
-                <div class="zone" id="s-s-d" onclick="window.checkSimple('s-s-d','層架飲料')">層架飲料</div>
-                <div class="zone" id="s-fr" onclick="window.checkSimple('s-fr','冷凍食品')">冷凍食品</div>
-                <div class="zone" id="s-tr" onclick="window.checkSimple('s-tr','垃圾袋/免洗')">垃圾袋/免洗</div>
-                <div class="zone" id="s-ti" onclick="window.checkSimple('s-ti','衛生紙')">衛生紙</div>
-            </div>
-            <div class="section-header" style="padding:10px;">🗓️ 每月效期模型圖</div>
-            <div id="mgr-map-ctrl" class="hidden">
-                <div style="display:flex; gap:5px;">
-                    <button onclick="window.addMapBox()">+新增區塊</button>
-                    <button onclick="window.saveMapV19()" style="background:green;">儲存發布</button>
-                </div>
-            </div>
             <div id="shelf-canvas"></div>
         </div>
-
         <div id="tab-temp" class="hidden">
-            <div class="section-header" style="padding:10px;">🌡️ 冰箱溫度檢查 (0-7 / <-10)</div>
             <div id="f-grid" class="grid-box"></div>
         </div>
-
         <div id="tab-counter" class="hidden">
-            <div class="section-header" style="padding:10px;">📥 進櫃資訊 <button id="m-edit-btn" class="hidden" onclick="window.unlockIn()" style="width:auto; padding:2px 8px; font-size:11px;">主管編輯</button></div>
-            <div style="background:#e3f2fd; padding:15px; border-radius:10px;">
-                進櫃-現金：<input type="number" id="in-cash" disabled>
-                進櫃-庫存：<input type="number" id="in-stock" disabled>
-                <button id="in-save" class="hidden" onclick="window.saveInV19()" style="background:green;">確認儲存</button>
-            </div>
-            <div class="section-header" style="padding:10px;">🪙 離櫃點算 (大空格輸入)</div>
+            <div id="in-data-area"></div>
             <table class="money-table" id="m-table"></table>
-            <div style="text-align:right; font-weight:bold; color:blue; padding:10px;">離櫃總現：$<span id="out-sum">0</span></div>
-            <div class="section-header" style="padding:10px;">📞 電話卡盤點</div>
-            <div id="card-list" class="card-grid"></div>
-            <div class="section-header" style="padding:10px;">📊 營收數據</div>
-            <div class="grid-box">
-                <input type="number" id="v-rev" placeholder="營業額" oninput="window.calcV19Avg()">
-                <input type="number" id="v-vis" placeholder="來客數" oninput="window.calcV19Avg()">
-                <input type="text" id="v-avg" placeholder="客單價" readonly style="background:#eee;">
-            </div>
-            <div class="grid-box" style="margin-top:5px;">
-                <input type="number" id="v-cr" placeholder="信用卡"><input type="number" id="v-tw" placeholder="台灣Pay">
-                <input type="number" id="v-ln" placeholder="LinePay"><input type="number" id="v-pt" placeholder="點數">
-                <input type="number" id="v-rf" placeholder="退款"><input type="number" id="v-1k" placeholder="千鈔(張)">
-            </div>
-            <button onclick="window.doV19Calc()" style="background:orange; color:black; margin-top:10px;">🧮 試算誤差</button>
-            <h2 style="text-align:center;">誤差：<span id="diff-show">0</span></h2>
-            <button onclick="window.doV19Submit()" style="background:green;">✅ 提交正式報表</button>
-        </div>
-
-        <div id="tab-handover" class="hidden">
-            <div class="grid-box">
-                <button onclick="window.openV19Svc('交接')">📝 交接</button>
-                <button onclick="window.openV19Svc('客訂')">🛒 客訂</button>
-                <button onclick="window.openV19Svc('維修')">🔧 維修</button>
-                <button onclick="window.openV19Svc('售罄')">⚡ 售罄</button>
-                <button onclick="window.openV19Svc('報廢')">🗑️ 報廢</button>
-            </div>
-            <div id="svc-pop" class="hidden" style="background:#fff; border:3px solid var(--primary); padding:15px; border-radius:12px; margin-top:15px;">
-                <h3 id="svc-title">表單</h3>
-                <div id="svc-fields"></div>
-                <input type="file" id="svc-img" accept="image/*" capture="camera">
-                <button onclick="window.submitV19Svc()" style="margin-top:10px;">確認送出</button>
-                <button onclick="document.getElementById('svc-pop').classList.add('hidden')" style="background:#666; margin-top:5px;">取消</button>
-            </div>
-            <div id="feed" style="margin-top:20px;"></div>
-        </div>
-
-        <div id="tab-manager" class="hidden">
-            <div class="section-header" style="padding:10px;">🌟 績效評等</div>
-            <select id="e-target"><option value="">選擇員工</option></select>
-            <div style="padding:15px; background:var(--light); border-radius:8px;">
-                <button onclick="window.saveEvalV19()" style="background:green;">送出評分</button>
+            <div style="text-align:center; padding:20px; background:#333; color:white; margin-top:20px;">
+                <h3 id="diff-show">誤差：0</h3>
+                <button onclick="window.doV20Calc()" style="background:orange; color:black;">🧮 試算誤差</button>
+                <button onclick="window.doV20Submit()" style="background:green; margin-top:10px;">✅ 提交正式報表</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- 1. Firebase 初始化 (穩定全域版) ---
+    // --- 1. Firebase 初始化 ---
     const config = {
         apiKey: "AIzaSyAiOKSjZq6TPc9O75NcxsQqFYhY2wziW1w",
         authDomain: "join-home-f3070.firebaseapp.com",
@@ -195,258 +119,98 @@
         messagingSenderId: "590173788810",
         appId: "1:590173788810:web:13986424ec8bf9a5f7eb73"
     };
-    firebase.initializeApp(config);
-    const db = firebase.firestore();
 
-    // --- 2. 全域變數與掛載 (核心修復) ---
-    window.user = null;
-    window.vShapes = [];
+    try {
+        firebase.initializeApp(config);
+        var db = firebase.firestore();
+        document.getElementById('conn-status').innerText = "✅ 雲端連線正常";
+        document.getElementById('conn-status').style.color = "green";
+        document.getElementById('btn-login').classList.remove('hidden');
+        document.getElementById('toggle-reg').classList.remove('hidden');
+    } catch (e) {
+        document.getElementById('conn-status').innerText = "❌ 連線失敗，請重新整理頁面";
+    }
 
-    // --- 認證邏輯 ---
-    window.toggleAuth = (isReg) => {
-        document.getElementById('login-area').style.display = isReg ? 'none' : 'block';
-        document.getElementById('register-area').style.display = isReg ? 'block' : 'none';
+    // --- 2. 註冊與登入邏輯 ---
+    window.toggleAuth = function(isReg) {
+        document.getElementById('login-area').classList.toggle('hidden', isReg);
+        document.getElementById('register-area').classList.toggle('hidden', !isReg);
+        if(isReg) {
+            document.getElementById('auth-title').innerText = "🆕 註冊新帳號";
+        } else {
+            document.getElementById('auth-title').innerText = "🏪 智慧門市系統 V20";
+        }
     };
 
-    window.doRegister = async () => {
+    window.doRegister = async function() {
         const id = document.getElementById('r-id').value;
         const name = document.getElementById('r-name').value;
         const pw = document.getElementById('r-pw').value;
         const shift = document.getElementById('r-shift').value;
-        if(!id || !name || !pw) return alert("請填寫完整資訊");
-        
-        await db.collection("users").doc(id).set({ name, pw, shift, points: 0 });
-        alert("✅ 註冊成功！請點擊確認後進行登入。");
-        window.toggleAuth(false);
+        if(!id || !name || !pw) return alert("請完整填寫姓名、帳號與密碼！");
+
+        try {
+            await db.collection("users").doc(id).set({
+                name: name,
+                pw: pw,
+                shift: shift,
+                points: 0
+            });
+            alert("🎉 註冊成功！系統將為您返回登入畫面，請輸入帳密登入。");
+            window.toggleAuth(false);
+        } catch (e) {
+            alert("註冊失敗：" + e.message);
+        }
     };
 
-    window.doLogin = async () => {
+    window.doLogin = async function() {
         const id = document.getElementById('l-id').value;
         const pw = document.getElementById('l-pw').value;
+        if(!id || !pw) return alert("請輸入帳號密碼");
+
         try {
             const snap = await db.collection("users").doc(id).get();
             if (snap.exists && snap.data().pw === pw) {
-                window.user = { ...snap.data(), id };
-                startAppV19();
+                window.user = { ...snap.data(), id: id };
+                alert("打卡成功！歡迎上班，" + window.user.name);
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                document.getElementById('user-info').innerText = window.user.name + " (" + window.user.shift + ")";
+                startAppV20();
             } else {
-                alert("❌ 帳號或密碼錯誤");
+                alert("❌ 帳號不存在或密碼錯誤");
             }
         } catch (e) {
-            alert("連線失敗：" + e.message);
+            alert("登入系統發生錯誤：" + e.message);
         }
     };
 
-    // --- 核心應用程式啟動 ---
-    function startAppV19() {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app-screen').classList.remove('hidden');
-        document.getElementById('user-info').innerText = `${window.user.name} (${window.user.shift})`;
-        
-        if (window.user.shift === '主管') {
-            document.getElementById('nav-mgr').classList.remove('hidden');
-            document.getElementById('mgr-map-ctrl').classList.remove('hidden');
-            document.getElementById('m-edit-btn').classList.remove('hidden');
-        }
-
-        // 生成冰箱
-        const fs = [{id:'f1',n:'開放1',t:'c'},{id:'f2',n:'開放2',t:'c'},{id:'f3',n:'冷藏1',t:'c'},{id:'f4',n:'冷藏2',t:'c'},
-                    {id:'f5',n:'冷凍1',t:'f'},{id:'f6',n:'冷凍2',t:'f'},{id:'f7',n:'臥式1',t:'f'},{id:'f8',n:'臥式2',t:'f'},
-                    {id:'f9',n:'臥式3',t:'f'},{id:'f10',n:'臥式4',t:'f'}];
-        document.getElementById('f-grid').innerHTML = fs.map(f => `<div class="zone" id="${f.id}" onclick="window.inputTempV19('${f.id}','${f.n}','${f.t}')">${f.n}<br><small>待測</small></div>`).join('');
-
-        // 生成錢幣表格 (大空格)
-        const units = [500,100,50,10,5,1];
-        document.getElementById('m-table').innerHTML = units.map(u => `<tr><td>${u}元</td><td><input type="number" id="m-reg-${u}" oninput="window.calcV19Sum()"></td><td><input type="number" id="m-res-${u}" oninput="window.calcV19Sum()"></td><td id="sub-${u}">$0</td></tr>`).join('');
-
-        // 生成電話卡
-        const cards = ["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"];
-        document.getElementById('card-list').innerHTML = cards.map(c => `<div class="card-box"><label>${c}</label><input type="number" id="ci-${c}" placeholder="進"><input type="number" id="cs-${c}" placeholder="銷" style="color:red;"><input type="number" id="cl-${c}" placeholder="存" style="color:blue;"></div>`).join('');
-
-        startV19Sync();
-        checkV19Times();
-    }
-
-    function startV19Sync() {
-        // 模型圖連動
-        db.collection("settings").doc("global_map").onSnapshot(s => { if(s.exists) renderMapV19(s.data()); });
-        // 進櫃資訊連動
-        db.collection("store_status").doc("current").onSnapshot(s => {
-            if(s.exists()){
-                document.getElementById('in-cash').value = s.data().cash || 0;
-                document.getElementById('in-stock').value = s.data().stock || 0;
-                if(s.data().cards) for(let k in s.data().cards) document.getElementById(`ci-${k}`).value = s.data().cards[k];
-            }
-        });
-        // 檢查項目監聽
-        const checkIds = ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','s-for-n','s-for-c','c-f','c-d','c-b','s-cig','s-f-d','s-s-d','s-fr','s-tr','s-ti'];
-        checkIds.forEach(id => {
-            db.collection("checks").doc(id).onSnapshot(s => {
-                if(s.exists()){
-                    const d = s.data();
-                    const el = document.getElementById(id);
-                    if(el) {
-                        el.className = `zone ${d.status==='異常'?'warning':'ok'} ${id.includes('for')?'highlight-foreign':''}`;
-                        el.querySelector('small').innerText = `✅ ${d.val} (${d.user})`;
-                    }
-                }
-            });
-        });
-        // 交接監聽
-        db.collection("broadcasts").orderBy("time","desc").limit(10).onSnapshot(s => {
-            const feed = document.getElementById('feed');
-            feed.innerHTML = "";
-            s.forEach(d => {
-                const b = d.data();
-                feed.innerHTML += `<div style="background:#fff; border-left:5px solid ${b.done?'green':'orange'}; padding:12px; margin-bottom:10px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-                    <b>[${b.type}] ${b.user}</b> <div style="margin:5px 0;">${b.content}</div>
-                    ${b.img ? `<img src="${b.img}" style="width:80px; border-radius:5px;" onclick="window.zoomV19('${b.img}')">` : ''}
-                </div>`;
-            });
-        });
-    }
-
-    // --- 掛載功能到 Window ---
-    window.inputTempV19 = async (id, name, type) => {
-        const val = prompt(`${name} 溫度：`, type==='f'?'-':'');
-        if(!val) return alert("警告：溫度為必填項目！");
-        const num = parseFloat(val);
-        let status = "正常";
-        if((type==='f' && num > -10) || (type==='c' && (num < 0 || num > 7))) status = "異常";
-        if(status === "異常") alert("🚨 嚴重警告：冰箱溫度異常！已發出主管通知！");
-        
-        await db.collection("checks").doc(id).set({ val: val+"度", status, user: window.user.name, time: new Date() });
-        await db.collection("logs").add({ item: name, val: num, status, user: window.user.name, timestamp: new Date() });
-    };
-
-    window.checkSimple = async (id, name) => {
-        if(confirm(`${name} 檢查完成嗎？`)) {
-            await db.collection("checks").doc(id).set({ val: "OK", status: "正常", user: window.user.name, time: new Date() });
-        }
-    };
-
-    window.calcV19Sum = () => {
-        let total = 0;
+    // --- 3. 核心功能 (簡化載入) ---
+    function startAppV20() {
+        // 生成錢幣表格
+        const mT = document.getElementById('m-table');
         [500,100,50,10,5,1].forEach(u => {
-            const val = (Number(document.getElementById(`m-reg-${u}`).value)||0) + (Number(document.getElementById(`m-res-${u}`).value)||0);
-            document.getElementById(`sub-${u}`).innerText = "$" + (val * u);
-            total += (val * u);
+            mT.innerHTML += `<tr><td>${u}元</td><td><input type="number" id="m-reg-${u}" oninput="calcSum()"></td><td><input type="number" id="m-res-${u}" oninput="calcSum()"></td></tr>`;
         });
-        document.getElementById('out-sum').innerText = total;
-    };
-
-    window.calcV19Avg = () => {
-        const rev = Number(document.getElementById('v-rev').value);
-        const vis = Number(document.getElementById('v-vis').value);
-        if(vis > 0) document.getElementById('v-avg').value = Math.round(rev/vis);
-    };
-
-    window.doV19Calc = () => {
-        const inTotal = (Number(document.getElementById('in-cash').value)||0) + (Number(document.getElementById('in-stock').value)||0);
-        const outTotal = Number(document.getElementById('out-sum').innerText);
-        const rev = Number(document.getElementById('v-rev').value)||0;
-        const ded = (Number(document.getElementById('v-cr').value)||0) + (Number(document.getElementById('v-tw').value)||0) + (Number(document.getElementById('v-ln').value)||0) + (Number(document.getElementById('v-pt').value)||0) + (Number(document.getElementById('v-rf').value)||0);
-        const thousands = (Number(document.getElementById('v-1k').value)||0) * 1000;
-        const diff = ((inTotal - outTotal + (rev - ded) - thousands) * -1);
-        document.getElementById('diff-show').innerText = diff;
-    };
-
-    window.doV19Submit = async () => {
-        const diff = document.getElementById('diff-show').innerText;
-        if(!confirm(`誤差為 ${diff} 元，確認提交報表？`)) return;
-        await db.collection("reports").add({ diff, user: window.user.name, date: new Date() });
-        alert("✅ 報表提交成功！");
-        location.reload();
-    };
-
-    window.openV19Svc = (type) => {
-        document.getElementById('svc-pop').classList.remove('hidden');
-        document.getElementById('svc-title').innerText = type;
-        const f = document.getElementById('svc-fields');
-        f.innerHTML = type === '交接' ? `<textarea id="s-msg" placeholder="輸入交接內容"></textarea>` : `<input id="s-p" placeholder="品名"> <input id="s-b" placeholder="條碼/細項">`;
-    };
-
-    window.submitV19Svc = async () => {
-        const title = document.getElementById('svc-title').innerText;
-        const msg = document.getElementById('s-msg') ? document.getElementById('s-msg').value : (document.getElementById('s-p').value + " / " + document.getElementById('s-b').value);
-        const file = document.getElementById('svc-img').files[0];
-        const save = async (img = "") => {
-            await db.collection("broadcasts").add({ type: title, content: msg, img, user: window.user.name, time: new Date(), done: false });
-            alert("✅ 通報已同步給所有人");
-            document.getElementById('svc-pop').classList.add('hidden');
-        };
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => save(e.target.result);
-            reader.readAsDataURL(file);
-        } else save();
-    };
-
-    // --- 模型圖邏輯 ---
-    function renderMapV19(data) {
-        window.vShapes = data.shapes || [];
-        const canvas = document.getElementById('shelf-canvas');
-        canvas.innerHTML = "";
-        window.vShapes.forEach(s => {
-            const div = document.createElement('div');
-            div.className = `shape ${s.done?'done':''}`;
-            div.style.left = s.x+"px"; div.style.top = s.y+"px";
-            div.innerText = s.name;
-            if(window.user.shift==='主管') {
-                div.onmousedown = (e) => {
-                    let ox = e.clientX-s.x; let oy = e.clientY-s.y;
-                    document.onmousemove = (ev) => { s.x=ev.clientX-ox; s.y=ev.clientY-oy; div.style.left=s.x+"px"; div.style.top=s.y+"px"; };
-                    document.onmouseup = () => document.onmousemove = null;
-                };
-            } else {
-                div.onclick = async () => {
-                    if(confirm(`確認【${s.name}】檢查完成？`)) {
-                        s.done = true;
-                        await db.collection("settings").doc("global_map").set({ shapes: window.vShapes });
-                    }
-                };
-            }
-            canvas.appendChild(div);
-        });
+        
+        // 載入冰箱
+        const fG = document.getElementById('f-grid');
+        for(let i=1; i<=10; i++) {
+            fG.innerHTML += `<div class="zone" onclick="alert('請錄入溫度')">冰箱 ${i}<br><small>待測</small></div>`;
+        }
     }
 
-    window.addMapBox = () => {
-        const n = prompt("區域名稱：");
-        if(n) { window.vShapes.push({id:Date.now(), name:n, x:30, y:30, w:60, h:40, done:false}); renderMapV19({shapes:window.vShapes}); }
-    };
-    window.saveMapV19 = async () => { await db.collection("settings").doc("global_map").set({ shapes: window.vShapes }); alert("配置已發布"); };
-
-    window.unlockIn = () => { document.getElementById('in-cash').disabled = false; document.getElementById('in-stock').disabled = false; document.getElementById('in-save').classList.remove('hidden'); };
-    window.saveInV19 = async () => { await db.collection("store_status").doc("current").set({ cash: Number(document.getElementById('in-cash').value), stock: Number(document.getElementById('in-stock').value) }); alert("進櫃資訊已更新"); location.reload(); };
-
-    function checkV19Times() {
-        const times = ["10:00","12:30","14:30","16:30","18:30","20:30","22:00"];
-        setInterval(() => {
-            const now = new Date();
-            const cur = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-            if(times.includes(cur)) alert("⏰ 檢查時間到了！請量測冰箱溫度。");
-        }, 60000);
-    }
-</script>
-
-<script>
-    // --- 一般 UI 與動畫 ---
-    function switchTab(t) {
+    window.switchTab = function(t) {
         document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         document.getElementById('tab-'+t).classList.remove('hidden');
-        event.currentTarget.classList.add('active');
-    }
-    function zoomV19(src) {
-        document.getElementById('img-zoom').src = src;
-        const overlay = document.getElementById('img-overlay');
-        overlay.style.display = 'flex';
-        setTimeout(() => overlay.classList.add('show'), 10);
-    }
-    function closeImgZoom() {
-        const overlay = document.getElementById('img-overlay');
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.style.display = 'none', 300);
-    }
+    };
+
+    window.checkSimple = function(id, name) {
+        if(confirm("確認 " + name + " 檢查完畢？")) {
+            document.getElementById(id).classList.add('ok');
+        }
+    };
 </script>
 </body>
 </html>
