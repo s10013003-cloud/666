@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雲端店務系統</title>
+    <style>
+        /* --- 樣式設定區 --- */
+        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; }
+        
+        /* 輸入框與按鈕 */
+        input, button, select { width: 100%; padding: 12px; margin: 5px 0; font-size: 16px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button.manager-btn { background: #dc3545; } /* 紅色按鈕給主管 */
+        .hidden { display: none; }
+
+        /* 地圖區域模型 */
+        .store-map { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .zone { 
+            background: #e9ecef; height: 100px; border-radius: 8px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; border: 2px solid #ccc;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .zone:active { transform: scale(0.98); }
+        .zone small { font-size: 12px; color: #666; margin-top: 5px; display: block;}
+        
+        /* 狀態顏色變換 */
+        .zone.ok { background: #d4edda; border-color: #28a745; color: #155724; }
+        .zone.warning { background: #fff3cd; border-color: #ffc107; color: #856404; }
+
+        /* 交接清單 */
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .meta { font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="login-screen">
+        <h2 style="text-align:center;">🏪 雲端店務系統</h2>
+        <p style="text-align:center; color:gray; font-size:14px;">請輸入姓名與職位以登入</p>
+        <label>選擇身分：</label>
+        <select id="role-select">
+            <option value="staff">一般員工</option>
+            <option value="manager">值班主管</option>
+        </select>
+        <input type="text" id="username" placeholder="請輸入你的姓名">
+        <button onclick="login()">登入系統</button>
+    </div>
+
+    <div id="app-screen" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #333; color: white; padding: 10px; margin: -15px -15px 15px -15px;">
+            <span id="user-display">使用者</span>
+            <button onclick="location.reload()" style="width: auto; background: #555; font-size: 12px; padding: 5px 10px;">登出</button>
+        </div>
+
+        <h3>📍 現場檢查 (點擊回報)</h3>
+        <p style="font-size: 12px; color: gray;">💡 點擊格子輸入狀態 (如: 正常/溫度過高)，資料會即時同步</p>
+        <div class="store-map">
+            <div class="zone" id="zone-fridge-a" onclick="reportStatus('zone-fridge-a', '冰箱 A (生鮮)')">
+                <strong>冰箱 A (生鮮)</strong>
+                <small id="status-zone-fridge-a">載入中...</small>
+            </div>
+            <div class="zone" id="zone-fridge-b" onclick="reportStatus('zone-fridge-b', '冰箱 B (飲料)')">
+                <strong>冰箱 B (飲料)</strong>
+                <small id="status-zone-fridge-b">載入中...</small>
+            </div>
+            <div class="zone" id="zone-shelf-c" onclick="reportStatus('zone-shelf-c', '貨架 C (乾貨)')">
+                <strong>貨架 C (乾貨)</strong>
+                <small id="status-zone-shelf-c">載入中...</small>
+            </div>
+            <div class="zone" id="zone-cashier" onclick="reportStatus('zone-cashier', '收銀台')">
+                <strong>收銀台</strong>
+                <small id="status-zone-cashier">載入中...</small>
+            </div>
+        </div>
+
+        <hr>
+        <h3>📝 交接與代辦</h3>
+        <ul id="handover-list">
+            <li>資料載入中...</li>
+        </ul>
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="new-todo" placeholder="輸入交接事項...">
+            <button onclick="addHandover()" style="width: 80px;">新增</button>
+        </div>
+
+        <div id="manager-section" class="hidden">
+            <hr>
+            <h3 style="color: #dc3545;">📊 主管評分/報表區</h3>
+            <div style="background: #ffebeb; padding: 10px; border-radius: 5px; border: 1px solid #f5c6cb;">
+                <label>今日營收誤差 (元)：</label>
+                <input type="number" id="cash-diff" placeholder="例如：-50">
+                <label>相關人員/備註：</label>
+                <input type="text" id="target-staff" placeholder="輸入員工姓名">
+                <button class="manager-btn" onclick="submitScore()">提交評分與懲處</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    // 1. 引入 Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, addDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // 2. 你的專案鑰匙 (已填入)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAiOKSjZq6TPc9O75NcxsQqFYhY2wziW1w",
+      authDomain: "join-home-f3070.firebaseapp.com",
+      projectId: "join-home-f3070",
+      storageBucket: "join-home-f3070.firebasestorage.app",
+      messagingSenderId: "590173788810",
+      appId: "1:590173788810:web:13986424ec8bf9a5f7eb73",
+      measurementId: "G-M4169BDVH5"
+    };
+
+    // 3. 啟動資料庫
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 把功能掛載到全域變數 window，讓下方的按鈕可以使用
+    window.db = db;
+    window.setDoc = setDoc;
+    window.addDoc = addDoc;
+    window.doc = doc;
+    window.collection = collection;
+    
+    // 4. 設定即時監聽 (Real-time Listener)
+    
+    // 監聽檢查區域狀態
+    const zones = ['zone-fridge-a', 'zone-fridge-b', 'zone-shelf-c', 'zone-cashier'];
+    zones.forEach(zoneId => {
+        onSnapshot(doc(db, "checks", zoneId), (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                // 呼叫下方的更新畫面函式
+                updateZoneUI(zoneId, data);
+            } else {
+                // 預設狀態
+                updateZoneUI(zoneId, { status: "未檢查", checker: "無" });
+            }
+        });
+    });
+
+    // 監聽交接事項 (最新的 10 筆)
+    const q = query(collection(db, "handover"), orderBy("time", "desc"), limit(10));
+    onSnapshot(q, (snapshot) => {
+        const list = document.getElementById('handover-list');
+        list.innerHTML = ""; 
+        if (snapshot.empty) {
+            list.innerHTML = "<li>目前無交接事項</li>";
+        }
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const timeStr = data.time ? new Date(data.time.toDate()).toLocaleString([], {hour: '2-digit', minute:'2-digit'}) : "";
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span style="font-weight:bold;">${data.content}</span><br>
+                <span class="meta">👤 ${data.author} | 🕒 ${timeStr}</span>
+            `;
+            list.appendChild(li);
+        });
+    });
+
+    // 畫面更新工具
+    window.updateZoneUI = function(elementId, data) {
+        const el = document.getElementById(elementId);
+        const statusText = document.getElementById('status-' + elementId);
+        
+        // 重置樣式
+        el.classList.remove('ok', 'warning');
+        
+        let displayStatus = data.status || "未檢查";
+        let displayTemp = data.temp ? `(${data.temp})` : "";
+        let displayChecker = data.checker ? data.checker : "待確認";
+
+        if (displayStatus.includes('正常') || displayStatus.includes('完成') || displayStatus.includes('ok')) {
+            el.classList.add('ok');
+            statusText.innerText = `✅ ${displayStatus} ${displayTemp}\n👤 ${displayChecker}`;
+        } else if (displayStatus === "未檢查") {
+            statusText.innerText = `⚪ 未檢查`;
+        } else {
+            el.classList.add('warning');
+            statusText.innerText = `⚠️ ${displayStatus} ${displayTemp}\n👤 ${displayChecker}`;
+        }
+    }
+</script>
+
+<script>
+    let currentUser = null;
+
+    // 登入
+    function login() {
+        const name = document.getElementById('username').value;
+        const role = document.getElementById('role-select').value;
+        if (!name) return alert("請輸入姓名！");
+
+        currentUser = { name, role };
+        
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.remove('hidden');
+        document.getElementById('user-display').innerText = `${role === 'manager' ? '主管' : '夥伴'}：${name}`;
+
+        if (role === 'manager') {
+            document.getElementById('manager-section').classList.remove('hidden');
+        }
+    }
+
+    // 回報狀態
+    async function reportStatus(zoneId, zoneName) {
+        if (!currentUser) return;
+        
+        const status = prompt(`正在檢查【${zoneName}】\n請輸入狀態 (例如：正常、溫度 5度、髒亂)：`, "正常");
+        if (!status) return;
+
+        try {
+            // 寫入資料庫
+            await window.setDoc(window.doc(window.db, "checks", zoneId), {
+                status: status,
+                temp: status.includes('度') ? status : '', 
+                checker: currentUser.name,
+                lastCheck: new Date(),
+                zoneName: zoneName
+            });
+        } catch (e) {
+            console.error(e);
+            alert("上傳失敗！請檢查你是否已啟用 Firebase Firestore 資料庫。");
+        }
+    }
+
+    // 新增交接
+    async function addHandover() {
+        const input = document.getElementById('new-todo');
+        const val = input.value;
+        if (!val) return;
+
+        try {
+            await window.addDoc(window.collection(window.db, "handover"), {
+                content: val,
+                author: currentUser.name,
+                time: new Date()
+            });
+            input.value = ""; 
+        } catch (e) {
+            alert("新增失敗，請檢查資料庫權限");
+        }
+    }
+
+    // 主管評分
+    async function submitScore() {
+        const diff = document.getElementById('cash-diff').value;
+        const target = document.getElementById('target-staff').value;
+        
+        if(!diff || !target) return alert("請填寫完整資料");
+
+        try {
+            await window.addDoc(window.collection(window.db, "reports"), {
+                cashDiff: diff,
+                targetStaff: target,
+                manager: currentUser.name,
+                date: new Date()
+            });
+            alert(`已記錄：${target} 誤差 ${diff} 元`);
+            document.getElementById('cash-diff').value = "";
+            document.getElementById('target-staff').value = "";
+        } catch (e) {
+            alert("儲存失敗");
+        }
+    }
+</script>
+
+</body>
+</html>
