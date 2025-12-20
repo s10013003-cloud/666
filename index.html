@@ -3,125 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>門市營運中樞 V10</title>
+    <title>智慧店務系統 V11 (正式整合版)</title>
     <style>
         /* --- 核心樣式 --- */
         body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; background: #f0f2f5; padding-bottom: 90px;}
         .container { padding: 15px; max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; }
         
-        /* 1. 導航與分頁 */
+        /* 註冊與登入 */
+        #auth-screen { padding: 40px 20px; text-align: center; }
+        .auth-box { background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .input-group { margin-bottom: 10px; text-align: left; }
+        
+        /* 導航切換 */
         .nav-tabs { display: flex; overflow-x: auto; background: #fff; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 100; }
         .nav-item { flex: 0 0 auto; padding: 15px 20px; cursor: pointer; color: #666; font-weight: bold; border-bottom: 4px solid transparent; white-space: nowrap;}
         .nav-item.active { color: #007bff; border-bottom-color: #007bff; background: #f8f9fa; }
 
-        /* 2. 外籍食品特殊標記 (重要) */
-        .highlight-foreign { 
-            background: linear-gradient(135deg, #6f42c1 0%, #4b2c84 100%) !important; 
-            color: #ffd700 !important; 
-            border: 2px solid #ffd700 !important;
-            animation: glow 1.5s infinite alternate;
-        }
-        @keyframes glow {
-            from { box-shadow: 0 0 5px #6f42c1; }
-            to { box-shadow: 0 0 15px #ffd700; }
-        }
+        /* 外籍食品特殊色 */
+        .highlight-foreign { background: #f3e5f5 !important; border: 2px solid #6f42c1 !important; color: #5e35b1 !important; font-weight: bold; }
 
-        /* 3. 每月效期模型圖 (畫布樣式) */
-        #shelf-canvas-container { position: relative; width: 100%; border: 2px dashed #ccc; background: #fff; margin-top: 10px; }
-        canvas { width: 100%; height: auto; touch-action: none; cursor: crosshair; }
-        .canvas-controls { display: flex; gap: 5px; margin-top: 5px; }
+        /* 模型圖形狀樣式 */
+        #shelf-canvas { border: 2px solid #333; position: relative; width: 100%; height: 300px; background: #fafafa; overflow: hidden; }
+        .shelf-shape { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid #333; }
+        .shape-square { border-radius: 0; }
+        .shape-circle { border-radius: 50%; }
+        .shape-triangle { width: 0; height: 0; border-left: 25px solid transparent; border-right: 25px solid transparent; border-bottom: 50px solid #ccc; background: transparent !important; border-top: none; }
+        .shelf-shape.checked { background: #d4edda !important; border-color: #28a745 !important; }
 
         /* 通用元件 */
         .section-header { background: #e9ecef; padding: 10px; margin: 15px -15px; font-weight: bold; border-left: 5px solid #007bff; }
         .grid-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .zone { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px 5px; text-align: center; cursor: pointer; min-height: 70px; }
         .zone.ok { background: #d4edda; border-color: #28a745; }
-        .zone.warning { background: #fff3cd; border-color: #dc3545; }
+        .zone.warning { background: #fff3cd; border-color: #dc3545; animation: flash 1s infinite; }
+        @keyframes flash { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        
+        input, select, button { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
-        input, select, button { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; }
-        button { background: #007bff; color: white; border: none; font-weight: bold; }
+
+        /* 報表樣式 */
+        .report-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 14px; }
+        .report-row input { width: 100px; text-align: right; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
-    <div id="login-screen">
-        <div style="text-align:center; padding:50px 0;">
-            <h2>🏪 門市系統 V10</h2>
-            <select id="login-role">
-                <option value="morning">🌞 早班 (1111)</option>
-                <option value="evening">🌙 晚班 (2222)</option>
-                <option value="manager">👨‍💼 主管 (8888)</option>
-            </select>
-            <input type="password" id="login-pwd" placeholder="密碼">
-            <input type="text" id="login-name" placeholder="請輸入姓名">
-            <button onclick="window.login()">登入並開始同步</button>
+    <div id="auth-screen">
+        <div class="auth-box">
+            <h2 id="auth-title">🏪 門市系統登入</h2>
+            <div id="login-area">
+                <input type="text" id="login-id" placeholder="帳號 (手機或序號)">
+                <input type="password" id="login-pw" placeholder="密碼">
+                <button onclick="handleLogin()">登入</button>
+                <p style="font-size:12px; color:#666;" onclick="toggleAuth(true)">沒有帳號？點此註冊</p>
+            </div>
+            <div id="register-area" class="hidden">
+                <input type="text" id="reg-name" placeholder="真實姓名">
+                <select id="reg-shift">
+                    <option value="早班">早班</option>
+                    <option value="晚班">晚班</option>
+                    <option value="主管">主管</option>
+                </select>
+                <input type="text" id="reg-id" placeholder="設定帳號">
+                <input type="password" id="reg-pw" placeholder="設定密碼">
+                <button onclick="handleRegister()" style="background:#28a745;">完成註冊</button>
+                <p style="font-size:12px; color:#666;" onclick="toggleAuth(false)">已有帳號？返回登入</p>
+            </div>
         </div>
     </div>
 
     <div id="app-screen" class="hidden">
+        <div style="background:#333; color:white; padding:10px; margin:-15px -15px 10px -15px; display:flex; justify-content:space-between; align-items:center;">
+            <span>👤 <span id="display-name">--</span> (<span id="display-shift">--</span>)</span>
+            <span>🏆 <span id="display-points">0</span> pt</span>
+            <button onclick="location.reload()" style="width:auto; padding:5px; font-size:10px;">登出</button>
+        </div>
+
         <div class="nav-tabs">
-            <div class="nav-item active" onclick="window.switchTab('temp')">🌡️ 冰箱溫度</div>
-            <div class="nav-item" onclick="window.switchTab('stock')">📦 補貨效期</div>
-            <div class="nav-item" onclick="window.switchTab('monthly')">🗓️ 每月模型圖</div>
-            <div class="nav-item" onclick="window.switchTab('counter')">💰 帳務報表</div>
+            <div class="nav-item active" onclick="switchTab('temp')">🌡️ 冰箱</div>
+            <div class="nav-item" onclick="switchTab('stock')">📦 效期補貨</div>
+            <div class="nav-item" onclick="switchTab('counter')">💰 帳務</div>
+            <div class="nav-item" onclick="switchTab('service')">💁 客服</div>
+            <div class="nav-item" onclick="switchTab('handover')">🤝 交接</div>
+            <div class="nav-item hidden" id="nav-mgr" onclick="switchTab('manager')">📊 數據</div>
         </div>
 
         <div id="tab-temp">
             <div class="section-header">❄️ 冷藏冰箱 (0~7度)</div>
             <div class="grid-box">
-                <div class="zone" id="f-open-1" onclick="window.checkTemp('f-open-1','開放式1','chiller')">開放式 1<br><small>待檢查</small></div>
-                <div class="zone" id="f-chiller-1" onclick="window.checkTemp('f-chiller-1','冷藏1','chiller')">冷藏 1<br><small>待檢查</small></div>
+                <div class="zone" id="f-o-1" onclick="checkTemp('f-o-1','開放式1','chiller')">開放式1<small>--</small></div>
+                <div class="zone" id="f-o-2" onclick="checkTemp('f-o-2','開放式2','chiller')">開放式2<small>--</small></div>
+                <div class="zone" id="f-c-1" onclick="checkTemp('f-c-1','冷藏1','chiller')">冷藏1<small>--</small></div>
+                <div class="zone" id="f-c-2" onclick="checkTemp('f-c-2','冷藏2','chiller')">冷藏2<small>--</small></div>
             </div>
-            <div class="section-header">🧊 冷凍冰箱 (<-10度)</div>
+            <div class="section-header">🧊 冷凍/臥式冰箱 (<-10度)</div>
             <div class="grid-box">
-                <div class="zone" id="f-freezer-1" onclick="window.checkTemp('f-freezer-1','冷凍1','freezer')">冷凍 1<br><small>待檢查</small></div>
-                <div class="zone" id="f-chest-1" onclick="window.checkTemp('f-chest-1','臥式1','freezer')">臥式 1<br><small>待檢查</small></div>
+                <div class="zone" id="f-f-1" onclick="checkTemp('f-f-1','冷凍1','freezer')">冷凍1<small>--</small></div>
+                <div class="zone" id="f-f-2" onclick="checkTemp('f-f-2','冷凍2','freezer')">冷凍2<small>--</small></div>
+                <div class="zone" id="f-w-1" onclick="checkTemp('f-w-1','臥式1','freezer')">臥式1<small>--</small></div>
+                <div class="zone" id="f-w-2" onclick="checkTemp('f-w-2','臥式2','freezer')">臥式2<small>--</small></div>
+                <div class="zone" id="f-w-3" onclick="checkTemp('f-w-3','臥式3','freezer')">臥式3<small>--</small></div>
+                <div class="zone" id="f-w-4" onclick="checkTemp('f-w-4','臥式4','freezer')">臥式4<small>--</small></div>
             </div>
         </div>
 
         <div id="tab-stock" class="hidden">
-            <div class="section-header">🛒 每日補貨與效期</div>
+            <div class="section-header">📅 每日效期/鮮度</div>
             <div class="grid-box">
-                <div class="zone" id="stk-drink" onclick="window.checkStock('stk-drink','飲料補貨')">飲料補貨</div>
-                <div class="zone" id="stk-cig" onclick="window.checkStock('stk-cig','菸架補貨')">菸架補貨</div>
-                <div class="zone highlight-foreign" id="stk-for-noodle" onclick="window.checkStock('stk-for-noodle','★ 外籍泡麵')">★ 外籍泡麵 ★</div>
-                <div class="zone highlight-foreign" id="stk-for-cookie" onclick="window.checkStock('stk-for-cookie','★ 外籍餅乾')">★ 外籍餅乾 ★</div>
+                <div class="zone" id="chk-1" onclick="checkStock('chk-1','日配飲料')">日配飲料</div>
+                <div class="zone" id="chk-2" onclick="checkStock('chk-2','生鮮蔬菜')">生鮮蔬菜</div>
+                <div class="zone" id="chk-3" onclick="checkStock('chk-3','麵包效期')">麵包效期</div>
             </div>
-        </div>
-
-        <div id="tab-monthly" class="hidden">
-            <div class="section-header">🗓️ 每月效期模型圖</div>
-            <div id="shelf-canvas-container">
-                <canvas id="shelfCanvas"></canvas>
+            <div class="section-header">🛒 補貨檢查</div>
+            <div class="grid-box">
+                <div class="zone" id="stk-1" onclick="checkStock('stk-1','菸架')">菸架</div>
+                <div class="zone" id="stk-2" onclick="checkStock('stk-2','冰箱飲料')">冰箱飲料</div>
+                <div class="zone" id="stk-3" onclick="checkStock('stk-3','層架飲料')">層架飲料</div>
+                <div class="zone highlight-foreign" id="stk-4" onclick="checkStock('stk-4','外籍泡麵')">★外籍泡麵★</div>
+                <div class="zone highlight-foreign" id="stk-5" onclick="checkStock('stk-5','外籍餅乾')">★外籍餅乾★</div>
+                <div class="zone" id="stk-6" onclick="checkStock('stk-6','冷凍食品')">冷凍食品</div>
+                <div class="zone" id="stk-7" onclick="checkStock('stk-7','垃圾袋')">垃圾袋</div>
+                <div class="zone" id="stk-8" onclick="checkStock('stk-8','免洗餐具')">免洗餐具</div>
             </div>
-            
-            <div id="manager-draw-tools" class="hidden">
-                <div class="canvas-controls">
-                    <button onclick="window.clearCanvas()" style="background:#dc3545;">清除重畫</button>
-                    <button onclick="window.saveCanvas()" style="background:#28a745;">儲存模型圖</button>
+            <div class="section-header">🗓️ 每月效期 (模型圖)</div>
+            <div id="shelf-canvas">
                 </div>
-                <p style="font-size:12px; color:red;">* 主管請在此畫出店內貨架圖，員工點擊圓圈處即可標記完成。</p>
-            </div>
-
-            <div style="margin-top:10px;">
-                <p>完成狀態：<span id="canvas-status">請主管先上傳模型圖</span></p>
-                <button onclick="window.markShelfDone()" style="background:#6f42c1;">點擊此處標記選中區域完成</button>
+            <div id="mgr-tools" class="hidden" style="display:flex; gap:5px; margin-top:5px;">
+                <button onclick="addShape('square')" style="font-size:10px;">+方塊</button>
+                <button onclick="addShape('circle')" style="font-size:10px;">+圓形</button>
+                <button onclick="saveMap()" style="font-size:10px; background:green;">儲存地圖</button>
             </div>
         </div>
 
         <div id="tab-counter" class="hidden">
-            <div class="section-header">💰 營業日報表</div>
-            <p>此處請參照前版填寫營業額、扣項、誤差等... (為了穩定度，本版先優化資料庫連線)</p>
-            <button onclick="window.submitReport()" style="background:#28a745;">提交今日報表到雲端</button>
+            <div class="section-header">💰 帳務報表</div>
+            <div style="background:#f8f9fa; padding:10px; border-radius:5px;">
+                <div class="report-row"><b>進櫃總現金</b><input type="number" id="cash-in"></div>
+                <hr>
+                <div class="report-row">營業額<input type="number" id="sales-total"></div>
+                <div class="report-row">信用卡<input type="number" id="sales-credit"></div>
+                <div class="report-row">台灣Pay<input type="number" id="sales-twpay"></div>
+                <div class="report-row">LinePay<input type="number" id="sales-linepay"></div>
+                <div class="report-row">點數折抵<input type="number" id="sales-points"></div>
+                <div class="report-row">現金退款<input type="number" id="sales-refund"></div>
+                <hr>
+                <div class="report-row">離櫃零錢<input type="number" id="cash-out"></div>
+                <div class="report-row">千鈔抽離<input type="number" id="cash-1000"></div>
+                <button onclick="calculateDiff()" style="background:#ffc107; color:black;">試算誤差</button>
+                <h3 style="text-align:center;">誤差：<span id="diff-res">0</span></h3>
+                <button onclick="submitFinalReport()" style="background:green;">提交正式報表</button>
+            </div>
+        </div>
+
+        <div id="tab-service" class="hidden">
+            <div class="grid-box">
+                <div class="zone" onclick="svcForm('客人詢問')">客人詢問/拍照</div>
+                <div class="zone" onclick="svcForm('商品售罄')">商品售罄通知</div>
+                <div class="zone" onclick="svcForm('客訂資料')">客訂資料</div>
+                <div class="zone" onclick="svcForm('電器維修')">電器維修</div>
+            </div>
+        </div>
+        
+        <div id="tab-handover" class="hidden">
+            <input type="text" id="task-input" placeholder="輸入交接事項...">
+            <button onclick="addTask()">發布任務</button>
+            <div id="task-list" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="tab-manager" class="hidden">
+            <div class="section-header">📊 主管數據分析</div>
+            <div id="mgr-stats">載入中...</div>
         </div>
     </div>
 </div>
 
 <script type="module">
+    // --- Firebase 核心 ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAiOKSjZq6TPc9O75NcxsQqFYhY2wziW1w",
@@ -135,129 +196,174 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    window.db = db; window.doc = doc; window.setDoc = setDoc; window.getDoc = getDoc; window.addDoc = addDoc;
+    window.db = db; window.setDoc = setDoc; window.addDoc = addDoc; window.doc = doc; window.getDoc = getDoc;
 
-    // --- 畫布邏輯 (模型圖) ---
-    const canvas = document.getElementById('shelfCanvas');
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
+    // --- 認證邏輯 ---
+    window.toggleAuth = (reg) => {
+        document.getElementById('login-area').classList.toggle('hidden', reg);
+        document.getElementById('register-area').classList.toggle('hidden', !reg);
+        document.getElementById('auth-title').innerText = reg ? "🆕 註冊新夥伴" : "🏪 門市系統登入";
+    };
 
-    canvas.width = 400; canvas.height = 300;
-    ctx.strokeStyle = "#333"; ctx.lineWidth = 2;
+    window.handleRegister = async () => {
+        const user = {
+            name: document.getElementById('reg-name').value,
+            shift: document.getElementById('reg-shift').value,
+            id: document.getElementById('reg-id').value,
+            pw: document.getElementById('reg-pw').value,
+            points: 0
+        };
+        if(!user.id || !user.pw) return alert("請填寫帳密");
+        await setDoc(doc(db, "users", user.id), user);
+        alert("註冊成功，請登入！");
+        toggleAuth(false);
+    };
 
-    // 監聽雲端模型圖
-    onSnapshot(doc(db, "settings", "shelf_map"), (snap) => {
-        if(snap.exists()){
-            const img = new Image();
-            img.src = snap.data().image;
-            img.onload = () => ctx.drawImage(img, 0, 0);
-            document.getElementById('canvas-status').innerText = "模型圖已載入，請點擊位置檢查。";
+    window.handleLogin = async () => {
+        const id = document.getElementById('login-id').value;
+        const pw = document.getElementById('login-pw').value;
+        const snap = await getDoc(doc(db, "users", id));
+        if(snap.exists() && snap.data().pw === pw) {
+            window.user = snap.data();
+            startApp();
+        } else {
+            alert("帳密錯誤");
         }
-    });
-
-    // 繪圖事件
-    canvas.addEventListener('mousedown', startDraw);
-    canvas.addEventListener('mousemove', drawing);
-    canvas.addEventListener('mouseup', stopDraw);
-    canvas.addEventListener('touchstart', (e) => startDraw(e.touches[0]));
-    canvas.addEventListener('touchmove', (e) => drawing(e.touches[0]));
-    canvas.addEventListener('touchend', stopDraw);
-
-    function startDraw(e) { if(window.role !== 'manager') return; isDrawing = true; drawing(e); }
-    function drawing(e) {
-        if(!isDrawing) return;
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX || e.pageX) - rect.left;
-        const y = (e.clientY || e.pageY) - rect.top;
-        ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
-    }
-    function stopDraw() { isDrawing = false; ctx.beginPath(); }
-
-    window.clearCanvas = () => ctx.clearRect(0,0,canvas.width,canvas.height);
-    window.saveCanvas = async () => {
-        const dataUrl = canvas.toDataURL();
-        await setDoc(doc(db, "settings", "shelf_map"), { image: dataUrl, updatedBy: window.userName });
-        alert("模型圖已成功上傳雲端！");
     };
 
-    // 監聽狀態
-    const allIds = ['f-open-1','f-chiller-1','f-freezer-1','f-chest-1','stk-drink','stk-cig','stk-for-noodle','stk-for-cookie'];
-    allIds.forEach(id => {
-        onSnapshot(doc(db, "checks", id), (snap) => {
-            if(snap.exists()) {
-                const d = snap.data();
-                const el = document.getElementById(id);
-                if(el){
-                    el.className = `zone ${d.status==='異常'?'warning':'ok'} ${id.includes('for')?'highlight-foreign':''}`;
-                    el.querySelector('small').innerText = `✅ ${d.val} (${d.checker})`;
-                }
-            }
-        });
-    });
-
-</script>
-
-<script>
-    // --- 應用程式邏輯 ---
-    window.role = ""; window.userName = "";
-
-    window.login = function() {
-        const r = document.getElementById('login-role').value;
-        const p = document.getElementById('login-pwd').value;
-        const n = document.getElementById('login-name').value;
-        
-        const pwds = { "morning":"1111", "evening":"2222", "manager":"8888" };
-        if(p !== pwds[r]) return alert("密碼錯誤！");
-        if(!n) return alert("請輸入姓名");
-
-        window.role = r; window.userName = n;
-        document.getElementById('login-screen').classList.add('hidden');
+    function startApp() {
+        document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
-        
-        if(r === 'manager') document.getElementById('manager-draw-tools').classList.remove('hidden');
+        document.getElementById('display-name').innerText = window.user.name;
+        document.getElementById('display-shift').innerText = window.user.shift;
+        document.getElementById('display-points').innerText = window.user.points;
+        if(window.user.shift === '主管') document.getElementById('nav-mgr').classList.remove('hidden');
+        loadMap();
+        listenUpdates();
+    }
+
+    // --- 核心更新監聽 ---
+    function listenUpdates() {
+        // 任務監聽
+        onSnapshot(query(collection(db, "tasks"), orderBy("time", "desc"), limit(10)), (snap) => {
+            const list = document.getElementById('task-list');
+            list.innerHTML = "";
+            snap.forEach(d => {
+                const t = d.data();
+                list.innerHTML += `<div style="background:#fff; padding:10px; border-radius:5px; margin-bottom:5px; border-left:4px solid ${t.done?'#28a745':'#ffc107'}">
+                    <b>${t.msg}</b> <small>(${t.user})</small>
+                </div>`;
+            });
+        });
+        // 格子狀態監聽
+        const ids = ['f-o-1','f-o-2','f-c-1','f-c-2','f-f-1','f-f-2','f-w-1','f-w-2','f-w-3','f-w-4','chk-1','chk-2','chk-3','stk-1','stk-2','stk-3','stk-4','stk-5','stk-6','stk-7','stk-8'];
+        ids.forEach(id => {
+            onSnapshot(doc(db, "checks", id), (snap) => {
+                if(snap.exists()){
+                    const d = snap.data();
+                    const el = document.getElementById(id);
+                    el.className = `zone ${d.status==='異常'?'warning':'ok'} ${id==='stk-4'||id==='stk-5'?'highlight-foreign':''}`;
+                    el.querySelector('small').innerText = `✅ ${d.val} (${d.user})`;
+                }
+            });
+        });
+    }
+
+    // --- 模型圖邏輯 ---
+    let shapes = [];
+    window.addShape = (type) => {
+        const name = prompt("區塊名稱 (如：飲料1架)");
+        if(!name) return;
+        const shape = { id: Date.now(), type, name, x: 50, y: 50, checked: false };
+        shapes.push(shape);
+        renderShapes();
     };
 
-    window.switchTab = (t) => {
-        document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('tab-'+t).classList.remove('hidden');
-        event.currentTarget.classList.add('active');
+    function renderShapes() {
+        const container = document.getElementById('shelf-canvas');
+        container.innerHTML = "";
+        shapes.forEach(s => {
+            const div = document.createElement('div');
+            div.className = `shelf-shape shape-${s.type} ${s.checked?'checked':''}`;
+            div.style.left = s.x + "px"; div.style.top = s.y + "px";
+            div.style.width = "60px"; div.style.height = "60px";
+            div.innerText = s.name;
+            if(window.user.shift === '主管') {
+                div.onmousedown = (e) => dragStart(e, s);
+            } else {
+                div.onclick = () => toggleShelf(s);
+            }
+            container.appendChild(div);
+        });
+    }
+
+    async function loadMap() {
+        const snap = await getDoc(doc(db, "settings", "map"));
+        if(snap.exists()) {
+            shapes = snap.data().shapes;
+            renderShapes();
+        }
+    }
+
+    window.saveMap = async () => {
+        await setDoc(doc(db, "settings", "map"), { shapes });
+        alert("地圖儲存成功");
     };
 
+    function toggleShelf(s) {
+        s.checked = !s.checked;
+        renderShapes();
+        // 紀錄日誌
+        addDoc(collection(db, "logs"), { type: '每月效期', item: s.name, user: window.user.name, time: new Date() });
+    }
+
+    // --- 冰箱/補貨邏輯 ---
     window.checkTemp = async (id, name, type) => {
-        let val = prompt(`${name} 溫度檢查：`);
+        const val = prompt(`${name} 溫度：`);
         if(!val) return;
-        let num = parseFloat(val);
+        const num = parseFloat(val);
         let status = "正常";
-        if(type==='freezer' && num > -10) { alert("⚠️ 高溫警告！"); status="異常"; }
-        
-        // 記錄到雲端
-        await window.setDoc(window.doc(window.db, "checks", id), {
-            val: val+"度", status, checker: window.userName, time: new Date()
-        });
-        // 紀錄 Log
-        await window.addDoc(window.collection(window.db, "logs"), {
-            item: name, val: val, checker: window.userName, time: new Date()
-        });
+        if(type === 'freezer' && num > -10) {
+            status = "異常";
+            alert("⚠️⚠️ 警告：冷凍溫度異常！已通報主管！");
+        }
+        if(type === 'chiller' && (num < 0 || num > 7)) status = "異常";
+        await setDoc(doc(db, "checks", id), { val: num+"度", status, user: window.user.name, time: new Date() });
+        await addDoc(collection(db, "logs"), { type: '冰箱', item: name, val: num, status, user: window.user.name, time: new Date() });
     };
 
     window.checkStock = async (id, name) => {
         if(confirm(`${name} 檢查完成？`)) {
-            await window.setDoc(window.doc(window.db, "checks", id), {
-                val: "已完成", status: "正常", checker: window.userName, time: new Date()
-            });
+            await setDoc(doc(db, "checks", id), { val: "OK", status: "正常", user: window.user.name, time: new Date() });
         }
     };
+</script>
 
-    window.markShelfDone = async () => {
-        const pos = prompt("請輸入檢查的貨架區塊名稱 (例如: 泡麵區):");
-        if(pos) {
-            await window.addDoc(window.collection(window.db, "monthly_checks"), {
-                area: pos, checker: window.userName, date: new Date()
-            });
-            alert(`${pos} 效期檢查已記錄！`);
-        }
-    };
+<script>
+    // --- 一般 UI 邏輯 ---
+    function switchTab(t) {
+        document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        event.currentTarget.classList.add('active');
+        if(window.user && window.user.shift === '主管') document.getElementById('mgr-tools').classList.remove('hidden');
+    }
+
+    function calculateDiff() {
+        const inCash = parseFloat(document.getElementById('cash-in').value) || 0;
+        const sales = parseFloat(document.getElementById('sales-total').value) || 0;
+        const deduct = (parseFloat(document.getElementById('sales-credit').value)||0) +
+                       (parseFloat(document.getElementById('sales-twpay').value)||0) +
+                       (parseFloat(document.getElementById('sales-linepay').value)||0) +
+                       (parseFloat(document.getElementById('sales-points').value)||0) +
+                       (parseFloat(document.getElementById('sales-refund').value)||0);
+        const out = parseFloat(document.getElementById('cash-out').value) || 0;
+        const thousand = (parseFloat(document.getElementById('cash-1000').value) || 0) * 1000;
+        
+        // 公式：(((進櫃+營收-扣項)-離櫃-千鈔)*-1)
+        const diff = ((inCash + (sales - deduct)) - out - thousand) * -1;
+        document.getElementById('diff-res').innerText = diff;
+    }
 </script>
 </body>
 </html>
