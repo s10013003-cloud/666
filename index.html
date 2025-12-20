@@ -3,31 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧店務系統 V11 (正式整合版)</title>
+    <title>智慧店務系統 V12 (完整實務版)</title>
     <style>
         /* --- 核心樣式 --- */
-        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; background: #f0f2f5; padding-bottom: 90px;}
+        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; background: #f0f2f5; padding-bottom: 90px; touch-action: manipulation; }
         .container { padding: 15px; max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; }
         
-        /* 註冊與登入 */
-        #auth-screen { padding: 40px 20px; text-align: center; }
-        .auth-box { background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .input-group { margin-bottom: 10px; text-align: left; }
+        /* 註冊登入 */
+        .auth-box { background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        .hidden { display: none !important; }
         
         /* 導航切換 */
         .nav-tabs { display: flex; overflow-x: auto; background: #fff; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 100; }
         .nav-item { flex: 0 0 auto; padding: 15px 20px; cursor: pointer; color: #666; font-weight: bold; border-bottom: 4px solid transparent; white-space: nowrap;}
         .nav-item.active { color: #007bff; border-bottom-color: #007bff; background: #f8f9fa; }
 
-        /* 外籍食品特殊色 */
-        .highlight-foreign { background: #f3e5f5 !important; border: 2px solid #6f42c1 !important; color: #5e35b1 !important; font-weight: bold; }
+        /* 外籍食品 - 置頂且特殊色 */
+        .highlight-foreign { background: linear-gradient(135deg, #6f42c1 0%, #4b2c84 100%) !important; color: #ffd700 !important; border: 2px solid #ffd700 !important; font-weight: bold; }
 
-        /* 模型圖形狀樣式 */
-        #shelf-canvas { border: 2px solid #333; position: relative; width: 100%; height: 300px; background: #fafafa; overflow: hidden; }
-        .shelf-shape { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid #333; }
-        .shape-square { border-radius: 0; }
-        .shape-circle { border-radius: 50%; }
-        .shape-triangle { width: 0; height: 0; border-left: 25px solid transparent; border-right: 25px solid transparent; border-bottom: 50px solid #ccc; background: transparent !important; border-top: none; }
+        /* 模型圖與拖曳 */
+        #shelf-canvas { border: 2px solid #333; position: relative; width: 100%; height: 350px; background: #eee; overflow: hidden; background-size: contain; background-repeat: no-repeat; background-position: center; }
+        .shelf-shape { position: absolute; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid #333; background: rgba(255,255,255,0.8); min-width: 50px; min-height: 50px; }
         .shelf-shape.checked { background: #d4edda !important; border-color: #28a745 !important; }
 
         /* 通用元件 */
@@ -36,15 +32,13 @@
         .zone { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px 5px; text-align: center; cursor: pointer; min-height: 70px; }
         .zone.ok { background: #d4edda; border-color: #28a745; }
         .zone.warning { background: #fff3cd; border-color: #dc3545; animation: flash 1s infinite; }
-        @keyframes flash { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
         
         input, select, button { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .hidden { display: none !important; }
-
-        /* 報表樣式 */
-        .report-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 14px; }
-        .report-row input { width: 100px; text-align: right; }
+        
+        /* 帳務表格 */
+        .report-table { width: 100%; font-size: 13px; margin-bottom: 10px; }
+        .report-table input { padding: 5px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -54,133 +48,117 @@
         <div class="auth-box">
             <h2 id="auth-title">🏪 門市系統登入</h2>
             <div id="login-area">
-                <input type="text" id="login-id" placeholder="帳號 (手機或序號)">
+                <input type="text" id="login-id" placeholder="帳號">
                 <input type="password" id="login-pw" placeholder="密碼">
                 <button onclick="handleLogin()">登入</button>
-                <p style="font-size:12px; color:#666;" onclick="toggleAuth(true)">沒有帳號？點此註冊</p>
+                <p style="font-size:12px; cursor:pointer;" onclick="toggleAuth(true)">沒有帳號？註冊一個</p>
             </div>
             <div id="register-area" class="hidden">
-                <input type="text" id="reg-name" placeholder="真實姓名">
-                <select id="reg-shift">
-                    <option value="早班">早班</option>
-                    <option value="晚班">晚班</option>
-                    <option value="主管">主管</option>
-                </select>
+                <input type="text" id="reg-name" placeholder="姓名">
+                <select id="reg-shift"><option value="早班">早班</option><option value="晚班">晚班</option><option value="主管">主管</option></select>
                 <input type="text" id="reg-id" placeholder="設定帳號">
                 <input type="password" id="reg-pw" placeholder="設定密碼">
                 <button onclick="handleRegister()" style="background:#28a745;">完成註冊</button>
-                <p style="font-size:12px; color:#666;" onclick="toggleAuth(false)">已有帳號？返回登入</p>
+                <p style="font-size:12px; cursor:pointer;" onclick="toggleAuth(false)">已有帳號？返回登入</p>
             </div>
         </div>
     </div>
 
     <div id="app-screen" class="hidden">
         <div style="background:#333; color:white; padding:10px; margin:-15px -15px 10px -15px; display:flex; justify-content:space-between; align-items:center;">
-            <span>👤 <span id="display-name">--</span> (<span id="display-shift">--</span>)</span>
-            <span>🏆 <span id="display-points">0</span> pt</span>
+            <span id="display-info">--</span>
             <button onclick="location.reload()" style="width:auto; padding:5px; font-size:10px;">登出</button>
         </div>
 
         <div class="nav-tabs">
-            <div class="nav-item active" onclick="switchTab('temp')">🌡️ 冰箱</div>
-            <div class="nav-item" onclick="switchTab('stock')">📦 效期補貨</div>
-            <div class="nav-item" onclick="switchTab('counter')">💰 帳務</div>
-            <div class="nav-item" onclick="switchTab('service')">💁 客服</div>
-            <div class="nav-item" onclick="switchTab('handover')">🤝 交接</div>
-            <div class="nav-item hidden" id="nav-mgr" onclick="switchTab('manager')">📊 數據</div>
+            <div class="nav-item active" onclick="switchTab('stock')">📦 補貨效期</div>
+            <div class="nav-item" onclick="switchTab('temp')">🌡️ 冰箱</div>
+            <div class="nav-item" onclick="switchTab('counter')">💰 帳務日報</div>
+            <div class="nav-item" onclick="switchTab('service')">💁 客服/交接</div>
+            <div class="nav-item hidden" id="nav-mgr" onclick="switchTab('manager')">📊 主管</div>
         </div>
 
-        <div id="tab-temp">
-            <div class="section-header">❄️ 冷藏冰箱 (0~7度)</div>
+        <div id="tab-stock">
+            <div class="section-header">🔥 重點補貨 (外籍食品)</div>
             <div class="grid-box">
-                <div class="zone" id="f-o-1" onclick="checkTemp('f-o-1','開放式1','chiller')">開放式1<small>--</small></div>
-                <div class="zone" id="f-o-2" onclick="checkTemp('f-o-2','開放式2','chiller')">開放式2<small>--</small></div>
-                <div class="zone" id="f-c-1" onclick="checkTemp('f-c-1','冷藏1','chiller')">冷藏1<small>--</small></div>
-                <div class="zone" id="f-c-2" onclick="checkTemp('f-c-2','冷藏2','chiller')">冷藏2<small>--</small></div>
+                <div class="zone highlight-foreign" id="stk-4" onclick="checkStock('stk-4','外籍泡麵')">★外籍泡麵★<small>--</small></div>
+                <div class="zone highlight-foreign" id="stk-5" onclick="checkStock('stk-5','外籍餅乾')">★外籍餅乾★<small>--</small></div>
             </div>
-            <div class="section-header">🧊 冷凍/臥式冰箱 (<-10度)</div>
+            <div class="section-header">📦 每日檢查</div>
             <div class="grid-box">
-                <div class="zone" id="f-f-1" onclick="checkTemp('f-f-1','冷凍1','freezer')">冷凍1<small>--</small></div>
-                <div class="zone" id="f-f-2" onclick="checkTemp('f-f-2','冷凍2','freezer')">冷凍2<small>--</small></div>
-                <div class="zone" id="f-w-1" onclick="checkTemp('f-w-1','臥式1','freezer')">臥式1<small>--</small></div>
-                <div class="zone" id="f-w-2" onclick="checkTemp('f-w-2','臥式2','freezer')">臥式2<small>--</small></div>
-                <div class="zone" id="f-w-3" onclick="checkTemp('f-w-3','臥式3','freezer')">臥式3<small>--</small></div>
-                <div class="zone" id="f-w-4" onclick="checkTemp('f-w-4','臥式4','freezer')">臥式4<small>--</small></div>
-            </div>
-        </div>
-
-        <div id="tab-stock" class="hidden">
-            <div class="section-header">📅 每日效期/鮮度</div>
-            <div class="grid-box">
-                <div class="zone" id="chk-1" onclick="checkStock('chk-1','日配飲料')">日配飲料</div>
-                <div class="zone" id="chk-2" onclick="checkStock('chk-2','生鮮蔬菜')">生鮮蔬菜</div>
-                <div class="zone" id="chk-3" onclick="checkStock('chk-3','麵包效期')">麵包效期</div>
-            </div>
-            <div class="section-header">🛒 補貨檢查</div>
-            <div class="grid-box">
-                <div class="zone" id="stk-1" onclick="checkStock('stk-1','菸架')">菸架</div>
+                <div class="zone" id="stk-1" onclick="checkStock('stk-1','菸架補貨')">菸架補貨</div>
                 <div class="zone" id="stk-2" onclick="checkStock('stk-2','冰箱飲料')">冰箱飲料</div>
-                <div class="zone" id="stk-3" onclick="checkStock('stk-3','層架飲料')">層架飲料</div>
-                <div class="zone highlight-foreign" id="stk-4" onclick="checkStock('stk-4','外籍泡麵')">★外籍泡麵★</div>
-                <div class="zone highlight-foreign" id="stk-5" onclick="checkStock('stk-5','外籍餅乾')">★外籍餅乾★</div>
                 <div class="zone" id="stk-6" onclick="checkStock('stk-6','冷凍食品')">冷凍食品</div>
-                <div class="zone" id="stk-7" onclick="checkStock('stk-7','垃圾袋')">垃圾袋</div>
-                <div class="zone" id="stk-8" onclick="checkStock('stk-8','免洗餐具')">免洗餐具</div>
+                <div class="zone" id="stk-7" onclick="checkStock('stk-7','垃圾袋/免洗')">垃圾袋/免洗</div>
+                <div class="zone" id="chk-1" onclick="checkStock('chk-1','日配飲料效期')">日配飲料效期</div>
             </div>
-            <div class="section-header">🗓️ 每月效期 (模型圖)</div>
-            <div id="shelf-canvas">
+            <div class="section-header">🗓️ 每月效期模型圖</div>
+            <div id="mgr-draw-tools" class="hidden">
+                <input type="file" id="bg-upload" accept="image/*" onchange="uploadBg()">
+                <button onclick="addShape('square')" style="font-size:10px; width:48%; display:inline;">+方塊</button>
+                <button onclick="addShape('circle')" style="font-size:10px; width:48%; display:inline;">+圓形</button>
+                <button onclick="saveMap()" style="background:green; margin-top:5px;">儲存此模型配置</button>
+            </div>
+            <div id="shelf-canvas"></div>
+        </div>
+
+        <div id="tab-temp" class="hidden">
+            <div class="section-header">❄️ 冷藏 (0~7) / 🧊 冷凍 (<-10)</div>
+            <div class="grid-box" id="fridge-grid">
                 </div>
-            <div id="mgr-tools" class="hidden" style="display:flex; gap:5px; margin-top:5px;">
-                <button onclick="addShape('square')" style="font-size:10px;">+方塊</button>
-                <button onclick="addShape('circle')" style="font-size:10px;">+圓形</button>
-                <button onclick="saveMap()" style="font-size:10px; background:green;">儲存地圖</button>
-            </div>
         </div>
 
         <div id="tab-counter" class="hidden">
-            <div class="section-header">💰 帳務報表</div>
-            <div style="background:#f8f9fa; padding:10px; border-radius:5px;">
-                <div class="report-row"><b>進櫃總現金</b><input type="number" id="cash-in"></div>
-                <hr>
-                <div class="report-row">營業額<input type="number" id="sales-total"></div>
-                <div class="report-row">信用卡<input type="number" id="sales-credit"></div>
-                <div class="report-row">台灣Pay<input type="number" id="sales-twpay"></div>
-                <div class="report-row">LinePay<input type="number" id="sales-linepay"></div>
-                <div class="report-row">點數折抵<input type="number" id="sales-points"></div>
-                <div class="report-row">現金退款<input type="number" id="sales-refund"></div>
-                <hr>
-                <div class="report-row">離櫃零錢<input type="number" id="cash-out"></div>
-                <div class="report-row">千鈔抽離<input type="number" id="cash-1000"></div>
-                <button onclick="calculateDiff()" style="background:#ffc107; color:black;">試算誤差</button>
-                <h3 style="text-align:center;">誤差：<span id="diff-res">0</span></h3>
-                <button onclick="submitFinalReport()" style="background:green;">提交正式報表</button>
+            <div class="section-header">📥 進櫃點交 (上一班)</div>
+            <div style="background:#e3f2fd; padding:10px; border-radius:5px;">
+                <label>進櫃現金/零錢</label><input type="number" id="cash-in-start">
+                <label>進櫃電話卡 (總張數)</label><input type="number" id="cards-in-start">
             </div>
+            <div class="section-header">📤 離櫃結帳 (本班)</div>
+            <h4>🪙 零錢點算</h4>
+            <table class="report-table">
+                <tr><td>1元:<input type="number" id="c1" oninput="calcOut()"></td><td>5元:<input type="number" id="c5" oninput="calcOut()"></td></tr>
+                <tr><td>10元:<input type="number" id="c10" oninput="calcOut()"></td><td>50元:<input type="number" id="c50" oninput="calcOut()"></td></tr>
+                <tr><td>100元:<input type="number" id="c100" oninput="calcOut()"></td><td>500元:<input type="number" id="c500" oninput="calcOut()"></td></tr>
+            </table>
+            <h4>📞 電話卡明細</h4>
+            <div id="cards-detail-area"></div>
+            <button onclick="calculateDiff()" style="background:#ffc107; color:black;">🧮 試算誤差</button>
+            <h3 style="text-align:center;">誤差：<span id="diff-res">0</span></h3>
+            <button onclick="submitFinalReport()" style="background:green;">✅ 提交正式報表</button>
         </div>
 
         <div id="tab-service" class="hidden">
-            <div class="grid-box">
-                <div class="zone" onclick="svcForm('客人詢問')">客人詢問/拍照</div>
-                <div class="zone" onclick="svcForm('商品售罄')">商品售罄通知</div>
-                <div class="zone" onclick="svcForm('客訂資料')">客訂資料</div>
-                <div class="zone" onclick="svcForm('電器維修')">電器維修</div>
+            <div class="section-header">📝 交接事項 (所有人都看得到)</div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="task-input" placeholder="新增交接事項...">
+                <button onclick="addTask()" style="width:80px;">送出</button>
             </div>
-        </div>
-        
-        <div id="tab-handover" class="hidden">
-            <input type="text" id="task-input" placeholder="輸入交接事項...">
-            <button onclick="addTask()">發布任務</button>
             <div id="task-list" style="margin-top:10px;"></div>
+            
+            <div class="section-header">💁 客服回報</div>
+            <div class="grid-box">
+                <div class="zone" onclick="svcForm('客人詢問')">客人詢問/許願</div>
+                <div class="zone" onclick="svcForm('售罄通報')">商品售罄</div>
+                <div class="zone" onclick="svcForm('客訂資料')">客訂/預購</div>
+                <div class="zone" onclick="svcForm('維修資料')">電器維修</div>
+            </div>
+            <div id="svc-form-area" class="hidden" style="background:#eee; padding:10px; border-radius:8px;">
+                <h4 id="svc-name">表單</h4>
+                <div id="svc-inputs"></div>
+                <button onclick="submitSvc()">確認送出</button>
+            </div>
+            <div id="svc-display-list" style="margin-top:10px;"></div>
         </div>
 
         <div id="tab-manager" class="hidden">
-            <div class="section-header">📊 主管數據分析</div>
+            <div class="section-header">📊 門市數據分析</div>
             <div id="mgr-stats">載入中...</div>
         </div>
     </div>
 </div>
 
 <script type="module">
-    // --- Firebase 核心 ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -196,26 +174,24 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    window.db = db; window.setDoc = setDoc; window.addDoc = addDoc; window.doc = doc; window.getDoc = getDoc;
+    window.db = db;
 
     // --- 認證邏輯 ---
     window.toggleAuth = (reg) => {
         document.getElementById('login-area').classList.toggle('hidden', reg);
         document.getElementById('register-area').classList.toggle('hidden', !reg);
-        document.getElementById('auth-title').innerText = reg ? "🆕 註冊新夥伴" : "🏪 門市系統登入";
     };
 
     window.handleRegister = async () => {
-        const user = {
+        const id = document.getElementById('reg-id').value;
+        const data = {
             name: document.getElementById('reg-name').value,
             shift: document.getElementById('reg-shift').value,
-            id: document.getElementById('reg-id').value,
             pw: document.getElementById('reg-pw').value,
             points: 0
         };
-        if(!user.id || !user.pw) return alert("請填寫帳密");
-        await setDoc(doc(db, "users", user.id), user);
-        alert("註冊成功，請登入！");
+        await setDoc(doc(db, "users", id), data);
+        alert("註冊成功！請用帳號登入。");
         toggleAuth(false);
     };
 
@@ -226,56 +202,88 @@
         if(snap.exists() && snap.data().pw === pw) {
             window.user = snap.data();
             startApp();
-        } else {
-            alert("帳密錯誤");
-        }
+        } else alert("登入失敗");
     };
 
     function startApp() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
-        document.getElementById('display-name').innerText = window.user.name;
-        document.getElementById('display-shift').innerText = window.user.shift;
-        document.getElementById('display-points').innerText = window.user.points;
-        if(window.user.shift === '主管') document.getElementById('nav-mgr').classList.remove('hidden');
-        loadMap();
-        listenUpdates();
+        document.getElementById('display-info').innerText = `${window.user.name} (${window.user.shift})`;
+        if(window.user.shift === '主管') {
+            document.getElementById('nav-mgr').classList.remove('hidden');
+            document.getElementById('mgr-draw-tools').classList.remove('hidden');
+        }
+        initAppContent();
     }
 
-    // --- 核心更新監聽 ---
-    function listenUpdates() {
-        // 任務監聽
+    // --- 內容初始化 ---
+    function initAppContent() {
+        // 生成冰箱
+        const fGrid = document.getElementById('fridge-grid');
+        const fridges = [
+            {id:'f1', n:'開放1', t:'chiller'}, {id:'f2', n:'開放2', t:'chiller'},
+            {id:'f3', n:'冷藏1', t:'chiller'}, {id:'f4', n:'冷藏2', t:'chiller'},
+            {id:'f5', n:'冷凍1', t:'freezer'}, {id:'f6', n:'冷凍2', t:'freezer'},
+            {id:'f7', n:'臥式1', t:'freezer'}, {id:'f8', n:'臥式2', t:'freezer'},
+            {id:'f9', n:'臥式3', t:'freezer'}, {id:'f10', n:'臥式4', t:'freezer'}
+        ];
+        fGrid.innerHTML = fridges.map(f => `<div class="zone" id="${f.id}" onclick="checkTemp('${f.id}','${f.n}','${f.t}')">${f.n}<br><small>--</small></div>`).join('');
+
+        // 生成電話卡
+        const cards = ["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"];
+        document.getElementById('cards-detail-area').innerHTML = cards.map(c => 
+            `<div style="display:flex; gap:5px; align-items:center; font-size:12px; margin-bottom:5px;">
+                <label style="width:70px;">${c}:</label>
+                <input type="number" id="card-sold-${c}" placeholder="販售" style="padding:5px;">
+                <input type="number" id="card-left-${c}" placeholder="離櫃庫存" style="padding:5px;">
+            </div>`).join('');
+
+        // 監聽任務 (即時同步)
         onSnapshot(query(collection(db, "tasks"), orderBy("time", "desc"), limit(10)), (snap) => {
             const list = document.getElementById('task-list');
             list.innerHTML = "";
             snap.forEach(d => {
                 const t = d.data();
-                list.innerHTML += `<div style="background:#fff; padding:10px; border-radius:5px; margin-bottom:5px; border-left:4px solid ${t.done?'#28a745':'#ffc107'}">
-                    <b>${t.msg}</b> <small>(${t.user})</small>
+                list.innerHTML += `<div style="background:#fff; padding:10px; border-radius:5px; margin-bottom:5px; border-left:4px solid #ffc107">
+                    <b>${t.msg}</b> <small>(${t.user} - ${t.shift})</small>
                 </div>`;
             });
         });
-        // 格子狀態監聽
-        const ids = ['f-o-1','f-o-2','f-c-1','f-c-2','f-f-1','f-f-2','f-w-1','f-w-2','f-w-3','f-w-4','chk-1','chk-2','chk-3','stk-1','stk-2','stk-3','stk-4','stk-5','stk-6','stk-7','stk-8'];
-        ids.forEach(id => {
-            onSnapshot(doc(db, "checks", id), (snap) => {
-                if(snap.exists()){
-                    const d = snap.data();
-                    const el = document.getElementById(id);
-                    el.className = `zone ${d.status==='異常'?'warning':'ok'} ${id==='stk-4'||id==='stk-5'?'highlight-foreign':''}`;
-                    el.querySelector('small').innerText = `✅ ${d.val} (${d.user})`;
-                }
+
+        // 監聽客服回報 (即時同步)
+        onSnapshot(query(collection(db, "services"), orderBy("time", "desc"), limit(10)), (snap) => {
+            const list = document.getElementById('svc-display-list');
+            list.innerHTML = "";
+            snap.forEach(d => {
+                const s = d.data();
+                list.innerHTML += `<div style="background:#f8f9fa; padding:8px; font-size:12px; border-bottom:1px solid #ddd;">
+                    <b>[${s.type}]</b> ${s.content} <br><small>${s.user} @ ${new Date(s.time.toDate()).toLocaleString()}</small>
+                </div>`;
             });
         });
+
+        // 載入模型圖
+        loadMap();
     }
 
-    // --- 模型圖邏輯 ---
+    // --- 模型圖邏輯 (拖曳與上傳) ---
     let shapes = [];
+    window.uploadBg = () => {
+        const file = document.getElementById('bg-upload').files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('shelf-canvas').style.backgroundImage = `url(${e.target.result})`;
+            window.bgData = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
     window.addShape = (type) => {
-        const name = prompt("區塊名稱 (如：飲料1架)");
+        const name = prompt("區域名稱：");
         if(!name) return;
-        const shape = { id: Date.now(), type, name, x: 50, y: 50, checked: false };
-        shapes.push(shape);
+        const id = "s" + Date.now();
+        const s = { id, type, name, x: 20, y: 20, done: false };
+        shapes.push(s);
         renderShapes();
     };
 
@@ -284,52 +292,67 @@
         container.innerHTML = "";
         shapes.forEach(s => {
             const div = document.createElement('div');
-            div.className = `shelf-shape shape-${s.type} ${s.checked?'checked':''}`;
+            div.className = `shelf-shape ${s.done?'checked':''}`;
+            div.id = s.id;
+            div.innerText = s.name + (s.time ? `\n(${s.time})` : "");
             div.style.left = s.x + "px"; div.style.top = s.y + "px";
-            div.style.width = "60px"; div.style.height = "60px";
-            div.innerText = s.name;
+            div.style.borderRadius = s.type === 'circle' ? '50%' : '5px';
+            
+            // 拖曳邏輯
             if(window.user.shift === '主管') {
-                div.onmousedown = (e) => dragStart(e, s);
+                div.draggable = true;
+                div.onmousedown = (e) => startDrag(e, s);
             } else {
-                div.onclick = () => toggleShelf(s);
+                div.onclick = () => markShape(s);
             }
             container.appendChild(div);
         });
     }
 
-    async function loadMap() {
-        const snap = await getDoc(doc(db, "settings", "map"));
-        if(snap.exists()) {
-            shapes = snap.data().shapes;
+    function startDrag(e, s) {
+        let offsetX = e.clientX - s.x;
+        let offsetY = e.clientY - s.y;
+        document.onmousemove = (ev) => {
+            s.x = ev.clientX - offsetX;
+            s.y = ev.clientY - offsetY;
             renderShapes();
+        };
+        document.onmouseup = () => document.onmousemove = null;
+    }
+
+    async function markShape(s) {
+        if(confirm(`確認【${s.name}】效期檢查已完成？`)) {
+            s.done = true;
+            s.time = new Date().toLocaleDateString();
+            renderShapes();
+            await saveMap();
         }
     }
 
     window.saveMap = async () => {
-        await setDoc(doc(db, "settings", "map"), { shapes });
-        alert("地圖儲存成功");
+        await setDoc(doc(db, "settings", "map"), { shapes, bg: window.bgData || "" });
+        alert("模型已更新！");
     };
 
-    function toggleShelf(s) {
-        s.checked = !s.checked;
-        renderShapes();
-        // 紀錄日誌
-        addDoc(collection(db, "logs"), { type: '每月效期', item: s.name, user: window.user.name, time: new Date() });
+    async function loadMap() {
+        const snap = await getDoc(doc(db, "settings", "map"));
+        if(snap.exists()){
+            shapes = snap.data().shapes || [];
+            window.bgData = snap.data().bg || "";
+            document.getElementById('shelf-canvas').style.backgroundImage = `url(${window.bgData})`;
+            renderShapes();
+        }
     }
 
-    // --- 冰箱/補貨邏輯 ---
+    // --- 冰箱與檢查 ---
     window.checkTemp = async (id, name, type) => {
-        const val = prompt(`${name} 溫度：`);
+        const def = type === 'freezer' ? '-' : '';
+        const val = prompt(`${name} 溫度：`, def);
         if(!val) return;
         const num = parseFloat(val);
         let status = "正常";
-        if(type === 'freezer' && num > -10) {
-            status = "異常";
-            alert("⚠️⚠️ 警告：冷凍溫度異常！已通報主管！");
-        }
-        if(type === 'chiller' && (num < 0 || num > 7)) status = "異常";
+        if(type==='freezer' && num > -10) { alert("⚠️ 嚴重警告：冷凍高溫！"); status="異常"; }
         await setDoc(doc(db, "checks", id), { val: num+"度", status, user: window.user.name, time: new Date() });
-        await addDoc(collection(db, "logs"), { type: '冰箱', item: name, val: num, status, user: window.user.name, time: new Date() });
     };
 
     window.checkStock = async (id, name) => {
@@ -337,33 +360,48 @@
             await setDoc(doc(db, "checks", id), { val: "OK", status: "正常", user: window.user.name, time: new Date() });
         }
     };
+
+    // --- 任務與客服 ---
+    window.addTask = async () => {
+        const msg = document.getElementById('task-input').value;
+        if(!msg) return;
+        await addDoc(collection(db, "tasks"), { msg, user: window.user.name, shift: window.user.shift, time: new Date() });
+        document.getElementById('task-input').value = "";
+    };
+
+    let curSvcType = "";
+    window.svcForm = (type) => {
+        curSvcType = type;
+        document.getElementById('svc-form-area').classList.remove('hidden');
+        document.getElementById('svc-name').innerText = type;
+        document.getElementById('svc-inputs').innerHTML = `<textarea id="svc-content" placeholder="請輸入詳細內容..."></textarea>`;
+    };
+
+    window.submitSvc = async () => {
+        const content = document.getElementById('svc-content').value;
+        if(!content) return;
+        await addDoc(collection(db, "services"), { type: curSvcType, content, user: window.user.name, time: new Date() });
+        document.getElementById('svc-form-area').classList.add('hidden');
+        alert("回報成功！");
+    };
 </script>
 
 <script>
-    // --- 一般 UI 邏輯 ---
+    // --- 一般介面邏輯 ---
     function switchTab(t) {
         document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         document.getElementById('tab-'+t).classList.remove('hidden');
         event.currentTarget.classList.add('active');
-        if(window.user && window.user.shift === '主管') document.getElementById('mgr-tools').classList.remove('hidden');
     }
 
-    function calculateDiff() {
-        const inCash = parseFloat(document.getElementById('cash-in').value) || 0;
-        const sales = parseFloat(document.getElementById('sales-total').value) || 0;
-        const deduct = (parseFloat(document.getElementById('sales-credit').value)||0) +
-                       (parseFloat(document.getElementById('sales-twpay').value)||0) +
-                       (parseFloat(document.getElementById('sales-linepay').value)||0) +
-                       (parseFloat(document.getElementById('sales-points').value)||0) +
-                       (parseFloat(document.getElementById('sales-refund').value)||0);
-        const out = parseFloat(document.getElementById('cash-out').value) || 0;
-        const thousand = (parseFloat(document.getElementById('cash-1000').value) || 0) * 1000;
-        
-        // 公式：(((進櫃+營收-扣項)-離櫃-千鈔)*-1)
-        const diff = ((inCash + (sales - deduct)) - out - thousand) * -1;
-        document.getElementById('diff-res').innerText = diff;
+    function calcOut() {
+        const total = (val('c1')*1) + (val('c5')*5) + (val('c10')*10) + (val('c50')*50) + (val('c100')*100) + (val('c500')*500);
+        document.getElementById('diff-res').innerText = "離櫃總現：$" + total;
+        return total;
     }
+    
+    function val(id) { return parseFloat(document.getElementById(id).value) || 0; }
 </script>
 </body>
 </html>
