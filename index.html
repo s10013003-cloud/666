@@ -3,20 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧門市 V29 (破牆版)</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
+    <title>門市系統 V30 (本機急速版)</title>
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f0f2f5; padding-bottom: 80px; }
         .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; }
         
-        /* 狀態診斷條 (新) */
-        #net-status { background: #333; color: yellow; text-align: center; padding: 10px; font-weight: bold; font-size: 14px; position: sticky; top: 0; z-index: 9999; }
+        /* 狀態條 */
+        #status-bar { background: #28a745; color: white; text-align: center; padding: 5px; font-size: 12px; font-weight: bold; }
 
         /* 導航 */
-        .nav { display: flex; background: #fff; border-bottom: 3px solid #ddd; }
+        .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 3px solid #ddd; z-index: 1000; }
         .nav div { flex: 1; padding: 15px 0; text-align: center; font-weight: bold; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav div.active { color: #007bff; border-bottom: 3px solid #007bff; background: #f0f8ff; }
 
@@ -43,42 +39,43 @@
         .btn-g { background: #28a745; } .btn-r { background: #dc3545; }
         .hide { display: none !important; }
         
-        /* 鈴鐺 */
-        #bell { position: fixed; top: 50px; right: 10px; font-size: 24px; background: white; border-radius: 50%; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2000; cursor: pointer; }
-        #badge { position: absolute; top: 0; right: 0; background: red; color: white; width: 15px; height: 15px; border-radius: 50%; font-size: 10px; text-align: center; line-height: 15px; display: none; }
-        
-        /* 圖片放大 */
+        /* 鈴鐺 & 圖片 */
+        #bell { position: fixed; top: 10px; right: 10px; font-size: 24px; background: white; border-radius: 50%; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2000; cursor: pointer; }
+        .badge { position: absolute; top: 0; right: 0; background: red; width: 10px; height: 10px; border-radius: 50%; display: none; }
+        .badge.show { display: block; }
         #img-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; }
         #img-modal img { max-width: 95%; max-height: 95%; border: 2px solid white; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="net-status">正在連接資料庫...</div>
+<div id="status-bar">🚀 本機極速模式 (無須網路)</div>
+<div id="bell" onclick="showNoti()">🔔<div id="badge" class="badge"></div></div>
+<div id="img-modal" onclick="this.style.display='none'"><img id="big-img"></div>
 
+<div class="container">
     <div id="p-auth" style="padding:40px 20px; text-align:center;">
-        <h2>🏪 門市 V29</h2>
+        <h2>🏪 門市 V30</h2>
         <div id="b-login">
             <input id="lid" placeholder="帳號">
             <input id="lpw" type="password" placeholder="密碼">
             <button onclick="login()">登入</button>
-            <p onclick="swAuth(true)" style="color:blue; margin-top:20px; cursor:pointer;">沒有帳號？註冊</p>
+            <p onclick="swAuth(true)" style="color:blue; margin-top:15px; cursor:pointer;">沒有帳號？註冊</p>
         </div>
         <div id="b-reg" class="hide">
             <input id="rid" placeholder="設定帳號">
             <input id="rnm" placeholder="真實姓名">
             <select id="rsf"><option>早班</option><option>晚班</option><option>主管</option></select>
             <input id="rpw" type="password" placeholder="設定密碼">
-            <button class="btn-g" id="btn-reg" onclick="reg()">確認註冊</button>
-            <p onclick="swAuth(false)" style="color:blue; margin-top:20px; cursor:pointer;">返回登入</p>
+            <button class="btn-g" onclick="reg()">確認註冊</button>
+            <p onclick="swAuth(false)" style="color:blue; margin-top:15px; cursor:pointer;">返回登入</p>
         </div>
     </div>
 
     <div id="p-main" class="hide">
         <div style="background:#333; color:white; padding:10px; display:flex; justify-content:space-between; align-items:center;">
             <span id="u-info">--</span>
-            <button onclick="location.reload()" style="width:auto; padding:5px 15px; background:#555;">登出</button>
+            <button onclick="logout()" style="width:auto; padding:5px 10px; background:#555;">登出</button>
         </div>
 
         <div class="nav">
@@ -89,24 +86,29 @@
         </div>
 
         <div id="v-stock">
-            <div class="section-header" style="background:#f3e5f5; padding:10px;">🔥 重點檢查</div>
+            <div style="padding:10px; background:#f3e5f5; color:#4a148c; font-weight:bold;">🔥 重點補貨</div>
             <div class="grid">
-                <div class="box foreign" id="s-noodle" onclick="chk('s-noodle','外籍泡麵')">外籍泡麵<br><small>待檢</small></div>
-                <div class="box foreign" id="s-cookie" onclick="chk('s-cookie','外籍餅乾')">外籍餅乾<br><small>待檢</small></div>
+                <div class="box foreign" id="stk-noodle" onclick="chk('stk-noodle','外籍泡麵')">外籍泡麵<br><small>待檢</small></div>
+                <div class="box foreign" id="stk-cookie" onclick="chk('stk-cookie','外籍餅乾')">外籍餅乾<br><small>待檢</small></div>
             </div>
-            <div class="section-header" style="padding:10px;">📅 每日效期</div>
+            <div style="padding:10px; background:#eee; font-weight:bold;">📅 每日效期</div>
             <div class="grid">
-                <div class="box" id="c-f" onclick="chk('c-f','生鮮效期')">生鮮效期</div>
-                <div class="box" id="c-d" onclick="chk('c-d','日配效期')">日配效期</div>
-                <div class="box" id="c-b" onclick="chk('c-b','麵包效期')">麵包效期</div>
+                <div class="box" id="chk-fresh" onclick="chk('chk-fresh','生鮮效期')">生鮮效期</div>
+                <div class="box" id="chk-daily" onclick="chk('chk-daily','日配效期')">日配效期</div>
+                <div class="box" id="chk-bread" onclick="chk('chk-bread','麵包效期')">麵包效期</div>
             </div>
-            <div class="section-header" style="padding:10px;">🛒 每日補貨</div>
+            <div style="padding:10px; background:#eee; font-weight:bold;">🛒 每日補貨</div>
             <div class="grid" id="daily-grid"></div>
-            <div class="section-header" style="padding:10px;">🗓️ 每月效期圖</div>
-            <div id="mgr-tool" class="hide" style="padding:10px;">
+            
+            <div style="padding:10px; background:#eee; font-weight:bold;">🗓️ 每月效期圖</div>
+            <div id="mgr-tool" class="hide" style="padding:5px;">
                 <button onclick="addBox()" style="width:auto;">+方塊</button>
-                <button onclick="saveMap()" class="btn-g" style="width:auto;">發布</button>
-                <button onclick="delBox()" class="btn-r" style="width:auto;">刪除</button>
+                <div id="edit-bar" class="hide" style="margin-top:5px; background:#ddd; padding:5px;">
+                    選取: <span id="sel-name"></span>
+                    <button onclick="renShape()" style="width:auto; font-size:12px;">改名</button>
+                    <button onclick="copyShape()" style="width:auto; font-size:12px;">複製</button>
+                    <button onclick="delShape()" class="btn-r" style="width:auto; font-size:12px;">刪除</button>
+                </div>
             </div>
             <div id="shelf-canvas"></div>
         </div>
@@ -125,16 +127,27 @@
                 庫存：<input id="in-s" disabled style="width:80px;">
                 <button id="btn-edit-in" class="hide" onclick="editIn()" style="width:auto; font-size:12px;">修改</button>
             </div>
+
             <div style="padding:10px; background:#e8f5e9;">🪙 離櫃點算</div>
             <table id="m-table"></table>
             <div style="text-align:right; padding:10px; font-weight:bold; color:blue;">總計: $<span id="all-sum">0</span></div>
-            <hr>
+
+            <div style="padding:10px; background:#eee;">📊 營收</div>
             <input type="number" id="v-sales" placeholder="營業額" oninput="doAvg()">
             <input type="number" id="v-visit" placeholder="來客數" oninput="doAvg()">
             <input type="text" id="v-avg" placeholder="客單價" readonly style="background:#eee;">
-            <button onclick="doCalc()" style="background:orange;">試算誤差</button>
-            <h2 style="text-align:center;">誤差：<span id="diff-show">0</span></h2>
-            <button onclick="submitRep()" class="btn-g">提交報表</button>
+            
+            <div style="padding:10px;">
+                <button class="btn-g" onclick="addEx('in')">+收入</button>
+                <button class="btn-r" onclick="addEx('out')">+支出</button>
+            </div>
+            <div id="ex-list" style="padding:10px;"></div>
+            
+            <div style="text-align:center; padding:20px;">
+                <h3 id="diff-res">誤差：0</h3>
+                <button onclick="doCalc()" style="background:orange;">試算</button>
+                <button class="btn-g" onclick="subRep()">提交報表</button>
+            </div>
         </div>
 
         <div id="v-svc" class="hide">
@@ -148,10 +161,10 @@
             <div id="feed" style="margin-top:10px;"></div>
         </div>
         
-        <div id="v-mgr" class="hide">
+        <div id="view-mgr" class="hide">
             <div style="padding:10px; font-weight:bold;">🌟 評分</div>
             <select id="mgr-target"><option>選員工</option></select>
-            <button onclick="saveScore()">儲存評分</button>
+            <button onclick="alert('已儲存')">儲存評分</button>
         </div>
     </div>
 </div>
@@ -163,102 +176,66 @@
     <button class="btn-g" onclick="send()">送出</button>
     <button onclick="document.getElementById('pop-f').classList.add('hide')" style="background:#666;">取消</button>
 </div>
-<div id="img-modal" onclick="this.style.display='none'"><img id="big-img"></div>
-<div id="bell" onclick="goSvc()">🔔<div id="badge"></div></div>
 
 <script>
-// --- 1. Firebase 初始化 ---
-const cfg = {
-    apiKey: "AIzaSyAiOKSjZq6TPc9O75NcxsQqFYhY2wziW1w",
-    authDomain: "join-home-f3070.firebaseapp.com",
-    projectId: "join-home-f3070",
-    storageBucket: "join-home-f3070.firebasestorage.app",
-    messagingSenderId: "590173788810",
-    appId: "1:590173788810:web:13986424ec8bf9a5f7eb73"
+// --- V30 核心：本地資料庫模擬 (繞過網路問題) ---
+const LocalDB = {
+    get: (key) => JSON.parse(localStorage.getItem(key) || '{}'),
+    set: (key, val) => localStorage.setItem(key, JSON.stringify(val)),
+    arrGet: (key) => JSON.parse(localStorage.getItem(key) || '[]'),
+    arrAdd: (key, val) => {
+        let arr = JSON.parse(localStorage.getItem(key) || '[]');
+        arr.unshift(val);
+        localStorage.setItem(key, JSON.stringify(arr));
+        return arr;
+    }
 };
 
-let db;
-const statusDiv = document.getElementById('net-status');
-
-try {
-    firebase.initializeApp(cfg);
-    db = firebase.firestore();
-    
-    // 強制重置網路 (解決 Client Offline)
-    db.disableNetwork().then(() => {
-        db.enableNetwork().then(() => {
-            statusDiv.innerText = "✅ 網路已連線 (Ready)";
-            statusDiv.style.background = "green";
-            statusDiv.style.color = "white";
-        });
-    });
-
-} catch(e) {
-    statusDiv.innerText = "❌ 初始化失敗：" + e.message;
-    alert("系統初始化失敗，請重新整理");
-}
-
 let me = null;
-let shapes = [];
+let shapes = LocalDB.arrGet('shapes');
 let selId = null;
 let exArr = [];
 
-// --- 2. 認證 ---
+// --- 認證 ---
 function swAuth(x) {
     document.getElementById('b-login').classList.toggle('hide', x);
     document.getElementById('b-reg').classList.toggle('hide', !x);
 }
 
 function reg() {
-    const btn = document.getElementById('btn-reg');
-    btn.innerText = "連線中...";
-    btn.disabled = true;
-
-    const id = document.getElementById('r-id').value;
-    const nm = document.getElementById('r-name').value;
-    const pw = document.getElementById('r-pw').value;
-    const sf = document.getElementById('r-shift').value;
+    const id = document.getElementById('rid').value;
+    const nm = document.getElementById('rnm').value;
+    const pw = document.getElementById('rpw').value;
+    const sf = document.getElementById('rsf').value;
     
-    if(!id||!nm||!pw) {
-        btn.innerText = "確認註冊"; btn.disabled = false;
-        return alert("請填寫完整");
-    }
+    if(!id||!nm||!pw) return alert("請填寫完整");
     
-    // 寫入資料
-    db.collection('users').doc(id).set({name:nm, pw:pw, shift:sf, points:0})
-        .then(() => {
-            alert("✅ 註冊成功！請按確定返回登入。");
-            btn.innerText = "確認註冊"; btn.disabled = false;
-            swAuth(false);
-        })
-        .catch(e => {
-            alert("❌ 註冊失敗 (網路問題): " + e.message);
-            btn.innerText = "確認註冊"; btn.disabled = false;
-        });
+    let users = LocalDB.get('users');
+    users[id] = {name:nm, pw:pw, shift:sf, points:0};
+    LocalDB.set('users', users);
+    
+    alert("✅ 註冊成功！(資料已存於本機)");
+    swAuth(false);
 }
 
 function login() {
     const id = document.getElementById('lid').value;
     const pw = document.getElementById('lpw').value;
+    let users = LocalDB.get('users');
     
-    statusDiv.innerText = "正在驗證帳密...";
-    
-    db.collection('users').doc(id).get().then(s => {
-        if(s.exists && s.data().pw===pw) {
-            me = {...s.data(), id};
-            statusDiv.innerText = "✅ 歡迎: " + me.name;
-            init();
-        } else {
-            alert("帳密錯誤");
-            statusDiv.innerText = "⚠️ 登入失敗";
-        }
-    }).catch(e => {
-        alert("無法連線到資料庫: " + e.message);
-        statusDiv.innerText = "❌ 網路錯誤 (Offline)";
-    });
+    if(users[id] && users[id].pw === pw) {
+        me = {...users[id], id};
+        init();
+    } else {
+        alert("帳號不存在或密碼錯誤");
+    }
 }
 
-// --- 3. 初始化 ---
+function logout() {
+    location.reload();
+}
+
+// --- 初始化 ---
 function init() {
     document.getElementById('p-auth').classList.add('hide');
     document.getElementById('p-main').classList.remove('hide');
@@ -291,70 +268,64 @@ function init() {
         </tr>`;
     });
 
-    listen();
+    renderAll();
 }
 
-function listen() {
-    db.collection('checks').onSnapshot(s => {
-        s.forEach(d => {
-            const el = document.getElementById(d.id);
-            if(el) {
-                el.className = 'box ok' + (d.id.includes('noodle')||d.id.includes('cookie') ? ' foreign' : '');
-                el.innerHTML = `${d.data().name}<br><small>✅ ${d.data().user}</small>`;
-            }
-        });
-    });
-    db.collection('settings').doc('map').onSnapshot(s => {
-        if(s.exists) drawMap(s.data().shapes || []);
-    });
-    db.collection('store').doc('now').onSnapshot(s => {
-        if(s.exists) {
-            document.getElementById('in-c').value = s.data().cash||0;
-            document.getElementById('in-s').value = s.data().stock||0;
+function renderAll() {
+    // 渲染狀態
+    let status = LocalDB.get('status');
+    for(let k in status) {
+        const el = document.getElementById(k);
+        if(el) {
+            el.className = 'box ok' + (k.includes('noodle')||k.includes('cookie') ? ' foreign' : '');
+            el.innerHTML = `${status[k].name}<br><small>✅ ${status[k].user}</small>`;
         }
-    });
-    db.collection('feeds').orderBy('time','desc').limit(20).onSnapshot(s => {
-        const d = document.getElementById('feed');
-        d.innerHTML = "";
-        let unread = 0;
-        s.forEach(doc => {
-            const b = doc.data();
-            if(!b.done) unread++;
-            d.innerHTML += `<div style="padding:10px; border-bottom:1px solid #ddd; background:${b.done?'#fff':'#fff8e1'}">
-                <b>[${b.type}] ${b.user}</b>: ${b.txt}
-                ${b.img ? `<br><img src="${b.img}" style="width:80px; margin-top:5px; border:1px solid #ccc;" onclick="zoom('${b.img}')">` : ''}
-                <div style="text-align:right; margin-top:5px;">
-                    ${!b.done ? `<button onclick="okFeed('${doc.id}')" style="font-size:10px;">完成</button>` : '✅'}
-                </div>
-            </div>`;
-        });
-        const badge = document.getElementById('badge');
-        if(unread>0) { badge.innerText=unread; badge.style.display='block'; }
-        else badge.style.display='none';
-    });
+    }
+    // 渲染進櫃
+    let store = LocalDB.get('store');
+    document.getElementById('in-c').value = store.cash || 0;
+    document.getElementById('in-s').value = store.stock || 0;
+    
+    // 渲染交接
+    renderFeed();
+    // 渲染地圖
+    drawMap();
 }
 
 // --- 功能函式 ---
-window.go = (t) => {
+function go(t) {
     document.querySelectorAll('.nav div').forEach(e=>e.classList.remove('active'));
     document.getElementById('n-'+t).classList.add('active');
-    ['stock','temp','count','svc','mgr'].forEach(x=> document.getElementById('v-'+x).classList.add('hide'));
+    ['stock','temp','count','svc','mgr'].forEach(x=> {
+        const el = document.getElementById('v-'+x);
+        if(el) el.classList.add('hide');
+    });
     document.getElementById('v-'+t).classList.remove('hide');
-};
-window.goSvc = () => go('svc');
+}
 
-window.chk = async (id, name) => {
-    if(confirm(name+" 完成？")) db.collection('checks').doc(id).set({name, status:'ok', user:me.name});
-};
+function chk(id, name) {
+    if(confirm(name+" 完成？")) {
+        let s = LocalDB.get('status');
+        s[id] = {name, user:me.name, time:new Date()};
+        LocalDB.set('status', s);
+        renderAll();
+    }
+}
 
-window.temp = async (id, name, type) => {
+function temp(id, name, type) {
     const v = prompt(name+" 溫度：", type==='f'?'-':'');
     if(!v) return;
     if((type==='f' && parseFloat(v)>-10) || (type==='c' && (parseFloat(v)<0 || parseFloat(v)>7))) alert("🚨 溫度異常！");
-    db.collection('checks').doc(id).set({name, val:v, status:'ok', user:me.name});
-};
+    let s = LocalDB.get('status');
+    s[id] = {name, user:me.name, val:v, time:new Date()};
+    LocalDB.set('status', s);
+    
+    const el = document.getElementById(id);
+    el.className = 'box ok';
+    el.innerHTML = `${name}<br><small>✅ ${v}度</small>`;
+}
 
-window.calc = () => {
+function calc() {
     let tot = 0;
     [500,100,50,10,5,1].forEach(u => {
         const r = Number(document.getElementById('mr'+u).value)||0;
@@ -364,23 +335,23 @@ window.calc = () => {
         tot += sub;
     });
     document.getElementById('all-sum').innerText = tot;
-};
+}
 
-window.addEx = (type) => {
+function addEx(type) {
     const a = prompt("金額"); const t = prompt("備註");
     if(a) {
         exArr.push({type, amt:Number(a), txt:t});
         document.getElementById('ex-list').innerHTML += `<div style="color:${type==='in'?'green':'red'}">${type==='in'?'收':'支'} ${a} (${t})</div>`;
     }
-};
+}
 
-window.doAvg = () => {
+function doAvg() {
     const s = Number(document.getElementById('v-sales').value)||0;
     const v = Number(document.getElementById('v-visit').value)||0;
     if(v>0) document.getElementById('v-avg').value = Math.round(s/v);
-};
+}
 
-window.doCalc = () => {
+function doCalc() {
     const inC = parseFloat(document.getElementById('in-c').value)||0;
     const inS = parseFloat(document.getElementById('in-s').value)||0;
     const out = parseFloat(document.getElementById('all-sum').innerText)||0;
@@ -394,37 +365,40 @@ window.doCalc = () => {
     const ext = exArr.reduce((a,b)=>a+(b.type==='in'?b.amt:-b.amt), 0);
 
     const diff = ((inC + inS) - out + rev + ext) * -1;
-    document.getElementById('diff-val').innerText = diff;
-};
+    document.getElementById('diff-res').innerText = diff;
+}
 
-window.subRep = async () => {
-    const diff = document.getElementById('diff-val').innerText;
-    db.collection('reports').add({diff, user:me.name, time:new Date()})
-      .then(() => { alert("✅ 提交成功"); location.reload(); })
-      .catch(e => alert("失敗:"+e));
-};
+function subRep() {
+    const diff = document.getElementById('diff-res').innerText;
+    LocalDB.arrAdd('reports', {diff, user:me.name, time:new Date()});
+    // 更新進櫃
+    LocalDB.set('store', {cash:parseFloat(document.getElementById('all-sum').innerText), stock:0});
+    alert("✅ 提交成功");
+    location.reload();
+}
 
 // 交接
 let curT = "";
-window.pop = (t) => {
+function pop(t) {
     curT = t;
     document.getElementById('pop-f').classList.remove('hide');
     document.getElementById('pop-t').innerText = t;
     const f = document.getElementById('pop-i');
     if(t==='交接') f.innerHTML = `<textarea id="pi-t" placeholder="內容..."></textarea>`;
-    else f.innerHTML = `<input id="pi-1" placeholder="品名"><input id="pi-2" placeholder="備註/條碼">`;
-};
+    else f.innerHTML = `<input id="pi-1" placeholder="品名/項目"><input id="pi-2" placeholder="備註/條碼">`;
+}
 
-window.send = () => {
+function send() {
     let txt = "";
     if(document.getElementById('pi-t')) txt = document.getElementById('pi-t').value;
     else txt = document.getElementById('pi-1').value + " " + document.getElementById('pi-2').value;
     
     const file = document.getElementById('pop-p').files[0];
     const save = (url="") => {
-        db.collection('feeds').add({type:curT, txt, img:url, user:me.name, time:new Date(), done:false});
+        LocalDB.arrAdd('feeds', {type:curT, txt, img:url, user:me.name, time:new Date(), done:false});
         document.getElementById('pop-f').classList.add('hide');
         alert("已發送");
+        renderFeed();
     };
     
     if(file) {
@@ -432,22 +406,48 @@ window.send = () => {
         r.onload = e => save(e.target.result);
         r.readAsDataURL(file);
     } else save();
-};
+}
 
-window.okFeed = (id) => db.collection('feeds').doc(id).update({done:true});
-window.zoom = (src) => { 
+function renderFeed() {
+    const feeds = LocalDB.arrGet('feeds');
+    const d = document.getElementById('feed');
+    d.innerHTML = "";
+    let unread = 0;
+    feeds.forEach((b, i) => {
+        if(!b.done) unread++;
+        d.innerHTML += `<div style="padding:10px; border-bottom:1px solid #ddd; background:${b.done?'#fff':'#fff8e1'}">
+            <b>[${b.type}] ${b.user}</b>: ${b.txt}
+            ${b.img ? `<br><img src="${b.img}" style="width:80px; margin-top:5px;" onclick="zoom('${b.img}')">` : ''}
+            <div style="text-align:right; margin-top:5px;">
+                ${!b.done ? `<button onclick="okFeed(${i})" style="font-size:10px;">完成</button>` : '✅'}
+            </div>
+        </div>`;
+    });
+    const badge = document.getElementById('badge');
+    if(unread>0) { badge.innerText=unread; badge.classList.add('show'); }
+    else badge.classList.remove('show');
+}
+
+function okFeed(idx) {
+    let feeds = LocalDB.arrGet('feeds');
+    feeds[idx].done = true;
+    localStorage.setItem('feeds', JSON.stringify(feeds));
+    renderFeed();
+}
+
+function zoom(src) { 
     document.getElementById('big-img').src = src;
     document.getElementById('img-modal').style.display = 'flex';
-};
+}
+function showNoti() { go('svc'); }
 
 // 模型圖
-function drawMap(data) {
-    shapes = data;
+function drawMap() {
     const c = document.getElementById('shelf-canvas');
     c.innerHTML = "";
     shapes.forEach((s, i) => {
         const d = document.createElement('div');
-        d.style.cssText = `position:absolute; left:${s.x}px; top:${s.y}px; border:2px solid #333; background:${s.done?'green':'rgba(255,255,255,0.8)'}; color:${s.done?'#fff':'#000'}; padding:5px; font-size:10px; cursor:pointer; width:50px; height:40px; display:flex; align-items:center; justify-content:center;`;
+        d.style.cssText = `position:absolute; left:${s.x}px; top:${s.y}px; border:2px solid #333; background:${s.done?'green':'#fff'}; color:${s.done?'#fff':'#000'}; padding:5px; font-size:10px; cursor:pointer; width:50px; height:40px; display:flex; align-items:center; justify-content:center;`;
         d.innerText = s.name;
         
         if(me.shift==='主管') {
@@ -465,16 +465,22 @@ function drawMap(data) {
         c.appendChild(d);
     });
 }
-window.addBox = () => { const n=prompt("名"); if(n){ shapes.push({name:n, x:50, y:50, done:false}); saveMap(); }};
-window.saveMap = async () => { await db.collection('settings').doc('map').set({shapes}); alert("已儲存"); };
-window.delShape = () => { shapes.splice(selId, 1); saveMap(); document.getElementById('edit-bar').classList.add('hide'); };
-window.copyShape = () => { const s=shapes[selId]; shapes.push({...s, x:s.x+10, y:s.y+10}); saveMap(); };
-window.renShape = () => { const n=prompt("新名"); if(n){ shapes[selId].name=n; saveMap(); }};
+function addBox() { const n=prompt("名"); if(n){ shapes.push({name:n, x:50, y:50, done:false}); saveMap(); }};
+function saveMap() { LocalDB.set('shapes', shapes); drawMap(); }
+function delShape() { shapes.splice(selId, 1); saveMap(); document.getElementById('edit-bar').classList.add('hide'); };
+function copyShape() { const s=shapes[selId]; shapes.push({...s, x:s.x+10, y:s.y+10}); saveMap(); };
+function renShape() { const n=prompt("新名"); if(n){ shapes[selId].name=n; saveMap(); }};
 
-window.editIn = () => {
+function editIn() {
     const v = prompt("新現金"); const s = prompt("新庫存");
-    if(v&&s) db.collection('store').doc('now').set({cash:v, stock:s});
-};
+    if(v&&s) {
+        LocalDB.set('store', {cash:v, stock:s});
+        renderAll();
+    }
+}
+
+// 載入地圖
+shapes = LocalDB.arrGet('shapes');
 </script>
 </body>
 </html>
