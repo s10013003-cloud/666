@@ -3,45 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧門市 V41 (MS Enterprise)</title>
+    <title>智慧門市 V42 (最終完善版)</title>
     <style>
-        /* --- Microsoft Fluent Design Inspired --- */
+        /* --- Microsoft Enterprise Design --- */
         :root { --primary: #0078d4; --success: #107c10; --danger: #d13438; --warning: #ffb900; --neutral: #f3f2f1; --white: #ffffff; }
-        body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; margin: 0; background: var(--neutral); padding-bottom: 100px; color: #323130; }
+        body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; margin: 0; background: var(--neutral); padding-bottom: 120px; color: #323130; }
         .container { max-width: 600px; margin: 0 auto; background: var(--white); min-height: 100vh; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
         /* Nav */
-        .nav { display: flex; position: sticky; top: 0; background: var(--white); border-bottom: 1px solid #edebe9; z-index: 100; }
-        .nav div { flex: 1; padding: 14px 0; text-align: center; font-weight: 600; color: #605e5c; cursor: pointer; font-size: 14px; }
+        .nav { display: flex; position: sticky; top: 0; background: var(--white); border-bottom: 1px solid #edebe9; z-index: 100; overflow-x: auto; }
+        .nav div { flex: 0 0 auto; padding: 14px 20px; text-align: center; font-weight: 600; color: #605e5c; cursor: pointer; font-size: 14px; white-space: nowrap; }
         .nav div.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: #eff6fc; }
 
-        /* Section */
+        /* Headers */
         .head { background: #f8f8f8; padding: 12px 16px; margin: 15px 0 10px; font-weight: 700; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
         
-        /* Grid */
+        /* Grid & Box */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px; }
         .box { border: 1px solid #8a8886; padding: 12px; text-align: center; border-radius: 4px; cursor: pointer; background: var(--white); min-height: 70px; display:flex; flex-direction:column; justify-content:center; align-items:center; position: relative; transition: 0.2s; }
         .box:active { transform: scale(0.98); }
-        .box.ok { background: #dff6dd !important; border-color: var(--success) !important; color: #107c10; }
+        .box.ok { background: #dff6dd !important; border-color: var(--success) !important; color: #107c10; font-weight:bold; }
         .box.alert { background: #fde7e9 !important; border-color: var(--danger) !important; color: #a4262c; animation: shake 0.4s; font-weight: bold; }
         
-        /* Management Controls */
+        /* Manager Controls */
         .del-btn { position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; display: none; align-items: center; justify-content: center; z-index: 10; border: 2px solid white; }
         .editing .del-btn { display: flex; }
         .editing .box { border: 2px dashed var(--primary); opacity: 0.9; background: #eff6fc; }
 
         /* Map */
-        #shelf-canvas { border: 2px solid #605e5c; position: relative; width: 94%; height: 400px; background: #e1dfdd; margin: 10px auto; overflow: hidden; }
+        #shelf-canvas { border: 2px solid #605e5c; position: relative; width: 94%; height: 400px; background: #e1dfdd; margin: 10px auto; overflow: hidden; touch-action: none; }
         .shape { position: absolute; border: 2px solid #323130; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; text-align: center; padding: 2px; font-weight: bold; user-select: none; }
-        .shape.done { background: var(--success) !important; color: white !important; }
-        .shape.selected { border: 3px solid var(--danger); z-index: 50; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+        .shape.done { background: var(--success) !important; color: white !important; border-color: #0b5a0b; }
+        /* 編輯模式下的選取狀態 */
+        .shape.selected { border: 4px solid #d13438 !important; z-index: 50; box-shadow: 0 0 15px rgba(209, 52, 56, 0.6); }
         .timer-badge { font-size: 9px; background: #323130; color: white; padding: 2px 4px; border-radius: 4px; margin-top: 2px; }
 
-        /* Feed */
-        .feed-item { padding: 15px; border: 1px solid #edebe9; margin-bottom: 10px; border-radius: 4px; background: var(--white); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .feed-item.done { border-left: 5px solid var(--success); background: #f6fffa; }
-        .feed-item.pending { border-left: 5px solid var(--danger); }
-        .comment-box { margin-top: 10px; background: #f3f2f1; padding: 8px; font-size: 13px; border-radius: 4px; }
+        /* Feed (Service) */
+        .feed-item { padding: 15px; border: 1px solid #edebe9; margin-bottom: 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* 4. 交接底色區分 */
+        .feed-item.done { border-left: 6px solid var(--success); background: #e6ffea; } 
+        .feed-item.pending { border-left: 6px solid var(--danger); background: #fff0f0; }
+        .comment-box { margin-top: 10px; background: rgba(255,255,255,0.7); padding: 8px; font-size: 13px; border-radius: 4px; border: 1px solid #ddd; }
 
         /* Table */
         table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 10px; }
@@ -62,7 +64,7 @@
         #big-img { max-width:95%; max-height:95%; border: 2px solid white; transform: scale(0.9); transition: 0.3s; }
         #img-overlay.show #big-img { transform: scale(1); }
 
-        .stars span { font-size: 28px; color: #ccc; cursor: pointer; }
+        .stars span { font-size: 32px; color: #ccc; cursor: pointer; }
         .stars span.gold { color: #ffb900; }
 
         @keyframes shake { 0%{transform:translateX(0)} 25%{transform:translateX(-5px)} 50%{transform:translateX(5px)} 75%{transform:translateX(-5px)} 100%{transform:translateX(0)} }
@@ -75,8 +77,8 @@
 
 <div class="container">
     <div id="page-auth" style="padding:40px 20px; text-align:center;">
-        <h2 style="color:var(--primary);">🏪 智慧門市 V41</h2>
-        <p style="color:#605e5c; font-size:12px;">Microsoft Enterprise Edition</p>
+        <h2 style="color:var(--primary);">🏪 智慧門市 V42</h2>
+        <p style="color:#605e5c; font-size:12px;">Final Stable Release</p>
         <div id="box-login" style="margin-top:20px;">
             <input id="l-id" placeholder="帳號">
             <input id="l-pw" type="password" placeholder="密碼">
@@ -141,10 +143,10 @@
                 </div>
             </div>
             <div id="map-editor" class="hide" style="padding:10px; background:#e1dfdd; border-bottom:1px solid #8a8886;">
-                <b>選取: <span id="sel-map-name" style="color:red">--</span></b>
+                <span style="color:red; font-weight:bold;">已選取: <span id="sel-map-name">--</span></span>
                 <div style="margin-top:5px; display:flex; gap:3px; flex-wrap:wrap;">
                     <button class="btn-s" onclick="setMapSize()">📏 尺寸</button>
-                    <button class="btn-s" onclick="setMapDate()">📅 日期</button>
+                    <button class="btn-s" onclick="setMapDate()">📅 期限</button>
                     <button class="btn-s" onclick="renMapBox()">✏️ 改名</button>
                     <button class="btn-s" onclick="copyMapBox()">📋 複製</button>
                     <button class="btn-s btn-r" onclick="delMapBox()">🗑️ 刪除</button>
@@ -210,6 +212,7 @@
         </div>
 
         <div id="v-svc" class="hide">
+            <div class="head">🤝 客服與內務</div>
             <div class="grid">
                 <button onclick="popSvc('交接')">📝 交接</button>
                 <button onclick="popSvc('客訂')">🛒 客訂</button>
@@ -227,7 +230,8 @@
                 <p>陳列整齊: <span class="stars" data-c="2" onclick="rate(this,event)">★★★★★</span></p>
                 <p>結帳速度: <span class="stars" data-c="3" onclick="rate(this,event)">★★★★★</span></p>
                 <p>出勤狀況: <span class="stars" data-c="4" onclick="rate(this,event)">★★★★★</span></p>
-                <button class="btn-g" onclick="saveRating()">送出評分</button>
+                <textarea id="mgr-comment" placeholder="輸入主管評語與建議..." style="height:80px; width:100%; margin-top:10px;"></textarea>
+                <button class="btn-g" style="margin-top:10px;" onclick="saveRating()">送出評分</button>
             </div>
         </div>
     </div>
@@ -250,7 +254,7 @@
 </div>
 
 <script>
-// --- DB Core (Microsoft Standard) ---
+// --- DB Core ---
 const DB = {
     get: (k) => JSON.parse(localStorage.getItem(k) || '{}'),
     set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
@@ -264,11 +268,11 @@ const DB = {
 
 // --- Initialization ---
 const initData = () => {
-    if(!localStorage.getItem('v41_stock')) {
-        localStorage.setItem('v41_stock', JSON.stringify(['冰箱飲料','層架飲料','菸架','電池','泡麵/餅乾','垃圾袋/免洗餐具','百貨用品(牙膏/洗衣精/衛生紙)']));
+    if(!localStorage.getItem('v42_stock')) {
+        localStorage.setItem('v42_stock', JSON.stringify(['冰箱飲料','層架飲料','菸架','電池','泡麵/餅乾','垃圾袋/免洗餐具','百貨用品(牙膏/洗衣精/衛生紙)']));
     }
-    if(!localStorage.getItem('v41_fridge')) {
-        localStorage.setItem('v41_fridge', JSON.stringify([
+    if(!localStorage.getItem('v42_fridge')) {
+        localStorage.setItem('v42_fridge', JSON.stringify([
             {n:'開放式冰箱1',t:'c'},{n:'開放式冰箱2',t:'c'},{n:'冷藏櫥櫃1',t:'c'},{n:'冷藏櫥櫃2',t:'c'},
             {n:'冷凍櫥櫃1',t:'f'},{n:'冷凍櫥櫃2',t:'f'},{n:'臥室冰箱1',t:'f'},{n:'臥室冰箱2',t:'f'},{n:'臥室冰箱3',t:'f'},{n:'臥室冰箱4',t:'f'}
         ]));
@@ -281,7 +285,7 @@ let shapes = DB.arr('map_shapes');
 let selShapeIdx = null;
 let imgBase64 = "";
 let exArr = [];
-let isMapEditMode = false; // Map Toggle
+let isMapEditMode = false;
 
 // --- Auth ---
 function swAuth(reg) {
@@ -309,7 +313,6 @@ function startApp() {
     document.getElementById('page-main').classList.remove('hide');
     document.getElementById('user-info').innerText = `${me.name} (${me.shift})`;
 
-    // Manager Controls Visibility
     if(me.shift==='主管') {
         document.getElementById('n-mgr').classList.remove('hide');
         document.getElementById('mgr-finance').classList.remove('hide');
@@ -330,7 +333,7 @@ function startApp() {
 
 // --- Renderers ---
 function renderStock() {
-    const list = JSON.parse(localStorage.getItem('v41_stock'));
+    const list = JSON.parse(localStorage.getItem('v42_stock'));
     document.getElementById('stock-list').innerHTML = list.map((s,i) => `
         <div class="box alert" id="stk_${i}" onclick="doCheck('stk_${i}','${s}')">
             ${s}<br><small>待檢</small>
@@ -341,7 +344,7 @@ function renderStock() {
 }
 
 function renderFridge() {
-    const list = JSON.parse(localStorage.getItem('v41_fridge'));
+    const list = JSON.parse(localStorage.getItem('v42_fridge'));
     document.getElementById('fridge-list').innerHTML = list.map((f,i) => `
         <div class="box alert" id="ref_${i}" onclick="doTemp('ref_${i}','${f.n}','${f.t}')">
             ${f.n}<br><small>待測</small>
@@ -354,7 +357,6 @@ function renderStatus() {
     let s = DB.get('status');
     let store = DB.get('store');
     
-    // Status update
     for(let k in s) {
         const el = document.getElementById(k);
         if(el && s[k]) {
@@ -365,7 +367,6 @@ function renderStatus() {
         }
     }
     
-    // Finance Load
     document.getElementById('in-cash').value = store.cash||0;
     document.getElementById('in-vault').value = store.vault||0;
     if(store.lastShift) document.getElementById('last-shift-info').innerText = `${store.lastShift.user} (${store.lastShift.time})`;
@@ -378,7 +379,7 @@ function renderStatus() {
     }
 }
 
-// --- Interaction Logic ---
+// --- Interaction ---
 function tab(t) {
     document.querySelectorAll('.nav div').forEach(e=>e.classList.remove('active'));
     document.getElementById('n-'+t).classList.add('active');
@@ -386,20 +387,25 @@ function tab(t) {
     document.getElementById('v-'+t).classList.remove('hide');
 }
 
-// 1. Check & Reset
+// 1. 防誤觸 (Check Confirmation)
 function doCheck(id, name) {
     let s = DB.get('status');
-    if(s[id] && !s[id].alert && !confirm("已完成，要覆蓋嗎？")) return;
+    if(s[id] && !s[id].alert) {
+        if(!confirm(`此項目已完成。確認要覆蓋嗎？`)) return;
+    } else {
+        // 第一次打勾也要確認
+        if(!confirm(`${name} - 確認檢查完成？`)) return;
+    }
     s[id] = {name, user:me.name, time:new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit'}), alert:false};
     DB.set('status', s);
     renderStatus();
 }
+
 function resetCheck(id) {
-    if(!confirm("重置此項目？")) return;
+    if(!confirm("確定重置為「未完成」？")) return;
     let s = DB.get('status');
     delete s[id];
     DB.set('status', s);
-    // Hard refresh list to clear style
     if(id.includes('stk_')) renderStock();
     else if(id.includes('ref_')) renderFridge();
     else {
@@ -410,7 +416,7 @@ function resetCheck(id) {
     renderStatus();
 }
 
-// 4. Fridge Validation
+// 3. 溫度防呆 (-30)
 function doTemp(id, name, type) {
     const v = prompt(`${name} 溫度輸入:`, type==='f'?'-':'');
     if(v === null) return;
@@ -431,13 +437,12 @@ function doTemp(id, name, type) {
     renderStatus();
 }
 
-// Manager Add/Delete
 function toggleEdit(id) {
     document.getElementById(id).classList.toggle('editing');
     document.getElementById(id==='stock-list'?'add-stock-area':'add-fridge-area').classList.toggle('hide');
 }
 function addItem(type) {
-    const key = `v41_${type}`;
+    const key = `v42_${type}`;
     let list = JSON.parse(localStorage.getItem(key));
     const n = prompt("名稱:"); if(!n) return;
     if(type==='fridge') {
@@ -449,14 +454,14 @@ function addItem(type) {
 }
 function delConfItem(type, idx) {
     if(!confirm("確定刪除？")) return;
-    const key = `v41_${type}`;
+    const key = `v42_${type}`;
     let list = JSON.parse(localStorage.getItem(key));
     list.splice(idx, 1);
     localStorage.setItem(key, JSON.stringify(list));
     startApp();
 }
 
-// --- Map Logic (Mode Switch) ---
+// --- Map (3. Editing Features) ---
 function toggleMapEdit() {
     isMapEditMode = !isMapEditMode;
     document.getElementById('map-mode-txt').innerText = isMapEditMode ? "開" : "關";
@@ -471,7 +476,7 @@ function drawMap() {
     
     shapes.forEach((s, i) => {
         const el = document.createElement('div');
-        el.className = `shape ${s.done?'done':''} ${selShapeIdx===i?'selected':''}`;
+        el.className = `shape ${s.done?'done':''} ${selShapeIdx===i && isMapEditMode?'selected':''}`;
         el.style.left = s.x + 'px'; el.style.top = s.y + 'px';
         el.style.width = (s.w||60) + 'px'; el.style.height = (s.h||60) + 'px';
         
@@ -483,23 +488,21 @@ function drawMap() {
 
         el.innerHTML = `<span>${s.name}</span>${timerHtml}`;
         
-        // Mode Logic
         el.onclick = (e) => {
             e.stopPropagation();
             if(isMapEditMode && me.shift==='主管') {
                 selShapeIdx = i;
                 document.getElementById('sel-map-name').innerText = s.name;
-                drawMap();
+                drawMap(); // Redraw to highlight
             } else {
-                // Check Mode (For Manager too!)
                 if(confirm(`${s.name} 檢查完成？ (紀錄時間)`)) { 
                     s.done = true; 
+                    s.checker = me.name;
                     saveMapData(); 
                 }
             }
         };
 
-        // Drag (Only in Edit Mode)
         if(isMapEditMode && me.shift==='主管') {
             el.onmousedown = (e) => {
                 const sx = e.clientX - s.x, sy = e.clientY - s.y;
@@ -560,7 +563,6 @@ function doCalc() {
     const vis = Number(document.getElementById('v-vis').value);
     if(vis>0) document.getElementById('v-avg').value = Math.round(rev/vis);
     
-    // Extra Income/Expense
     let extIn=0, extOut=0;
     exArr.forEach(x => { if(x.type==='in') extIn+=x.amt; else extOut+=x.amt; });
 
@@ -571,7 +573,7 @@ function doCalc() {
 function submitShift() {
     if(!confirm("確定提交交班？")) return;
     let s = DB.get('store');
-    s.cash = parseFloat(document.getElementById('total-money').innerText); // Simplify
+    s.cash = parseFloat(document.getElementById('total-money').innerText);
     s.lastShift = { user: me.name, time: new Date().toLocaleString() };
     
     let cards = {};
@@ -635,20 +637,18 @@ function renderFeed() {
     
     feeds.forEach((f,i)=>{
         if(!f.done) unread++;
-        // Render comments
-        let commentsHtml = (f.comments || []).map(c => `<div class="comment-box"><b>${c.u}</b>: ${c.t}</div>`).join('');
-
+        // 4. Color coding
         d.innerHTML += `
             <div class="feed-item ${f.done?'done':'pending'}">
                 <div class="feed-meta"><span>${f.type} | ${f.user}</span> <span>${f.time}</span></div>
                 <div>${f.txt}</div>
                 ${f.img ? `<img src="${f.img}" style="width:80px; margin-top:5px; cursor:pointer; border-radius:4px;" onclick="zoom('${f.img}')">` : ''}
                 
-                ${commentsHtml}
+                ${(f.comments||[]).map(c=>`<div class="comment-box"><b>${c.u}</b>: ${c.t}</div>`).join('')}
 
                 <div style="margin-top:8px; text-align:right;">
                     <button class="btn-s btn-o" onclick="addComment(${i})">💬 留言</button>
-                    <button class="btn-s btn-g" onclick="toggleFeed(${i})">${f.done?'重開':'完成'}</button>
+                    ${me.shift==='主管' ? `<button class="btn-s btn-r" onclick="delFeed(${i})">刪除</button> <button class="btn-s btn-g" onclick="toggleFeed(${i})">批閱/完成</button>` : ''}
                 </div>
             </div>`;
     });
@@ -669,24 +669,29 @@ function toggleFeed(i) {
     if(!confirm("確定變更狀態？")) return;
     let fs=DB.arr('feeds'); fs[i].done=!fs[i].done; localStorage.setItem('feeds', JSON.stringify(fs)); renderFeed();
 }
+function delFeed(i) {
+    if(!confirm("確定刪除此則？")) return;
+    let fs=DB.arr('feeds'); fs.splice(i,1); localStorage.setItem('feeds', JSON.stringify(fs)); renderFeed();
+}
 
 function gotoSvc() { tab('svc'); }
 function zoom(s) { document.getElementById('big-img').src=s; document.getElementById('img-overlay').classList.add('show'); }
 function closeZoom() { document.getElementById('img-overlay').classList.remove('show'); }
 
-// --- 7. Rating (Fix User List) ---
+// --- 5. Rating (Empty Default) ---
 function loadUserList() {
     const u = DB.get('users');
     const s = document.getElementById('mgr-users');
-    s.innerHTML = "<option>選擇員工...</option>"; // Reset
-    for(let k in u) if(u[k].shift!=='主管') { 
-        let o=document.createElement('option'); o.value=k; o.innerText=`${u[k].name} (${u[k].shift})`; s.appendChild(o); 
-    }
+    for(let k in u) if(u[k].shift!=='主管') { let o=document.createElement('option'); o.value=k; o.innerText=u[k].name; s.appendChild(o); }
 }
+// Init stars as grey
 function rate(span,e) { span.parentNode.querySelectorAll('span').forEach((s,i)=>s.className=i<e.target.cellIndex?'gold':''); }
 function saveRating() {
-    if(document.getElementById('mgr-users').selectedIndex === 0) return alert("請選擇員工");
-    alert("評分已儲存！");
+    const uid = document.getElementById('mgr-users').value;
+    const comment = document.getElementById('mgr-comment').value;
+    if(!uid || uid === "載入員工...") return alert("請選擇員工");
+    // Mock save
+    alert(`評分已儲存！\n評語: ${comment}`);
 }
 </script>
 </body>
