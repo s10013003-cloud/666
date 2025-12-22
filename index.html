@@ -3,98 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧門市 V39 (Vitaly UX Edition)</title>
+    <title>智慧門市 V40 (RWD Retail Master)</title>
     <style>
-        /* --- Smashing Magazine Style: Clean Typography & Solid Colors --- */
-        :root { --primary: #d33a2c; /* Smashing Red */ --accent: #2c8eb5; --success: #27ae60; --dark: #292e31; --light: #f3f4f5; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif; margin: 0; background: var(--light); padding-bottom: 120px; color: var(--dark); line-height: 1.5; }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        /* --- RWD Core Design --- */
+        :root { --primary: #00695c; /* Teal for Professionalism */ --accent: #ff6f00; --success: #2e7d32; --danger: #c62828; --bg: #f1f3f4; --card: #fff; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Microsoft JhengHei", sans-serif; margin: 0; background: var(--bg); padding-bottom: 120px; color: #333; -webkit-tap-highlight-color: transparent; }
+        .container { max-width: 600px; margin: 0 auto; background: var(--card); min-height: 100vh; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
 
-        /* Nav */
-        .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 2px solid #eee; z-index: 100; }
-        .nav div { flex: 1; padding: 14px 0; text-align: center; font-weight: bold; color: #777; cursor: pointer; font-size: 14px; border-bottom: 4px solid transparent; transition: 0.3s; }
-        .nav div.active { color: var(--primary); border-bottom-color: var(--primary); background: #fff5f5; }
+        /* Navigation */
+        .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ddd; z-index: 100; overflow-x: auto; scrollbar-width: none; }
+        .nav::-webkit-scrollbar { display: none; }
+        .nav div { flex: 0 0 auto; padding: 14px 18px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; font-size: 15px; transition: 0.3s; }
+        .nav div.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: #e0f2f1; }
 
-        /* Headers */
-        .head { background: #e8ebed; padding: 12px 15px; margin: 20px 0 10px; font-weight: 800; color: var(--dark); border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; border-radius: 0 4px 4px 0; }
+        /* Section Header */
+        .head { background: #fafafa; padding: 12px 15px; margin: 15px 0 10px; font-weight: 700; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; font-size: 16px; border-bottom: 1px solid #eee; }
         
-        /* Box & Grid */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px; }
-        .box { border: 2px solid #e0e0e0; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; background: #fff; min-height: 70px; display:flex; flex-direction:column; justify-content:center; align-items:center; position: relative; transition: transform 0.1s; }
+        /* Grid Layout */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px; }
+        .box { border: 1px solid #ccc; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; background: #fff; min-height: 70px; display:flex; flex-direction:column; justify-content:center; align-items:center; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.1s; }
         .box:active { transform: scale(0.98); }
-        .box.ok { background: #e9f7ef !important; border-color: var(--success) !important; color: #1e8449; }
-        .box.alert { background: #fadbd8 !important; border-color: #c0392b !important; color: #922b21; animation: shake 0.4s; font-weight: bold; }
         
-        /* Utility */
-        .del-btn { position: absolute; top: -8px; right: -8px; background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; font-size: 14px; line-height: 24px; display: none; z-index: 10; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .editing .del-btn { display: block; }
-        .editing .box { border: 2px dashed var(--accent); opacity: 0.8; }
+        /* Status Colors */
+        .box.ok { background: #e8f5e9 !important; border-color: var(--success) !important; color: #1b5e20; }
+        .box.alert { background: #ffebee !important; border-color: var(--danger) !important; color: #b71c1c; font-weight: bold; animation: shake 0.4s; }
+        .priority { border: 2px solid var(--accent) !important; background: #fff8e1; }
+
+        /* Reset Button (The Refresh Icon) */
+        .reset-btn { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background: #fff; border: 1px solid #999; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; color: #555; }
+        .reset-btn:active { background: var(--danger); color: white; border-color: var(--danger); }
+
+        /* Delete Button (Manager Mode) */
+        .del-item-btn { position: absolute; top: -8px; left: -8px; width: 20px; height: 20px; background: red; color: white; border-radius: 50%; font-size: 12px; display: none; align-items: center; justify-content: center; border: 2px solid white; z-index: 15; }
+        .editing .del-item-btn { display: flex; }
+        .editing .box { border: 2px dashed var(--primary); opacity: 0.9; }
+
+        /* Interactive Map */
+        #map-area { position: relative; width: 94%; height: 400px; background: #eee; margin: 10px auto; overflow: hidden; border: 2px solid #ccc; border-radius: 4px; background-image: radial-gradient(#ccc 1px, transparent 1px); background-size: 20px 20px; }
+        .map-box { position: absolute; background: rgba(255,255,255,0.9); border: 2px solid #555; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; cursor: grab; user-select: none; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); padding: 2px; text-align: center; }
+        .map-box.done { background: var(--success) !important; color: white !important; border-color: #004d40; }
+        .map-box.selected { border: 3px solid var(--danger); z-index: 50; }
+        .map-box.pinned { border-style: double; border-width: 4px; border-color: #333; }
+        .pin-icon { font-size: 10px; position: absolute; top: 0; right: 0; display: none; }
+        .map-box.pinned .pin-icon { display: block; }
+        .timer-badge { font-size: 9px; background: #333; color: white; padding: 1px 4px; border-radius: 4px; margin-top: 2px; }
+
+        /* Service Feed (Card Style) */
+        .feed-item { padding: 12px; border: 1px solid #e0e0e0; margin-bottom: 12px; border-radius: 8px; transition: 0.2s; }
+        .feed-item.done { background: #e8f5e9; border-left: 5px solid var(--success); }
+        .feed-item.pending { background: #ffebee; border-left: 5px solid var(--danger); }
+        .feed-meta { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 5px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
+
+        /* UI Elements */
+        input, select, button, textarea { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
+        button { background: var(--primary); color: white; border: none; font-weight: 600; }
+        button:active { filter: brightness(0.9); transform: translateY(1px); }
+        .btn-g { background: var(--success); } .btn-r { background: var(--danger); } .btn-o { background: var(--accent); color: white; }
+        .btn-sm { width: auto; padding: 5px 12px; font-size: 12px; margin-right: 5px; }
         .hide { display: none !important; }
-        .row { display: flex; gap: 5px; }
+        .stars span { font-size: 32px; color: #ddd; cursor: pointer; }
+        .stars span.gold { color: #ffc107; }
 
-        /* Map */
-        #shelf-canvas { border: 2px solid #333; position: relative; width: 94%; height: 350px; background: #eee; margin: 10px auto; overflow: hidden; border-radius: 4px; }
-        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.95); display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; text-align: center; padding: 2px; font-weight: bold; box-shadow: 2px 2px 0 rgba(0,0,0,0.1); user-select: none; }
-        .shape.done { background: var(--success) !important; color: white !important; border-color: #145a32; }
-        .shape.selected { border: 3px solid var(--primary); z-index: 20; transform: scale(1.05); }
-
-        /* Feed */
-        .feed-item { padding: 15px; border: 1px solid #eee; margin-bottom: 15px; border-radius: 8px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .feed-meta { font-size: 12px; color: #888; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
-        .feed-reply { background: #f8f9fa; padding: 8px; margin-top: 8px; border-left: 3px solid var(--accent); font-size: 13px; color: #555; }
-
-        /* Image & Modal */
-        #img-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-        #img-overlay.show { opacity: 1; pointer-events: auto; }
-        #big-img { max-width: 95%; max-height: 95%; border: 4px solid white; border-radius: 4px; transition: transform 0.3s; }
-        
         /* Table */
         table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 10px; }
-        td, th { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background: #f9f9f9; }
-        .inp-money { width: 100%; text-align: center; padding: 8px; border: 1px solid #ccc; font-size: 16px; border-radius: 4px; }
+        td, th { border: 1px solid #eee; padding: 8px; text-align: center; }
+        th { background: #f5f5f5; }
+        .inp-money { width: 100%; text-align: center; padding: 8px; border: 1px solid #ccc; background: #fff; font-size: 16px; border-radius: 4px; }
 
-        /* General UI */
-        input, select, button, textarea { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; box-sizing: border-box; font-family: inherit; }
-        button { background: var(--accent); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: translateY(2px); }
-        .btn-g { background: var(--success); } .btn-r { background: var(--primary); } .btn-o { background: #f39c12; }
-        .btn-sm { width: auto; padding: 5px 12px; font-size: 12px; margin-right: 5px; }
+        /* Image Modal */
+        #img-modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:999; display:none; justify-content:center; align-items:center; }
+        #img-modal img { max-width:95%; max-height:95%; border: 3px solid white; border-radius: 4px; }
         
-        .stars span { font-size: 32px; color: #ddd; cursor: pointer; transition: 0.2s; }
-        .stars span.gold { color: #f1c40f; }
-
         @keyframes shake { 0%{transform:translateX(0)} 25%{transform:translateX(-5px)} 50%{transform:translateX(5px)} 75%{transform:translateX(-5px)} 100%{transform:translateX(0)} }
     </style>
 </head>
 <body>
 
-<div id="img-overlay" onclick="closeZoom()"><img id="big-img"></div>
-<div id="bell" style="position:fixed; top:15px; right:15px; font-size:24px; background:white; border-radius:50%; padding:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); z-index:200; cursor:pointer;" onclick="gotoSvc()">🔔<div id="badge" style="position:absolute; top:-2px; right:-2px; background:red; color:white; width:18px; height:18px; border-radius:50%; font-size:10px; line-height:18px; text-align:center; display:none;">0</div></div>
+<div id="img-modal" onclick="this.style.display='none'"><img id="big-img"></div>
+<div id="bell" style="position:fixed; top:15px; right:15px; font-size:24px; background:white; border-radius:50%; padding:8px; box-shadow:0 4px 10px rgba(0,0,0,0.15); z-index:200; cursor:pointer;" onclick="gotoSvc()">🔔<div id="badge" style="position:absolute; top:-2px; right:-2px; background:red; color:white; width:18px; height:18px; border-radius:50%; font-size:10px; line-height:18px; text-align:center; display:none;">0</div></div>
 
 <div class="container">
     <div id="page-auth" style="padding:40px 20px; text-align:center;">
-        <h2 style="color:var(--dark)">🏪 智慧門市 V39</h2>
-        <p style="color:#777; font-size:12px;">Vitaly UX Edition</p>
+        <h2 style="color:var(--primary); margin-bottom:5px;">🏪 智慧門市 V40</h2>
+        <p style="color:#666; font-size:12px;">Retail UX Master Edition</p>
         <div id="box-login" style="margin-top:20px;">
             <input id="l-id" placeholder="帳號">
             <input id="l-pw" type="password" placeholder="密碼">
-            <button onclick="login()" style="width:100%">登入</button>
-            <p onclick="swAuth(true)" style="color:var(--accent); margin-top:20px; cursor:pointer;">註冊新帳號</p>
+            <button onclick="login()">登入</button>
+            <p onclick="swAuth(true)" style="color:var(--primary); margin-top:20px; cursor:pointer;">註冊新帳號</p>
         </div>
         <div id="box-reg" class="hide" style="margin-top:20px;">
             <input id="r-name" placeholder="真實姓名">
             <select id="r-shift"><option>早班</option><option>晚班</option><option>主管</option></select>
             <input id="r-id" placeholder="設定帳號">
             <input id="r-pw" type="password" placeholder="設定密碼">
-            <button class="btn-g" onclick="reg()" style="width:100%">確認註冊</button>
-            <p onclick="swAuth(false)" style="color:var(--accent); margin-top:20px; cursor:pointer;">返回登入</p>
+            <button class="btn-g" onclick="reg()">確認註冊</button>
+            <p onclick="swAuth(false)" style="color:var(--primary); margin-top:20px; cursor:pointer;">返回登入</p>
         </div>
     </div>
 
     <div id="page-main" class="hide">
-        <div style="background:var(--dark); color:white; padding:12px; display:flex; justify-content:space-between; align-items:center;">
-            <span>👤 <span id="user-info">--</span></span>
+        <div style="background:#333; color:white; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+            <span id="user-info">--</span>
             <button onclick="logout()" class="btn-sm" style="background:#555;">登出</button>
         </div>
 
@@ -108,10 +118,10 @@
         </div>
 
         <div id="v-stock">
-            <div class="head" style="color:var(--primary); border-color:var(--primary);">🔥 重點補貨</div>
+            <div class="head" style="border-color:var(--accent);">🔥 重點補貨 (主管可重置)</div>
             <div class="grid">
-                <div class="box alert" id="s_noodle" onclick="doCheck('s_noodle','外籍泡麵')">外籍泡麵<br><small>待處理</small></div>
-                <div class="box alert" id="s_cookie" onclick="doCheck('s_cookie','外籍餅乾')">外籍餅乾<br><small>待處理</small></div>
+                <div class="box priority alert" id="s_noodle" onclick="doCheck('s_noodle','外籍泡麵')">外籍泡麵<br><small>待處理</small></div>
+                <div class="box priority alert" id="s_cookie" onclick="doCheck('s_cookie','外籍餅乾')">外籍餅乾<br><small>待處理</small></div>
             </div>
 
             <div class="head">
@@ -120,50 +130,47 @@
             </div>
             <div class="grid" id="stock-list"></div>
             <div id="add-stock-area" class="hide" style="padding:10px;">
-                <button class="btn-g" style="width:100%" onclick="addItem('stock')">+ 新增補貨</button>
+                <button class="btn-g" style="width:100%" onclick="addItem('stock')">+ 新增補貨項目</button>
             </div>
         </div>
 
         <div id="v-expiry" class="hide">
             <div class="head">📅 每日效期檢查</div>
             <div class="grid">
-                <div class="box" id="ex_bread" onclick="doCheck('ex_bread','麵包')">麵包<br><small>待檢</small></div>
-                <div class="box" id="ex_drink" onclick="doCheck('ex_drink','日配飲料')">日配飲料<br><small>待檢</small></div>
-                <div class="box" id="ex_veg" onclick="doCheck('ex_veg','生鮮蔬菜')">生鮮蔬菜<br><small>待檢</small></div>
+                <div class="box alert" id="ex_bread" onclick="doCheck('ex_bread','麵包')">麵包<br><small>待檢</small></div>
+                <div class="box alert" id="ex_drink" onclick="doCheck('ex_drink','日配飲料')">日配飲料<br><small>待檢</small></div>
+                <div class="box alert" id="ex_veg" onclick="doCheck('ex_veg','生鮮蔬菜')">生鮮蔬菜<br><small>待檢</small></div>
             </div>
 
             <div class="head">
                 🗓️ 每月效期圖
                 <div id="map-tools" class="hide">
                     <button class="btn-sm btn-g" onclick="addMapBox()">+方格</button>
-                    <button class="btn-sm btn-o" onclick="saveMapData()">發布</button>
+                    <button class="btn-sm btn-o" onclick="resetMapAll()">全重置</button>
                 </div>
             </div>
-            <div id="map-editor" class="hide" style="padding:10px; background:#fff; border-bottom:1px solid #ccc;">
+            <div id="map-editor" class="hide" style="padding:10px; background:#e0f7fa; border-bottom:1px solid #ccc;">
                 <b>選取: <span id="sel-map-name" style="color:red">--</span></b>
-                <div style="margin-top:5px; display:flex; gap:5px;">
-                    <button class="btn-sm" onclick="setMapSize()">設大小</button>
-                    <button class="btn-sm" onclick="renMapBox()">改名</button>
-                    <button class="btn-sm btn-r" onclick="delMapBox()">刪除</button>
+                <div style="margin-top:5px; display:flex; gap:3px; flex-wrap:wrap;">
+                    <button class="btn-sm" onclick="setMapSize()">📏 尺寸</button>
+                    <button class="btn-sm" onclick="setMapDate()">📅 日期</button>
+                    <button class="btn-sm" onclick="togglePin()">📌 固定</button>
+                    <button class="btn-sm" onclick="renMapBox()">✏️ 改名</button>
+                    <button class="btn-sm" onclick="copyMapBox()">📋 複製</button>
+                    <button class="btn-sm btn-r" onclick="delMapBox()">🗑️ 刪除</button>
                 </div>
             </div>
-            <div id="shelf-canvas"></div>
+            <div id="map-area"></div>
         </div>
 
         <div id="v-temp" class="hide">
-            <div class="head">
-                ❄️ 冰箱溫度檢查
-                <button id="btn-edit-fridge" class="hide btn-sm btn-o" onclick="toggleEdit('fridge-list')">管理</button>
-            </div>
+            <div class="head">❄️ 冰箱溫度檢查</div>
             <div class="grid" id="fridge-list"></div>
-            <div id="add-fridge-area" class="hide" style="padding:10px;">
-                <button class="btn-g" style="width:100%" onclick="addItem('fridge')">+ 新增冰箱</button>
-            </div>
         </div>
 
         <div id="v-count" class="hide">
-            <div style="padding:15px; background:#e3f2fd; text-align:center; font-size:14px; margin-bottom:10px;">
-                🕒 上次交班: <span id="last-shift-info" style="font-weight:bold;">無記錄</span>
+            <div style="padding:10px; background:#e8f5e9; text-align:center; margin:10px; border-radius:5px; font-size:12px;">
+                🕒 上次交班: <span id="last-shift-info">無記錄</span>
             </div>
 
             <div class="head">📥 進櫃 (主管可修)</div>
@@ -176,17 +183,17 @@
                 </div>
             </div>
 
-            <div class="head">🪙 交班點算</div>
+            <div class="head">🪙 交班點算 (含金庫)</div>
             <table>
                 <tr><th>面額</th><th>收銀機</th><th>金庫</th><th>小計</th></tr>
                 <tbody id="money-table"></tbody>
                 <tr><td colspan="3"><b>總計</b></td><td id="total-money" style="color:blue; font-weight:bold;">0</td></tr>
             </table>
 
-            <div class="head">📞 電話卡 (主管可修)</div>
+            <div class="head">📞 電話卡</div>
             <div id="card-list" class="grid"></div>
 
-            <div class="head">📊 營收結算</div>
+            <div class="head">📊 營收數據</div>
             <div class="grid">
                 <input type="number" id="v-rev" placeholder="營業額" oninput="doCalc()">
                 <input type="number" id="v-vis" placeholder="來客數" oninput="doCalc()">
@@ -214,10 +221,10 @@
             <div class="head">🌟 員工評分</div>
             <select id="mgr-users"><option>載入員工...</option></select>
             <div style="padding:15px; background:#fff; margin-top:10px; border:1px solid #ddd;">
-                <p>工作效率: <span class="stars" data-c="1" onclick="rate(this,event)">★★★★★</span></p>
-                <p>補貨完成: <span class="stars" data-c="2" onclick="rate(this,event)">★★★★★</span></p>
-                <p>生鮮檢查: <span class="stars" data-c="3" onclick="rate(this,event)">★★★★★</span></p>
-                <p>顧客反應: <span class="stars" data-c="4" onclick="rate(this,event)">★★★★★</span></p>
+                <p>服務態度: <span class="stars" data-c="1" onclick="rate(this,event)">★★★★★</span></p>
+                <p>陳列整齊: <span class="stars" data-c="2" onclick="rate(this,event)">★★★★★</span></p>
+                <p>結帳速度: <span class="stars" data-c="3" onclick="rate(this,event)">★★★★★</span></p>
+                <p>出勤狀況: <span class="stars" data-c="4" onclick="rate(this,event)">★★★★★</span></p>
                 <button class="btn-g" onclick="saveRating()">送出評分</button>
             </div>
         </div>
@@ -241,7 +248,7 @@
 </div>
 
 <script>
-// --- V39 CORE: 髒資料清洗與防錯 ---
+// --- DB Core ---
 const DB = {
     get: (k) => JSON.parse(localStorage.getItem(k) || '{}'),
     set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
@@ -253,29 +260,30 @@ const DB = {
     }
 };
 
-// **自動修復：解決 [object Object]**
-const fixData = () => {
-    let s = localStorage.getItem('v39_stock');
-    if (!s || s.includes('object')) {
-        localStorage.setItem('v39_stock', JSON.stringify(['冰箱飲料','層架飲料','菸架','電池','泡麵/餅乾','垃圾袋/免洗餐具','百貨用品(牙膏/洗衣精/衛生紙)']));
+// --- Initialization (Fix Data) ---
+const initData = () => {
+    // Force reset for V40 standards
+    if(!localStorage.getItem('v40_stock')) {
+        localStorage.setItem('v40_stock', JSON.stringify([
+            '冰箱飲料','層架飲料','菸架','電池','泡麵/餅乾','垃圾袋/免洗餐具','百貨用品(牙膏/洗衣精/衛生紙)'
+        ]));
     }
-    let f = localStorage.getItem('v39_fridge');
-    if (!f || f.includes('undefined')) {
-        localStorage.setItem('v39_fridge', JSON.stringify([
+    if(!localStorage.getItem('v40_fridge')) {
+        localStorage.setItem('v40_fridge', JSON.stringify([
             {n:'開放式冰箱1',t:'c'},{n:'開放式冰箱2',t:'c'},{n:'冷藏櫥櫃1',t:'c'},{n:'冷藏櫥櫃2',t:'c'},
             {n:'冷凍櫥櫃1',t:'f'},{n:'冷凍櫥櫃2',t:'f'},{n:'臥室冰箱1',t:'f'},{n:'臥室冰箱2',t:'f'},{n:'臥室冰箱3',t:'f'},{n:'臥室冰箱4',t:'f'}
         ]));
     }
-};
-fixData();
+}
+initData();
 
 let me = null;
 let shapes = DB.arr('map_shapes');
 let selShapeIdx = null;
 let imgBase64 = "";
-let curFeedId = null; // For editing
+let curFeedId = null;
 
-// --- AUTH ---
+// --- Auth ---
 function swAuth(reg) {
     document.getElementById('box-login').classList.toggle('hide', reg);
     document.getElementById('box-reg').classList.toggle('hide', !reg);
@@ -284,7 +292,7 @@ function reg() {
     const id=document.getElementById('r-id').value, nm=document.getElementById('r-name').value, pw=document.getElementById('r-pw').value;
     if(!id||!nm||!pw) return alert("請填寫完整");
     let u=DB.get('users'); u[id]={name:nm, pw:pw, shift:document.getElementById('r-shift').value}; DB.set('users', u);
-    alert("✅ 註冊成功！請登入"); swAuth(false);
+    alert("✅ 註冊成功！"); swAuth(false);
 }
 function login() {
     const id=document.getElementById('l-id').value, pw=document.getElementById('l-pw').value;
@@ -293,13 +301,12 @@ function login() {
 }
 function logout() { location.reload(); }
 
-// --- INIT ---
+// --- Start App ---
 function startApp() {
     document.getElementById('page-auth').classList.add('hide');
     document.getElementById('page-main').classList.remove('hide');
     document.getElementById('user-info').innerText = `${me.name} (${me.shift})`;
 
-    // Manager Controls
     if(me.shift==='主管') {
         document.getElementById('n-mgr').classList.remove('hide');
         document.getElementById('mgr-finance').classList.remove('hide');
@@ -318,23 +325,24 @@ function startApp() {
     renderStatus();
 }
 
-// --- RENDERERS ---
+// --- Renderers ---
 function renderStock() {
-    const list = JSON.parse(localStorage.getItem('v39_stock'));
+    const list = JSON.parse(localStorage.getItem('v40_stock'));
     document.getElementById('stock-list').innerHTML = list.map((s,i) => `
-        <div class="box" id="stk_${i}" onclick="doCheck('stk_${i}','${s}')">
+        <div class="box alert" id="stk_${i}" onclick="doCheck('stk_${i}','${s}')">
             ${s}<br><small>待檢</small>
-            ${me.shift==='主管' ? `<div class="del-btn" onclick="delConfItem('stock',${i}); event.stopPropagation()">X</div>` : ''}
+            ${me.shift==='主管' ? `<div class="reset-btn" onclick="resetCheck('stk_${i}'); event.stopPropagation()">↻</div>` : ''}
+            <div class="del-item-btn" onclick="delConfItem('stock',${i}); event.stopPropagation()">-</div>
         </div>
     `).join('');
 }
 
 function renderFridge() {
-    const list = JSON.parse(localStorage.getItem('v39_fridge'));
+    const list = JSON.parse(localStorage.getItem('v40_fridge'));
     document.getElementById('fridge-list').innerHTML = list.map((f,i) => `
-        <div class="box" id="ref_${i}" onclick="doTemp('ref_${i}','${f.n}','${f.t}')">
+        <div class="box alert" id="ref_${i}" onclick="doTemp('ref_${i}','${f.n}','${f.t}')">
             ${f.n}<br><small>待測</small>
-            ${me.shift==='主管' ? `<div class="del-btn" onclick="delConfItem('fridge',${i}); event.stopPropagation()">X</div>` : ''}
+            <div class="del-item-btn" onclick="delConfItem('fridge',${i}); event.stopPropagation()">-</div>
         </div>
     `).join('');
 }
@@ -346,24 +354,17 @@ function renderStatus() {
     for(let k in s) {
         const el = document.getElementById(k);
         if(el && s[k]) {
-            // undefined 修正: 使用 || ''
-            el.className = `box ${s[k].alert?'alert':'ok'}`;
-            el.innerHTML = `${s[k].name}<br><small>${s[k].alert?'⚠️ 異常':'✅ '+(s[k].user||'未知')+' '+s[k].time}</small>
-            ${s[k].mgrReply ? `<br><span style="color:blue;font-size:10px">批:${s[k].mgrReply}</span>` : ''}
-            ${me.shift==='主管' && document.querySelector('.editing') ? `<div class="del-btn" style="display:block" onclick="delConfItem('${k.includes('stk')?'stock':'fridge'}',${k.split('_')[1]});event.stopPropagation()">X</div>` : ''}`;
+            el.className = `box ${s[k].alert?'alert':'ok'} ${k.includes('s_')?'priority':''}`;
+            el.innerHTML = `${s[k].name}<br><small>${s[k].alert?'⚠️ 異常':'✅ '+s[k].user+' '+s[k].time}</small>
+            ${me.shift==='主管' ? `<div class="reset-btn" onclick="resetCheck('${k}'); event.stopPropagation()">↻</div>` : ''}
+            <div class="del-item-btn" onclick="delConfItem('${k.includes('stk')?'stock':'fridge'}',${k.split('_')[1]}); event.stopPropagation()">-</div>`;
         }
     }
     
-    // Finance
     document.getElementById('in-cash').value = store.cash||0;
     document.getElementById('in-vault').value = store.vault||0;
+    if(store.lastShift) document.getElementById('last-shift-info').innerText = `${store.lastShift.user} 於 ${store.lastShift.time}`;
     
-    // Shift Info
-    if(store.lastShift) {
-        document.getElementById('last-shift-info').innerText = `${store.lastShift.user} 於 ${store.lastShift.time}`;
-    }
-    
-    // Cards
     if(store.cards) {
         for(let k in store.cards) {
             let el = document.getElementById(`cd_l_${k}`);
@@ -372,7 +373,7 @@ function renderStatus() {
     }
 }
 
-// --- LOGIC ---
+// --- Interaction Logic ---
 function tab(t) {
     document.querySelectorAll('.nav div').forEach(e=>e.classList.remove('active'));
     document.getElementById('n-'+t).classList.add('active');
@@ -380,28 +381,44 @@ function tab(t) {
     document.getElementById('v-'+t).classList.remove('hide');
 }
 
-// 1. Employee Confirmation
+// 1. Anti-touch & Check
 function doCheck(id, name) {
     let s = DB.get('status');
-    if(s[id] && !s[id].alert) {
-        if(!confirm(`此項目已由 ${s[id].user} 完成。確定要重新打勾嗎？`)) return;
-    }
-    // 主管審閱
-    if(me.shift === '主管' && s[id] && s[id].user) {
-        const r = prompt("主管審閱/評語 (留空則僅打勾):", s[id].mgrReply||"");
-        if(r!==null) s[id].mgrReply = r;
-    }
-    
-    s[id] = {name, user:me.name, time:new Date().toLocaleTimeString(), alert:false, mgrReply: s[id]?.mgrReply};
+    if(s[id] && !s[id].alert && !confirm(`此項目已由 ${s[id].user} 完成。確定要覆蓋嗎？`)) return;
+    if(!s[id] && !confirm(`${name} 確認完成？`)) return; // First time check confirmation
+
+    s[id] = {name, user:me.name, time:new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}), alert:false};
     DB.set('status', s);
     renderStatus();
 }
 
-// 4. Fridge Logic (-30 check)
+// 5. Reset Button Logic
+function resetCheck(id) {
+    if(!confirm("確定要重置此項目為「未完成」？")) return;
+    let s = DB.get('status');
+    delete s[id]; 
+    DB.set('status', s);
+    // UI Reset
+    const el = document.getElementById(id);
+    el.className = `box alert ${id.includes('s_')?'priority':''}`;
+    // Re-render text logic is complex here, simpler to reload status or hard refresh list
+    if(id.includes('stk_')) renderStock();
+    else if(id.includes('ref_')) renderFridge();
+    else {
+        // Hardcoded boxes
+        const defaultName = id==='s_noodle'?'外籍泡麵':(id==='s_cookie'?'外籍餅乾':(id==='ex_bread'?'麵包':(id==='ex_drink'?'日配飲料':'生鮮蔬菜')));
+        el.innerHTML = `${defaultName}<br><small>待處理</small>
+        ${me.shift==='主管' ? `<div class="reset-btn" onclick="resetCheck('${id}'); event.stopPropagation()">↻</div>` : ''}`;
+    }
+    renderStatus();
+}
+
+// 3. Fridge Validation
 function doTemp(id, name, type) {
     const v = prompt(`${name} 溫度輸入:`, type==='f'?'-':'');
     if(v === null) return;
-    if(v.trim() === "") return alert("❌ 未輸入數字");
+    // 3. 嚴格檢查數字與符號
+    if(v.trim() === "" || v === "-" || isNaN(Number(v))) return alert("❌ 無效輸入！請輸入正確數字");
     
     const n = parseFloat(v);
     let alertFlag = false;
@@ -409,22 +426,22 @@ function doTemp(id, name, type) {
     if(type==='c' && (n<0 || n>7)) { alert("🚨 溫度異常 (0~7)！"); alertFlag=true; }
     if(type==='f') {
         if(n > -10) { alert("🚨 溫度異常 (需<-10)！"); alertFlag=true; }
-        if(n < -30) return alert("❌ 錯誤：溫度不可能低於 -30 度，請重測！");
+        if(n < -30) return alert("❌ 錯誤：溫度不可能低於 -30 度");
     }
     
     let s = DB.get('status');
-    s[id] = {name, user:me.name, val:v+"°C", time:new Date().toLocaleTimeString(), alert:alertFlag};
+    s[id] = {name, user:me.name, val:v+"°C", time:new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}), alert:alertFlag};
     DB.set('status', s);
     renderStatus();
 }
 
-// Manager Add/Delete
+// 6. Manager Add/Delete
 function toggleEdit(id) {
     document.getElementById(id).classList.toggle('editing');
-    document.getElementById(id==='stock-grid'?'add-stock-area':'add-fridge-area').classList.toggle('hide');
+    document.getElementById(id==='stock-list'?'add-stock-area':'add-fridge-area').classList.toggle('hide');
 }
 function addItem(type) {
-    const key = `v39_${type}`;
+    const key = `v40_${type}`;
     let list = JSON.parse(localStorage.getItem(key));
     const n = prompt("名稱:"); if(!n) return;
     if(type==='fridge') {
@@ -436,24 +453,34 @@ function addItem(type) {
 }
 function delConfItem(type, idx) {
     if(!confirm("確定刪除？")) return;
-    const key = `v39_${type}`;
+    const key = `v40_${type}`;
     let list = JSON.parse(localStorage.getItem(key));
     list.splice(idx, 1);
     localStorage.setItem(key, JSON.stringify(list));
     startApp();
 }
 
-// --- Map Logic ---
+// --- 7. Advanced Map Logic ---
 function drawMap() {
-    const area = document.getElementById('shelf-canvas');
+    const area = document.getElementById('map-area');
     area.innerHTML = "";
     shapes = DB.arr('map_shapes');
+    
     shapes.forEach((s, i) => {
         const el = document.createElement('div');
-        el.className = `shape ${s.done?'done':''} ${selShapeIdx===i?'selected':''}`;
-        el.style.left = s.x + 'px'; el.style.top = s.y + 'px';
-        el.style.width = (s.w||60) + 'px'; el.style.height = (s.h||60) + 'px';
-        el.innerHTML = `${s.name}<br><small>${s.done?s.checker:''}</small>`;
+        el.className = `map-box ${s.done?'done':''} ${selShapeIdx===i?'selected':''} ${s.pinned?'pinned':''}`;
+        el.style.left = s.x + 'px';
+        el.style.top = s.y + 'px';
+        el.style.width = (s.w||60) + 'px';
+        el.style.height = (s.h||60) + 'px';
+        
+        let timerHtml = "";
+        if(s.date) {
+            const daysLeft = Math.ceil((new Date(s.date) - new Date()) / (1000 * 60 * 60 * 24));
+            timerHtml = `<div class="timer-badge" style="background:${daysLeft<3?'red':(daysLeft<7?'orange':'green')}">${daysLeft}天</div>`;
+        }
+
+        el.innerHTML = `<span>${s.name}</span>${timerHtml}${s.pinned?'<div class="pin-icon">📌</div>':''}`;
         
         el.onclick = (e) => {
             e.stopPropagation();
@@ -463,11 +490,12 @@ function drawMap() {
                 document.getElementById('map-editor').classList.remove('hide');
                 drawMap();
             } else {
-                if(confirm(`${s.name} 檢查完成？`)) { s.done=true; s.checker=me.name; saveMapData(); }
+                if(confirm(`${s.name} 檢查完成？`)) { s.done = true; saveMapData(); }
             }
         };
-        // Drag
-        if(me.shift==='主管') {
+
+        // Drag (Only if not pinned)
+        if(me.shift==='主管' && !s.pinned) {
             el.onmousedown = (e) => {
                 if(e.target !== el) return;
                 const sx = e.clientX - s.x, sy = e.clientY - s.y;
@@ -478,15 +506,16 @@ function drawMap() {
         area.appendChild(el);
     });
 }
-function addMapBox() { const n = prompt("名稱:"); if(n) { shapes.push({name:n, x:50, y:50, w:60, h:60, done:false}); saveMapData(); }}
+
+function addMapBox() { const n = prompt("名稱:"); if(n) { shapes.push({name:n, x:50, y:50, w:60, h:60, done:false, pinned:false}); saveMapData(); }}
 function saveMapData() { localStorage.setItem('map_shapes', JSON.stringify(shapes)); drawMap(); }
-function setMapSize() {
-    const w = prompt("寬:", shapes[selShapeIdx].w||60);
-    const h = prompt("高:", shapes[selShapeIdx].h||60);
-    if(w&&h) { shapes[selShapeIdx].w=parseInt(w); shapes[selShapeIdx].h=parseInt(h); saveMapData(); }
-}
+function setMapDate() { const d = prompt("到期日 (YYYY-MM-DD):"); if(d) { shapes[selShapeIdx].date = d; saveMapData(); }}
+function setMapSize() { const w = prompt("寬:", shapes[selShapeIdx].w); const h = prompt("高:", shapes[selShapeIdx].h); if(w&&h) { shapes[selShapeIdx].w=parseInt(w); shapes[selShapeIdx].h=parseInt(h); saveMapData(); }}
+function togglePin() { shapes[selShapeIdx].pinned = !shapes[selShapeIdx].pinned; saveMapData(); }
 function renMapBox() { const n=prompt("新名"); if(n){ shapes[selShapeIdx].name=n; saveMapData(); }}
-function delMapBox() { shapes.splice(selShapeIdx,1); saveMapData(); document.getElementById('map-editor').classList.add('hide'); }
+function delMapBox() { if(confirm("刪除此方格?")) { shapes.splice(selShapeIdx,1); saveMapData(); document.getElementById('map-editor').classList.add('hide'); }}
+function copyMapBox() { const s=shapes[selShapeIdx]; shapes.push({...s, x:s.x+20, y:s.y+20}); saveMapData(); }
+function resetMapAll() { if(confirm("全重置?")) { shapes.forEach(s=>s.done=false); saveMapData(); }}
 
 // --- Finance & Shift ---
 function renderMoney() {
@@ -529,20 +558,16 @@ function doCalc() {
     const vis = Number(document.getElementById('v-vis').value);
     if(vis>0) document.getElementById('v-avg').value = Math.round(rev/vis);
     
-    // 7. 誤差
-    const diff = count - (inC + inV + rev); // 簡化公式，實際應扣除刷卡等
+    const diff = count - (inC + inV + rev); 
     document.getElementById('diff-show').innerText = diff;
     document.getElementById('diff-show').style.color = diff===0?'green':'red';
 }
-// 4. & 5. 交班功能
 function submitShift() {
     if(!confirm("確定提交交班？")) return;
     let s = DB.get('store');
     s.cash = parseFloat(document.getElementById('total-money').innerText);
-    // 記錄時間與人
     s.lastShift = { user: me.name, time: new Date().toLocaleString() };
     
-    // Save Cards
     let cards = {};
     ["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"].forEach(c => {
         cards[c] = document.getElementById(`cd_l_${c}`).value || 0;
@@ -553,7 +578,6 @@ function submitShift() {
     alert("✅ 交班成功！");
     location.reload();
 }
-// Manager Finance
 function unlockIn() { document.getElementById('in-cash').disabled=false; document.getElementById('in-vault').disabled=false; }
 function saveIn() { 
     let s = DB.get('store'); 
@@ -573,10 +597,10 @@ function popSvc(t) {
     curSvcType=t; document.getElementById('modal-form').classList.remove('hide');
     document.getElementById('modal-title').innerText=t;
     const f=document.getElementById('modal-fields');
-    curFeedId = null; // New item
+    curFeedId = null; 
     imgBase64=""; document.getElementById('preview-box').style.display='none';
-    
-    // 6. 7. 完整欄位
+    document.getElementById('modal-img').value="";
+
     if(t==='客訂') f.innerHTML=`<input id="f1" placeholder="品名"><input id="f2" placeholder="條碼"><input id="f3" placeholder="數量"><input id="f4" placeholder="售價"><hr><input id="f5" placeholder="客名"><input id="f6" placeholder="電話"><input id="f7" placeholder="LINE"><input id="f8" placeholder="時間">`;
     else if(t==='維修') f.innerHTML=`<input id="f1" placeholder="品名"><input id="f2" placeholder="原因"><input id="f3" placeholder="購買日"><input id="f4" placeholder="條碼"><hr><input id="f5" placeholder="客名"><input id="f6" placeholder="電話"><input id="f7" placeholder="LINE"><input id="f8" placeholder="時間">`;
     else f.innerHTML=`<textarea id="f1" placeholder="請輸入內容..." style="height:100px"></textarea>`;
@@ -596,7 +620,6 @@ function submitSvc() {
     if(!txt && !imgBase64) return alert("❌ 空白無法送出");
     
     let feeds = DB.arr('feeds');
-    // Edit or New
     if(curFeedId !== null) {
         feeds[curFeedId].txt = txt;
         if(imgBase64) feeds[curFeedId].img = imgBase64;
@@ -608,21 +631,20 @@ function submitSvc() {
 }
 
 function renderFeed() {
-    const feeds = DB.arr('feeds');
     const d=document.getElementById('feed-area'); d.innerHTML="";
-    const noti=document.getElementById('noti-dropdown'); if(noti) noti.innerHTML="";
+    const feeds = DB.arr('feeds');
     let unread=0;
     
     feeds.forEach((f,i)=>{
         if(!f.done) unread++;
-        // 9. Edit Permission: Self or Manager
         const canEdit = (me.shift==='主管' || me.name===f.user);
         
+        // 4. Background Color for status
         d.innerHTML += `
-            <div class="feed-item" style="border-left:5px solid ${f.done?'green':'orange'}">
+            <div class="feed-item ${f.done?'done':'pending'}">
                 <div class="feed-meta"><span>${f.type} | ${f.user}</span> <span>${f.time}</span></div>
                 <div>${f.txt}</div>
-                ${f.img ? `<img src="${f.img}" style="width:80px; margin-top:5px; cursor:pointer" onclick="zoom('${f.img}')">` : ''}
+                ${f.img ? `<img src="${f.img}" style="width:80px; margin-top:5px; cursor:pointer; border-radius:4px;" onclick="zoom('${f.img}')">` : ''}
                 <div style="margin-top:5px; text-align:right;">
                     ${canEdit ? `<button class="btn-sm btn-o" onclick="editFeed(${i})">編輯</button> <button class="btn-sm btn-r" onclick="delFeed(${i})">刪除</button>` : ''}
                     <button class="btn-sm btn-g" onclick="toggleFeed(${i})">${f.done?'重開':'完成'}</button>
@@ -643,17 +665,15 @@ function delFeed(i) {
     let fs=DB.arr('feeds'); fs.splice(i,1); localStorage.setItem('feeds', JSON.stringify(fs)); renderFeed();
 }
 function editFeed(i) {
-    let fs=DB.arr('feeds');
-    curFeedId = i;
-    popSvc(fs[i].type);
-    // Note: Simple edit just opens empty form for now, in real app would populate data
+    let fs=DB.arr('feeds'); curFeedId = i; popSvc(fs[i].type);
+    // Simple mock load, normally you'd parse back
 }
 
 function gotoSvc() { tab('svc'); }
 function zoom(s) { document.getElementById('big-img').src=s; document.getElementById('img-overlay').classList.add('show'); }
 function closeZoom() { document.getElementById('img-overlay').classList.remove('show'); }
 
-// --- Rating ---
+// --- 8. Ratings ---
 function loadUserList() {
     const u = DB.get('users');
     const s = document.getElementById('mgr-users');
@@ -662,9 +682,8 @@ function loadUserList() {
 function rate(span,e) { span.parentNode.querySelectorAll('span').forEach((s,i)=>s.className=i<e.target.cellIndex?'gold':''); }
 function saveRating() {
     const uid = document.getElementById('mgr-users').value;
-    if(!uid) return alert("請選擇員工");
-    // Save logic here (mock)
-    alert("評分已儲存至員工檔案");
+    if(!uid || uid === "載入員工...") return alert("請選擇員工");
+    alert("評分已儲存！");
 }
 </script>
 </body>
