@@ -3,51 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧門市 V36 (除錯修復版)</title>
+    <title>智慧門市 V36 (自動修復版)</title>
     <style>
         /* --- 核心樣式 --- */
-        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f0f2f5; padding-bottom: 100px; }
+        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: #f0f2f5; padding-bottom: 120px; }
         .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; }
         
         /* 導航 */
         .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 3px solid #ddd; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .nav div { flex: 1; padding: 12px 0; text-align: center; font-weight: bold; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav div { flex: 1; padding: 12px 0; text-align: center; font-weight: bold; color: #666; cursor: pointer; font-size: 15px; }
         .nav div.active { color: #007bff; border-bottom: 3px solid #007bff; background: #eef7ff; }
 
-        /* 區塊與標題 */
-        .section-header { background: #e9ecef; padding: 10px; margin: 10px 0; font-weight: bold; border-left: 5px solid #007bff; display: flex; justify-content: space-between; align-items: center; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 10px; }
+        /* 區塊標題 */
+        .head { background: #e9ecef; padding: 10px; margin: 15px 0 10px 0; font-weight: bold; border-left: 5px solid #007bff; display: flex; justify-content: space-between; align-items: center; }
         
-        /* 萬用格子 */
-        .box { border: 2px solid #ccc; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; background: #fff; min-height: 60px; display:flex; flex-direction:column; justify-content:center; align-items:center; position: relative; }
+        /* 格子系統 */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 10px; }
+        .box { border: 2px solid #ccc; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; background: #fff; min-height: 70px; display:flex; flex-direction:column; justify-content:center; align-items:center; position: relative; transition:0.2s; }
         .box.ok { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
+        /* 1. 溫度異常紅底 */
         .box.alert { background: #dc3545 !important; border-color: #a71d2a !important; color: white !important; animation: shake 0.4s; }
         .foreign { background: #f3e5f5; border: 2px solid #9c27b0; color: #6a1b9a; font-weight: bold; }
 
-        /* 管理模式按鈕 */
-        .del-btn { position: absolute; top: -10px; right: -10px; background: red; color: white; width: 24px; height: 24px; border-radius: 50%; font-size: 14px; line-height: 24px; display: none; z-index: 10; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        /* 管理模式刪除紐 */
+        .del-btn { position: absolute; top: -8px; right: -8px; background: red; color: white; width: 24px; height: 24px; border-radius: 50%; font-size: 12px; line-height: 24px; display: none; z-index: 10; border: 2px solid white; box-shadow: 0 2px 2px rgba(0,0,0,0.3); }
         .editing .del-btn { display: block; }
         .editing .box { border: 2px dashed #007bff; animation: pulse 1s infinite; }
 
-        /* 帳務 */
-        table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 10px; }
-        td, th { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .inp-money { width: 100%; text-align: center; padding: 8px; border: 1px solid #ccc; font-size: 16px; background: #f9f9f9; }
-
-        /* 圖片與鈴鐺 */
-        #img-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-        #img-overlay.show { opacity: 1; pointer-events: auto; }
-        #big-img { max-width: 95%; max-height: 95%; border: 2px solid white; transform: scale(0.8); transition: transform 0.3s; }
-        #img-overlay.show #big-img { transform: scale(1); }
-
-        #bell { position: fixed; top: 15px; right: 15px; font-size: 26px; background: white; border-radius: 50%; padding: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 200; cursor: pointer; }
-        #badge { position: absolute; top: 0; right: 0; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; text-align: center; line-height: 20px; display: none; border: 2px solid white; }
-
         /* 模型圖 */
         #shelf-canvas { border: 2px solid #333; position: relative; width: 95%; height: 350px; background: #eee; margin: 10px auto; overflow: hidden; }
-        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; text-align: center; padding: 2px; font-weight: bold; }
+        .shape { position: absolute; border: 2px solid #333; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; text-align: center; padding: 2px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
         .shape.done { background: #28a745 !important; color: white !important; }
         .shape.selected { border: 3px solid red; z-index: 20; transform: scale(1.05); }
+        .shape-info { font-size: 9px; margin-top: 2px; display: block; }
+
+        /* 圖片放大 */
+        #img-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        #img-overlay.show { opacity: 1; pointer-events: auto; }
+        #big-img { max-width: 95%; max-height: 95%; border: 2px solid white; border-radius: 5px; transform: scale(0.8); transition: transform 0.3s; }
+        #img-overlay.show #big-img { transform: scale(1); }
+
+        /* 鈴鐺 */
+        #bell { position: fixed; top: 15px; right: 15px; font-size: 26px; background: white; border-radius: 50%; padding: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 200; cursor: pointer; }
+        #badge { position: absolute; top: 0; right: 0; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; text-align: center; line-height: 20px; display: none; border: 2px solid white; }
+        
+        /* 帳務表 */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 10px; }
+        td, th { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .inp-money { width: 100%; text-align: center; padding: 8px; border: 1px solid #ccc; font-size: 16px; background: #fff; }
 
         /* 通用元件 */
         input, select, button, textarea { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #bbb; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
@@ -98,27 +101,26 @@
             <div onclick="tab('stock')" id="n-stock" class="active">補貨</div>
             <div onclick="tab('temp')" id="n-temp">冰箱</div>
             <div onclick="tab('count')" id="n-count">帳務</div>
-            <div onclick="tab('svc')" id="n-svc">交接</div>
+            <div onclick="tab('svc')" id="n-svc">客服</div>
             <div onclick="tab('mgr')" id="n-mgr" class="hide">主管</div>
         </div>
 
         <div id="v-stock">
-            <div class="section-header" style="background:#f3e5f5; color:#4a148c;">🔥 重點補貨</div>
+            <div class="head" style="background:#f3e5f5; color:#4a148c;">🔥 重點補貨</div>
             <div class="grid">
                 <div class="box foreign" id="stk_noodle" onclick="chk('stk_noodle','外籍泡麵')">外籍泡麵<br><small>待檢</small></div>
                 <div class="box foreign" id="stk_cookie" onclick="chk('stk_cookie','外籍餅乾')">外籍餅乾<br><small>待檢</small></div>
             </div>
 
-            <div class="section-header">
+            <div class="head">
                 🛒 每日補貨 
                 <button id="btn-edit-stock" class="hide btn-s btn-o" onclick="toggleEdit('stock-grid')">管理</button>
             </div>
-            <div class="grid" id="stock-grid"></div>
-            <div id="add-stock-area" class="hide" style="padding:10px;">
+            <div class="grid" id="stock-grid"></div> <div id="add-stock-area" class="hide" style="padding:10px;">
                 <button class="btn-g" style="width:100%" onclick="addItem('stock')">+ 新增補貨項目</button>
             </div>
 
-            <div class="section-header">🗓️ 每月效期圖</div>
+            <div class="head">🗓️ 每月效期圖</div>
             <div id="mgr-map-tool" class="hide" style="padding:5px; background:#e9ecef;">
                 <button onclick="addMapShape()" class="btn-s btn-g">+ 新增方塊</button>
                 <button onclick="saveMapData()" class="btn-s btn-o">發布地圖</button>
@@ -134,7 +136,7 @@
         </div>
 
         <div id="v-temp" class="hide">
-            <div class="section-header">
+            <div class="head">
                 ❄️ 冰箱列表 
                 <button id="btn-edit-fridge" class="hide btn-s btn-o" onclick="toggleEdit('fridge-grid')">管理</button>
             </div>
@@ -145,7 +147,7 @@
         </div>
 
         <div id="v-count" class="hide">
-            <div class="section-header">📥 上一班留存 (進櫃)</div>
+            <div class="head">📥 上一班留存 (進櫃)</div>
             <div style="padding:10px; background:#e3f2fd;">
                 收銀：<input id="in-c" disabled style="width:100px; display:inline"> 
                 庫存：<input id="in-s" disabled style="width:100px; display:inline">
@@ -155,17 +157,17 @@
                 </div>
             </div>
 
-            <div class="section-header">🪙 交班點算</div>
+            <div class="head">🪙 交班點算</div>
             <table>
                 <tr><th>面額</th><th>收銀</th><th>庫存</th><th>小計</th></tr>
                 <tbody id="money-body"></tbody>
             </table>
             <div style="text-align:right; font-weight:bold; color:blue; padding:10px; font-size:18px;">總計: $<span id="total-cash">0</span></div>
 
-            <div class="section-header">📞 電話卡</div>
+            <div class="head">📞 電話卡</div>
             <div id="card-list" class="grid"></div>
 
-            <div class="section-header">📊 營收</div>
+            <div class="head">📊 營收</div>
             <div class="grid">
                 <input type="number" id="val-rev" placeholder="營業額" oninput="calcAvg()">
                 <input type="number" id="val-vis" placeholder="來客數" oninput="calcAvg()">
@@ -177,7 +179,7 @@
                 <input type="number" id="pay-rf" placeholder="現金扣款">
             </div>
 
-            <div class="section-header">➕ 額外收支</div>
+            <div class="head">➕ 額外收支</div>
             <div class="grid">
                 <button class="btn-g" onclick="addEx('in')">+收入</button>
                 <button class="btn-r" onclick="addEx('out')">+支出</button>
@@ -199,7 +201,7 @@
         </div>
 
         <div id="v-mgr" class="hide">
-            <div class="section-header">🌟 員工評分</div>
+            <div class="head">🌟 員工評分</div>
             <select id="mgr-target"><option>選擇員工</option></select>
             <div style="padding:15px; background:#f9f9f9; margin-top:10px;">
                 <p>工作效率: <span class="stars" onclick="rate(this, event)">★★★★★</span></p>
@@ -345,7 +347,7 @@ function renderAll() {
     document.getElementById('in-c').value = store.cash || 0;
     document.getElementById('in-s').value = store.stock || 0;
     
-    // 電話卡進櫃顯示
+    // 電話卡進櫃
     if(store.cards) {
         for(let k in store.cards) {
             let el = document.getElementById(`cd_l_${k}`);
@@ -393,7 +395,7 @@ function inputTemp(id, name, type) {
     DB.set('status',s); renderAll();
 }
 
-// --- 管理模式 (修復) ---
+// --- 管理模式 (新增/刪除) ---
 function toggleEdit(id) {
     const el = document.getElementById(id);
     el.classList.toggle('editing');
@@ -409,7 +411,7 @@ function addItem(type) {
         list.push({n, t});
     } else list.push(n);
     localStorage.setItem(key, JSON.stringify(list));
-    renderItems(); // 重新渲染列表
+    renderItems();
 }
 function delItem(type, idx) {
     if(!confirm("刪除?")) return;
@@ -473,28 +475,27 @@ function submitForm() {
 function renderFeed() {
     const fs=DB.arr('feeds');
     const d=document.getElementById('feed-list'); d.innerHTML="";
-    const noti=document.getElementById('noti-dropdown'); noti.innerHTML="";
     let unread=0;
-    
     fs.forEach((b,i)=>{
-        if(!b.done) { unread++; noti.innerHTML+=`<div class="noti-item">${b.type}</div>`; }
+        if(!b.done) unread++;
         d.innerHTML += `<div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-left:5px solid ${b.done?'green':'orange'}">
             <b>[${b.type}] ${b.user}</b> <small>${b.time}</small><br>${b.txt}
             ${b.img ? `<br><img src="${b.img}" style="width:60px; margin-top:5px;" onclick="zoom('${b.img}')">` : ''}
-            ${b.mgrReply ? `<div style="background:#fce4ec; padding:5px; margin-top:5px; font-size:12px; color:#d63384;">👮 批改: ${b.mgrReply}</div>` : ''}
+            ${b.reply ? `<div style="background:#eee; padding:5px; margin-top:5px;">👮 ${b.reply}</div>` : ''}
             <div style="text-align:right; margin-top:5px;">
                 ${!b.done ? `<button onclick="finishFeed(${i})" class="btn-s">完成</button>` : '✅'}
                 ${me.shift==='主管' ? `<button onclick="replyFeed(${i})" class="btn-s btn-o">批改</button>` : ''}
             </div>
         </div>`;
     });
+    // 鈴鐺
     document.getElementById('badge').style.display=unread?'block':'none';
     document.getElementById('badge').innerText=unread;
 }
 function finishFeed(i) { let fs=DB.arr('feeds'); fs[i].done=true; localStorage.setItem('feeds',JSON.stringify(fs)); renderFeed(); }
-function replyFeed(i) { const r=prompt("批改/回覆："); if(r){ let fs=DB.arr('feeds'); fs[i].mgrReply=r; localStorage.setItem('feeds',JSON.stringify(fs)); renderFeed(); }}
-function toggleNoti() { const n=document.getElementById('noti-dropdown'); n.style.display=n.style.display==='block'?'none':'block'; }
-function gotoSvc() { tab('svc'); toggleNoti(); }
+function replyFeed(i) { const r=prompt("批改/回覆："); if(r){ let fs=DB.arr('feeds'); fs[i].reply=r; localStorage.setItem('feeds',JSON.stringify(fs)); renderFeed(); }}
+function toggleNoti() { gotoSvc(); }
+function gotoSvc() { tab('svc'); }
 function zoom(s){ document.getElementById('big-img').src=s; document.getElementById('img-overlay').classList.add('show'); }
 function closeZoom(){ document.getElementById('img-overlay').classList.remove('show'); }
 
@@ -506,12 +507,7 @@ function drawMap() {
         const d=document.createElement('div');
         d.className = `shape ${s.done?'done':''} ${selShapeIdx===i?'selected':''}`;
         d.style.left=s.x+'px'; d.style.top=s.y+'px'; d.style.width="60px"; d.style.height="40px";
-        
-        let info = s.name;
-        if(s.done) info += `<br><span style='font-size:9px'>✅${s.checker||''}</span>`;
-        if(s.mgrNote) info += `<br><span style='font-size:9px; color:blue'>${s.mgrNote}</span>`;
-        d.innerHTML = info;
-
+        d.innerText=s.name;
         if(me.shift==='主管') {
             d.onclick=()=>{ selShapeIdx=i; document.getElementById('sel-name').innerText=s.name; document.getElementById('map-edit-bar').classList.remove('hide'); drawMap(); };
             d.onmousedown=e=>{
@@ -519,12 +515,7 @@ function drawMap() {
                 document.onmousemove=ev=>{ s.x=ev.clientX-ox; s.y=ev.clientY-oy; d.style.left=s.x+'px'; d.style.top=s.y+'px'; };
                 document.onmouseup=()=>document.onmousemove=null;
             };
-        } else d.onclick=()=>{ 
-            if(confirm("完成?")){ 
-                s.done=true; s.checker=me.name; s.checkTime=new Date().toLocaleString(); 
-                saveMapData(); 
-            } 
-        };
+        } else d.onclick=()=>{ if(confirm("完成?")){ s.done=true; saveMapData(); } };
         c.appendChild(d);
     });
 }
@@ -535,6 +526,7 @@ function copyShape(){ const s=shapes[selShapeIdx]; shapes.push({...s, x:s.x+20, 
 function renShape(){ const n=prompt("新名"); if(n){ shapes[selShapeIdx].name=n; saveMapData(); }}
 function reviewMapItem() { const r=prompt("批改評語:"); if(r){ shapes[selShapeIdx].mgrNote=r; saveMapData(); }}
 
+// 評分
 function rate(span,v) { span.parentNode.querySelectorAll('span').forEach((s,i)=>s.className=i<v?'gold':''); }
 </script>
 </body>
