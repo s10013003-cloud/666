@@ -1,248 +1,231 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧門市 V43 (RWD Ultimate)</title>
-    <style>
-        /* --- Core Design System --- */
-        :root { --primary: #00695c; --accent: #d84315; --success: #2e7d32; --bg: #f8f9fa; --white: #fff; --gray: #eceff1; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Microsoft JhengHei", sans-serif; margin: 0; background: var(--bg); padding-bottom: 120px; color: #333; -webkit-tap-highlight-color: transparent; }
-        .container { max-width: 600px; margin: 0 auto; background: var(--white); min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+!DOCTYPE html
+html lang=zh-TW
+head
+    meta charset=UTF-8
+    meta name=viewport content=width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no
+    title智慧門市 V44 (7-11 Enterprise)title
+    style
+         --- 7-Eleven Style Guidelines --- 
+        root { --green #008148; --orange #f37920; --red #d32f2f; --gray #f4f4f4; --text #333; }
+        body { font-family Microsoft JhengHei, sans-serif; margin 0; background var(--gray); padding-bottom 120px; color var(--text); -webkit-user-select none; user-select none; }
+        .container { max-width 600px; margin 0 auto; background #fff; min-height 100vh; box-shadow 0 0 15px rgba(0,0,0,0.1); }
 
-        /* Navigation */
-        .nav { display: flex; position: sticky; top: 0; background: var(--white); border-bottom: 1px solid #ddd; z-index: 100; overflow-x: auto; }
-        .nav div { flex: 0 0 auto; padding: 14px 18px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; font-size: 15px; }
-        .nav div.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: #e0f2f1; }
+         Nav 
+        .nav { display flex; position sticky; top 0; background #fff; border-bottom 3px solid #eee; z-index 100; }
+        .nav div { flex 1; padding 15px 0; text-align center; font-weight bold; color #999; cursor pointer; border-bottom 3px solid transparent; transition0.2s; }
+        .nav div.active { color var(--green); border-bottom-color var(--green); background #f0fff4; }
 
-        /* Headers */
-        .head { background: #fff; padding: 15px; margin: 15px 0 10px; font-weight: 800; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+         Headers 
+        .head { background #fff; padding 15px; margin 10px 0; font-weight 800; border-left 6px solid var(--orange); display flex; justify-content space-between; align-items center; border-bottom 1px solid #eee; }
         
-        /* Grid & Box */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px; }
-        .box { border: 1px solid #cfd8dc; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; background: var(--white); min-height: 70px; display:flex; flex-direction:column; justify-content:center; align-items:center; position: relative; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .box:active { transform: scale(0.98); background: #f5f5f5; }
+         Box Grid 
+        .grid { display grid; grid-template-columns 1fr 1fr; gap 10px; padding 0 12px; }
+        .box { border 1px solid #ccc; padding 15px; text-align center; border-radius 6px; cursor pointer; background #fff; min-height 70px; displayflex; flex-directioncolumn; justify-contentcenter; align-itemscenter; position relative; transition0.2s; }
+        .boxactive { transform scale(0.97); }
         
-        /* Status Colors */
-        .box.ok { background: #e8f5e9 !important; border-color: var(--success) !important; color: #1b5e20; }
-        .box.alert { background: #ffebee !important; border-color: #c62828 !important; color: #b71c1c; font-weight: bold; animation: shake 0.4s; }
+         Status States 
+        .box.done { background #e8f5e9 !important; border-color var(--green) !important; color #1b5e20; }
+        .box.alert { background #ffebee !important; border-color var(--red) !important; color #b71c1c; font-weight bold; animation pulse 2s infinite; }
+        .box.priority { border 2px solid var(--orange); }
+
+         Reset Button 
+        .reset-btn { position absolute; top 5px; right 5px; width 24px; height 24px; background #fff; border 1px solid #ccc; border-radius 50%; color #666; font-size 14px; line-height 22px; z-index 10; displayflex; justify-contentcenter; align-itemscenter; }
+        .reset-btnhover { background var(--red); color white; border-color var(--red); }
+
+         Map 
+        #map-area { position relative; width 94%; height 400px; background #eceff1; margin 10px auto; overflow hidden; border 2px solid #cfd8dc; border-radius 4px; }
+        .map-box { position absolute; background rgba(255,255,255,0.9); border 2px solid #546e7a; display flex; flex-direction column; align-items center; justify-content center; font-size 11px; cursor pointer; box-shadow 2px 2px 5px rgba(0,0,0,0.2); }
+        .map-box.done { border-color var(--green); background #e8f5e9; color var(--green); }
+        .map-box.selected { border 3px solid var(--red); z-index 50; transform scale(1.05); }
+
+         Fridge Time Slots 
+        .time-grid { display grid; grid-template-columns repeat(3, 1fr); gap 8px; margin-top 10px; }
+        .time-btn { padding 8px; border 1px solid #ccc; border-radius 4px; background #fff; text-align center; cursor pointer; font-size 12px; }
+        .time-btn.checked { background var(--green); color white; border-color var(--green); }
+        .time-btn.missed { background #cfd8dc; color #999; border-color #b0bec5; cursor not-allowed; }  逾時 
+        .time-btn.alert { background var(--red); color white; }  溫度異常 
+
+         Feed 
+        .feed-item { padding 12px; border 1px solid #eee; margin-bottom 10px; border-radius 6px; background #fff; border-left 5px solid #ccc; }
+        .feed-item.done { border-left-color var(--green); background #f1f8e9; }
+        .feed-item.pending { border-left-color var(--red); background #fff3e0; }
+
+         UI Elements 
+        input, select, textarea { width 100%; padding 12px; margin 6px 0; border 1px solid #ccc; border-radius 4px; font-size 16px; box-sizing border-box; }
+        button { background var(--green); color white; border none; padding 10px; border-radius 4px; font-weight bold; cursor pointer; width 100%; margin-top 5px; }
+        .btn-s { width auto; padding 5px 12px; font-size 12px; margin-right 5px; background #555; }
+        .btn-r { background var(--red); } .btn-o { background var(--orange); }
+        .hide { display none !important; }
         
-        /* Interactive Map */
-        #map-area { position: relative; width: 94%; height: 450px; background: #eceff1; margin: 10px auto; overflow: hidden; border: 2px solid #b0bec5; border-radius: 4px; background-image: radial-gradient(#cfd8dc 1px, transparent 1px); background-size: 20px 20px; }
-        .map-box { position: absolute; background: rgba(255,255,255,0.95); border: 2px solid #546e7a; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; user-select: none; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); padding: 2px; text-align: center; font-weight: bold; transition: 0.1s; }
-        .map-box.done { color: #000; border-color: #004d40; }
-        .map-box.selected { border: 4px solid var(--accent); z-index: 50; transform: scale(1.05); }
-        .timer-badge { font-size: 9px; background: #263238; color: white; padding: 1px 4px; border-radius: 4px; margin-top: 2px; }
+         Rating 
+        .rating-row { display flex; justify-content space-between; align-items center; margin-bottom 10px; border-bottom 1px solid #eee; padding-bottom 5px; }
+        .stars span { font-size 28px; color #e0e0e0; cursor pointer; }
+        .stars span.gold { color #fbc02d; }
 
-        /* Time Slots Grid (Fridge) */
-        .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .time-btn { padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #fff; text-align: center; cursor: pointer; font-size: 14px; }
-        .time-btn.checked { background: var(--success); color: white; border-color: var(--success); }
-
-        /* Feed */
-        .feed-item { padding: 12px; border: 1px solid #eee; margin-bottom: 10px; border-radius: 8px; background: #fff; }
-        .feed-item.done { border-left: 5px solid var(--success); background: #f1f8e9; }
-        .feed-item.pending { border-left: 5px solid var(--accent); background: #fff3e0; }
-
-        /* Controls */
-        .reset-btn { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; background: #fff; border: 1px solid #999; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; z-index: 5; color: #555; }
-        .del-item-btn { position: absolute; top: -8px; left: -8px; width: 22px; height: 22px; background: var(--accent); color: white; border-radius: 50%; font-size: 12px; display: none; align-items: center; justify-content: center; border: 2px solid white; z-index: 10; }
-        .editing .del-item-btn { display: flex; }
-        .editing .box { border: 2px dashed var(--primary); opacity: 0.9; }
-
-        /* Inputs & Buttons */
-        input, select, button, textarea { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #b0bec5; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; }
-        button:active { filter: brightness(0.9); transform: translateY(1px); }
-        .btn-sm { width: auto; padding: 6px 12px; font-size: 12px; margin-right: 5px; }
-        .btn-g { background: var(--success); } .btn-r { background: var(--accent); } .btn-o { background: #fbc02d; color: #333; }
-        .hide { display: none !important; }
+         Modal 
+        #modal-overlay { position fixed; top0; left0; width100%; height100%; backgroundrgba(0,0,0,0.8); z-index2000; displaynone; justify-contentcenter; align-itemscenter; }
+        .modal-content { backgroundwhite; width90%; max-height90%; overflow-yauto; padding20px; border-radius8px; }
         
-        /* Rating Stars */
-        .stars span { font-size: 30px; color: #cfd8dc; cursor: pointer; transition: 0.2s; }
-        .stars span.gold { color: #fbc02d; }
+        @keyframes pulse { 0%{box-shadow 0 0 0 0 rgba(211, 47, 47, 0.4);} 70%{box-shadow 0 0 0 10px rgba(211, 47, 47, 0);} 100%{box-shadow 0 0 0 0 rgba(211, 47, 47, 0);} }
+    style
+head
+body
 
-        /* Modal & Img */
-        #modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; display:none; justify-content:center; align-items:center; backdrop-filter: blur(2px); }
-        .modal-content { background:white; width:90%; max-height:90%; overflow-y:auto; padding:20px; border-radius:12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        #img-zoom { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:3000; display:none; justify-content:center; align-items:center; }
-        #img-zoom img { max-width:95%; max-height:95%; border: 3px solid white; border-radius: 4px; }
+div id=modal-overlaydiv class=modal-content id=modal-bodydivdiv
 
-        @keyframes shake { 0%{transform:translateX(0)} 25%{transform:translateX(-5px)} 50%{transform:translateX(5px)} 75%{transform:translateX(-5px)} 100%{transform:translateX(0)} }
-    </style>
-</head>
-<body>
+div class=container
+    div id=page-auth style=padding40px 20px; text-aligncenter;
+        h2 style=colorvar(--green); letter-spacing 2px;7-ELEVEn Systemh2
+        p style=color#666Store Operation V44p
+        div id=box-login style=margin-top30px;
+            input id=l-id placeholder=員工編號
+            input id=l-pw type=password placeholder=密碼
+            button onclick=login()登入系統button
+            p onclick=swAuth(true) style=colorblue; margin-top20px; cursorpointer;註冊帳號p
+        div
+        div id=box-reg class=hide style=margin-top30px;
+            input id=r-name placeholder=真實姓名
+            select id=r-shiftoption早班optionoption晚班optionoption主管optionselect
+            input id=r-id placeholder=設定編號
+            input id=r-pw type=password placeholder=設定密碼
+            button class=btn-g onclick=reg()確認註冊button
+            p onclick=swAuth(false) style=colorblue; margin-top20px; cursorpointer;返回登入p
+        div
+    div
 
-<div id="img-zoom" onclick="this.style.display='none'"><img id="big-img"></div>
-<div id="modal-overlay"><div class="modal-content" id="modal-body"></div></div>
+    div id=page-main class=hide
+        div style=background#333; colorwhite; padding10px; displayflex; justify-contentspace-between; align-itemscenter;
+            span🏪 span id=user-info--spanspan
+            button onclick=logout() class=btn-s登出button
+        div
 
-<div class="container">
-    <div id="page-auth" style="padding:40px 20px; text-align:center;">
-        <h2 style="color:var(--primary); margin-bottom:5px;">🏪 智慧門市 V43</h2>
-        <p style="color:#78909c; font-size:12px;">Retail RWD Ultimate</p>
-        <div id="box-login" style="margin-top:20px;">
-            <input id="l-id" placeholder="帳號">
-            <input id="l-pw" type="password" placeholder="密碼">
-            <button onclick="login()">登入</button>
-            <p onclick="swAuth(true)" style="color:var(--primary); margin-top:20px; cursor:pointer;">註冊新帳號</p>
-        </div>
-        <div id="box-reg" class="hide" style="margin-top:20px;">
-            <input id="r-name" placeholder="真實姓名">
-            <select id="r-shift"><option>早班</option><option>晚班</option><option>主管</option></select>
-            <input id="r-id" placeholder="設定帳號">
-            <input id="r-pw" type="password" placeholder="設定密碼">
-            <button class="btn-g" onclick="reg()">確認註冊</button>
-            <p onclick="swAuth(false)" style="color:var(--primary); margin-top:20px; cursor:pointer;">返回登入</p>
-        </div>
-    </div>
+        div class=nav
+            div onclick=tab('stock') id=n-stock class=active補貨div
+            div onclick=tab('expiry') id=n-expiry效期div
+            div onclick=tab('temp') id=n-temp冰箱div
+            div onclick=tab('count') id=n-count帳務div
+            div onclick=tab('svc') id=n-svc客服div
+            div onclick=tab('mgr') id=n-mgr class=hide主管div
+        div
 
-    <div id="page-main" class="hide">
-        <div style="background:#263238; color:white; padding:12px; display:flex; justify-content:space-between; align-items:center;">
-            <span>👤 <span id="user-info">--</span></span>
-            <button onclick="logout()" class="btn-sm" style="background:#546e7a;">登出</button>
-        </div>
+        div id=v-stock
+            div class=head style=border-colorvar(--red);🔥 重點補貨div
+            div class=grid
+                div class=box priority alert id=s_noodle onclick=doCheck('s_noodle','外籍泡麵')外籍泡麵brsmall待處理smalldiv
+                div class=box priority alert id=s_cookie onclick=doCheck('s_cookie','外籍餅乾')外籍餅乾brsmall待處理smalldiv
+            div
 
-        <div class="nav">
-            <div onclick="tab('stock')" id="n-stock" class="active">📦 補貨</div>
-            <div onclick="tab('expiry')" id="n-expiry">📅 效期</div>
-            <div onclick="tab('temp')" id="n-temp">🌡️ 冰箱</div>
-            <div onclick="tab('count')" id="n-count">💰 帳務</div>
-            <div onclick="tab('svc')" id="n-svc">🤝 客服</div>
-            <div onclick="tab('mgr')" id="n-mgr" class="hide">📊 主管</div>
-        </div>
-
-        <div id="v-stock">
-            <div class="head" style="border-color:var(--accent);">🔥 重點補貨</div>
-            <div class="grid">
-                <div class="box alert" id="s_noodle" onclick="doCheck('s_noodle','外籍泡麵')">外籍泡麵<br><small>待處理</small></div>
-                <div class="box alert" id="s_cookie" onclick="doCheck('s_cookie','外籍餅乾')">外籍餅乾<br><small>待處理</small></div>
-            </div>
-
-            <div class="head">
+            div class=head
                 🛒 每日補貨 
-                <button id="btn-edit-stock" class="hide btn-sm btn-o" onclick="toggleEdit('stock-list')">管理</button>
-            </div>
-            <div class="grid" id="stock-list"></div>
-            <div id="add-stock-area" class="hide" style="padding:10px;">
-                <button class="btn-g" style="width:100%" onclick="addItem('stock')">+ 新增項目</button>
-            </div>
-        </div>
+                button id=btn-add-stock class=hide btn-s onclick=addItem('stock')+新增button
+            div
+            div class=grid id=stock-listdiv
+        div
 
-        <div id="v-expiry" class="hide">
-            <div class="head">📅 每日效期檢查</div>
-            <div class="grid">
-                <div class="box alert" id="ex_bread" onclick="doCheck('ex_bread','麵包')">麵包<br><small>待檢</small></div>
-                <div class="box alert" id="ex_drink" onclick="doCheck('ex_drink','日配飲料')">日配飲料<br><small>待檢</small></div>
-                <div class="box alert" id="ex_veg" onclick="doCheck('ex_veg','生鮮蔬菜')">生鮮蔬菜<br><small>待檢</small></div>
-            </div>
+        div id=v-expiry class=hide
+            div class=head📅 每日效期檢查div
+            div class=grid
+                div class=box alert id=ex_bread onclick=doCheck('ex_bread','麵包')麵包brsmall待檢smalldiv
+                div class=box alert id=ex_drink onclick=doCheck('ex_drink','日配飲料')日配飲料brsmall待檢smalldiv
+                div class=box alert id=ex_veg onclick=doCheck('ex_veg','生鮮蔬菜')生鮮蔬菜brsmall待檢smalldiv
+            div
 
-            <div class="head">
+            div class=head
                 🗓️ 每月效期圖
-                <div id="map-tools" class="hide">
-                    <button class="btn-sm btn-g" onclick="addMapBox()">+方格</button>
-                    <button class="btn-sm btn-o" onclick="toggleMapEdit()">✏️ <span id="map-mode-txt">編輯:關</span></button>
-                </div>
-            </div>
-            <div id="map-editor" class="hide" style="padding:10px; background:#fff3e0; border-bottom:1px solid #ccc; font-size:12px;">
-                <b style="color:var(--accent)">編輯模式：點擊方格可修改屬性</b>
-            </div>
-            <div id="map-area"></div>
-        </div>
+                div id=map-tools class=hide
+                    button class=btn-s btn-g onclick=addMapBox()+方格button
+                    button class=btn-s btn-o onclick=toggleMapEdit()✏️ span id=map-mode-txt編輯關spanbutton
+                div
+            div
+            div id=map-areadiv
+        div
 
-        <div id="v-temp" class="hide">
-            <div class="head">
-                ❄️ 冰箱溫度檢查 (點擊填寫時段)
-                <button id="btn-edit-fridge" class="hide btn-sm btn-o" onclick="toggleEdit('fridge-list')">管理</button>
-            </div>
-            <div class="grid" id="fridge-list"></div>
-            <div id="add-fridge-area" class="hide" style="padding:10px;">
-                <button class="btn-g" style="width:100%" onclick="addItem('fridge')">+ 新增冰箱</button>
-            </div>
-        </div>
+        div id=v-temp class=hide
+            div class=head
+                ❄️ 冰箱溫度 (時段檢核)
+                button id=btn-add-fridge class=hide btn-s onclick=addItem('fridge')+新增button
+            div
+            div style=padding0 10px; font-size12px; color#666; 逾時1小時將鎖定為「未檢」div
+            div class=grid id=fridge-listdiv
+        div
 
-        <div id="v-count" class="hide">
-            <div class="head">📥 進櫃 (主管可修)</div>
-            <div style="padding:10px; background:#fff; border:1px solid #eee; margin:10px;">
-                收銀留底：<input type="number" id="in-cash" disabled style="width:100px; display:inline-block">
-                金庫留底：<input type="number" id="in-vault" disabled style="width:100px; display:inline-block">
-                <div id="mgr-finance" class="hide" style="margin-top:5px;">
-                    <button class="btn-sm btn-o" onclick="unlockIn()">✏️ 修改</button>
-                    <button class="btn-sm btn-g" onclick="saveIn()">💾 儲存</button>
-                </div>
-            </div>
+        div id=v-count class=hide
+            div class=head📥 上班留存 (主管可修)div
+            div style=padding10px; background#fff; margin10px; border1px solid #ccc;
+                收銀留底：input type=number id=in-cash disabled style=width100px; displayinline-block
+                金庫留底：input type=number id=in-vault disabled style=width100px; displayinline-block
+                button id=btn-unlock-in class=hide btn-s btn-o style=margin-top5px; onclick=unlockIn()修正button
+                button id=btn-save-in class=hide btn-s btn-g style=margin-top5px; onclick=saveIn()儲存button
+            div
 
-            <div class="head">🪙 交班點算</div>
-            <table>
-                <tr><th>面額</th><th>收銀機</th><th>金庫</th><th>小計</th></tr>
-                <tbody id="money-table"></tbody>
-                <tr><td colspan="3"><b>總計</b></td><td id="total-money" style="color:var(--primary); font-weight:bold;">0</td></tr>
-            </table>
+            div class=head🪙 交班點算div
+            table
+                trth幣值thth收銀thth金庫thth小計thtr
+                tbody id=money-tabletbody
+                trtd colspan=3b總計btdtd id=total-money style=colorblue; font-weightbold;0tdtr
+            table
 
-            <div class="head">📞 電話卡</div>
-            <div id="card-list" class="grid"></div>
+            div class=head📞 電話卡div
+            div id=card-list class=griddiv
 
-            <div class="head">📊 營收結算</div>
-            <div class="grid">
-                <input type="number" id="v-rev" placeholder="營業額" oninput="doCalc()">
-                <input type="number" id="v-vis" placeholder="來客數" oninput="doCalc()">
-                <input type="text" id="v-avg" placeholder="客單價" readonly style="background:#eee;">
-            </div>
+            div class=head📊 營收結算div
+            div class=grid
+                input type=number id=v-rev placeholder=營業額 oninput=doCalc()
+                input type=number id=v-vis placeholder=來客數 oninput=doCalc()
+                input type=text id=v-avg placeholder=客單價 readonly style=background#eee;
+            div
             
-            <div class="head">
-                誤差：<span id="diff-show" style="font-weight:bold;">0</span>
-            </div>
-            <button class="btn-g" style="width:100%; margin-top:20px; padding:15px;" onclick="alert('報表已送出')">✅ 提交交班報表</button>
-        </div>
+            div class=head誤差：span id=diff-show style=font-weightbold;0spandiv
+            button class=btn-g onclick=submitShift()✅ 提交交班報表button
+        div
 
-        <div id="v-svc" class="hide">
-            <div class="head">🤝 客服與內務</div>
-            <div class="grid">
-                <button onclick="openForm('交接')">📝 交接</button>
-                <button onclick="openForm('客訂')">🛒 客訂</button>
-                <button onclick="openForm('維修')">🔧 維修</button>
-                <button onclick="openForm('詢問')" class="btn-o">❓ 詢問</button>
-            </div>
-            <div id="feed-area" style="margin-top:15px;"></div>
-        </div>
+        div id=v-svc class=hide
+            div class=grid
+                button onclick=popSvc('交接')📝 交接事項button
+                button onclick=popSvc('客訂')🛒 客訂登記button
+                button onclick=popSvc('維修')🔧 報修登記button
+                button onclick=popSvc('詢問')❓ 顧客詢問button
+            div
+            div id=feed-area style=margin-top15px;div
+        div
 
-        <div id="v-mgr" class="hide">
-            <div class="head">🌟 員工評分</div>
-            <select id="mgr-users"><option>載入員工...</option></select>
-            <div style="padding:15px; background:#fff; margin-top:10px; border:1px solid #ddd;">
-                <p>服務態度: <span class="stars" data-c="1" onclick="rate(this,event)">★★★★★</span></p>
-                <p>陳列整齊: <span class="stars" data-c="2" onclick="rate(this,event)">★★★★★</span></p>
-                <p>結帳速度: <span class="stars" data-c="3" onclick="rate(this,event)">★★★★★</span></p>
-                <p>出勤狀況: <span class="stars" data-c="4" onclick="rate(this,event)">★★★★★</span></p>
-                <button class="btn-g" onclick="alert('評分已儲存')">送出評分</button>
-            </div>
-        </div>
-    </div>
-</div>
+        div id=v-mgr class=hide
+            div class=head🌟 員工 KPI 評核div
+            select id=mgr-usersoption選擇員工...optionselect
+            div style=padding15px; background#fff; border1px solid #ddd; margin-top10px;
+                div class=rating-rowSOP 執行率 span class=stars data-c=1 onclick=rate(this,event)★★★★★spandiv
+                div class=rating-row客訴服務 span class=stars data-c=2 onclick=rate(this,event)★★★★★spandiv
+                div class=rating-row出勤狀況 span class=stars data-c=3 onclick=rate(this,event)★★★★★spandiv
+                div class=rating-row團隊精神 span class=stars data-c=4 onclick=rate(this,event)★★★★★spandiv
+                textarea id=mgr-comment placeholder=主管評語... style=height60px;textarea
+                button class=btn-g onclick=saveRating()送出評核button
+            div
+        div
+    div
+div
 
-<script>
-// --- DB Core ---
+script
+ --- V44 Core Logic ---
 const DB = {
-    get: (k) => JSON.parse(localStorage.getItem(k) || '{}'),
-    set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
-    arr: (k) => JSON.parse(localStorage.getItem(k) || '[]'),
-    push: (k, v) => {
-        let a = JSON.parse(localStorage.getItem(k) || '[]');
+    get (k) = JSON.parse(localStorage.getItem(k)  '{}'),
+    set (k, v) = localStorage.setItem(k, JSON.stringify(v)),
+    arr (k) = JSON.parse(localStorage.getItem(k)  '[]'),
+    push (k, v) = {
+        let a = JSON.parse(localStorage.getItem(k)  '[]');
         a.unshift(v);
         localStorage.setItem(k, JSON.stringify(a));
     }
 };
 
-// --- Init Data ---
-const initData = () => {
-    // Force reset for V43
-    if(!localStorage.getItem('v43_stock')) {
-        localStorage.setItem('v43_stock', JSON.stringify(['冰箱飲料','層架飲料','菸架','電池','泡麵/餅乾','垃圾袋/免洗餐具','百貨用品(牙膏/洗衣精/衛生紙)']));
+ 6. Typo Fix & Init
+const initData = () = {
+    if(!localStorage.getItem('v44_stock')) {
+        localStorage.setItem('v44_stock', JSON.stringify(['冰箱飲料','層架飲料','菸架','電池','泡麵餅乾','垃圾袋免洗餐具','百貨用品']));
     }
-    if(!localStorage.getItem('v43_fridge')) {
-        // 6. Typo Fix: 臥室 -> 臥式
-        localStorage.setItem('v43_fridge', JSON.stringify([
-            {n:'開放式冰箱1',t:'c'},{n:'開放式冰箱2',t:'c'},{n:'冷藏櫥櫃1',t:'c'},{n:'冷藏櫥櫃2',t:'c'},
-            {n:'冷凍櫥櫃1',t:'f'},{n:'冷凍櫥櫃2',t:'f'},{n:'臥式冰箱1',t:'f'},{n:'臥式冰箱2',t:'f'},{n:'臥式冰箱3',t:'f'},{n:'臥式冰箱4',t:'f'}
+    if(!localStorage.getItem('v44_fridge')) {
+        localStorage.setItem('v44_fridge', JSON.stringify([
+            {n'開放式1',t'c'},{n'開放式2',t'c'},{n'冷藏櫥櫃1',t'c'},{n'冷藏櫥櫃2',t'c'},
+            {n'冷凍櫥櫃1',t'f'},{n'冷凍櫥櫃2',t'f'},{n'臥式冰箱1',t'f'},{n'臥式冰箱2',t'f'},{n'臥式冰箱3',t'f'},{n'臥式冰箱4',t'f'}
         ]));
     }
 }
@@ -251,43 +234,37 @@ initData();
 let me = null;
 let shapes = DB.arr('map_shapes');
 let selShapeIdx = null;
-let imgBase64 = "";
-let isMapEditMode = false;
-const fridgeTimes = ["10:30","12:30","14:30","16:30","18:30","20:30","22:00"];
+let imgBase64 = ;
+let isMapEdit = false;
+const fridgeTimes = [1030,1230,1430,1630,1830,2030,2200];
 
-// --- Auth ---
-function swAuth(reg) {
-    document.getElementById('box-login').classList.toggle('hide', reg);
-    document.getElementById('box-reg').classList.toggle('hide', !reg);
-}
+ --- Auth ---
+function swAuth(reg) { document.getElementById('box-login').classList.toggle('hide', reg); document.getElementById('box-reg').classList.toggle('hide', !reg); }
 function reg() {
     const id=document.getElementById('r-id').value, nm=document.getElementById('r-name').value, pw=document.getElementById('r-pw').value;
-    if(!id||!nm||!pw) return alert("請填寫");
-    let u=DB.get('users'); u[id]={name:nm, pw:pw, shift:document.getElementById('r-shift').value}; DB.set('users', u);
-    alert("✅ 註冊成功"); swAuth(false);
+    if(!id!nm!pw) return alert(請填寫);
+    let u=DB.get('users'); u[id]={namenm, pwpw, shiftdocument.getElementById('r-shift').value}; DB.set('users', u);
+    alert(註冊成功); swAuth(false);
 }
 function login() {
     const id=document.getElementById('l-id').value, pw=document.getElementById('l-pw').value;
     let u=DB.get('users');
-    if(u[id] && u[id].pw===pw) { me={...u[id], id}; startApp(); } else alert("帳密錯誤");
+    if(u[id] && u[id].pw===pw) { me={...u[id], id}; startApp(); } else alert(帳密錯誤);
 }
 function logout() { location.reload(); }
 
-// --- App Start ---
 function startApp() {
     document.getElementById('page-auth').classList.add('hide');
     document.getElementById('page-main').classList.remove('hide');
-    document.getElementById('user-info').innerText = `${me.name} (${me.shift})`;
+    document.getElementById('user-info').innerText = `${me.name}(${me.shift})`;
 
     if(me.shift==='主管') {
-        document.getElementById('n-mgr').classList.remove('hide');
-        document.getElementById('mgr-finance').classList.remove('hide');
-        document.getElementById('map-tools').classList.remove('hide');
-        document.getElementById('btn-edit-stock').classList.remove('hide');
-        document.getElementById('btn-edit-fridge').classList.remove('hide');
+        document.querySelectorAll('.hide').forEach(el={
+            if(el.id.includes('mgr')  el.id.includes('btn-add')  el.id.includes('map-tools')  el.id.includes('unlock')) el.classList.remove('hide');
+        });
         loadUserList();
     }
-
+    
     renderStock();
     renderFridge();
     renderMoney();
@@ -297,281 +274,223 @@ function startApp() {
     renderStatus();
 }
 
-// --- Renderers ---
-function renderStock() {
-    const list = JSON.parse(localStorage.getItem('v43_stock'));
-    document.getElementById('stock-list').innerHTML = list.map((s,i) => `
-        <div class="box alert" id="stk_${i}" onclick="doCheck('stk_${i}','${s}')">
-            ${s}<br><small>待檢</small>
-            ${me.shift==='主管' ? `<div class="reset-btn" onclick="resetCheck('stk_${i}');event.stopPropagation()">↻</div>` : ''}
-            <div class="del-item-btn" onclick="delConfItem('stock',${i}); event.stopPropagation()">-</div>
-        </div>
-    `).join('');
+function tab(t) {
+    document.querySelectorAll('.nav div').forEach(e=e.classList.remove('active'));
+    document.getElementById('n-'+t).classList.add('active');
+    ['stock','expiry','temp','count','svc','mgr'].forEach(x=document.getElementById('v-'+x).classList.add('hide'));
+    document.getElementById('v-'+t).classList.remove('hide');
 }
 
-function renderFridge() {
-    const list = JSON.parse(localStorage.getItem('v43_fridge'));
-    document.getElementById('fridge-list').innerHTML = list.map((f,i) => `
-        <div class="box alert" id="ref_${i}" onclick="openFridgeModal('ref_${i}','${f.n}','${f.t}')">
-            ${f.n}<br><small>待測</small>
-            <div class="del-item-btn" onclick="delConfItem('fridge',${i}); event.stopPropagation()">-</div>
-        </div>
-    `).join('');
+ --- 1. Stock & Expiry CheckReset ---
+function renderStock() {
+    const list = JSON.parse(localStorage.getItem('v44_stock'));
+    document.getElementById('stock-list').innerHTML = list.map((s,i) = `
+        div class=box alert id=stk_${i} onclick=doCheck('stk_${i}','${s}')
+            ${s}brsmall待檢small
+            ${me.shift==='主管'  `div class=reset-btn onclick=resetCheck('stk_${i}');event.stopPropagation()↻div`  ''}
+        div`).join('');
+}
+
+function doCheck(id, name) {
+    let s = DB.get('status');
+    if(s[id] && !s[id].alert && !confirm(已完成。是否覆蓋？)) return;
+    if(!s[id] && !confirm(`確認完成 ${name}？`)) return;
+    
+    s[id] = {name, userme.name, timenew Date().toLocaleTimeString(), alertfalse};
+    DB.set('status', s);
+    renderStatus();
+}
+
+function resetCheck(id) {
+    if(!confirm(確定重置為未完成？)) return;
+    let s = DB.get('status'); delete s[id]; DB.set('status', s);
+    if(id.includes('stk_')) renderStock(); else {
+        const el=document.getElementById(id); 
+        el.className=`box alert ${id.includes('s_')'priority'''}`;
+        el.innerHTML=`${el.innerText.split('n')[0]}brsmall待處理small
+        ${me.shift==='主管'  `div class=reset-btn onclick=resetCheck('${id}');event.stopPropagation()↻div`  ''}`;
+    }
+    renderStatus();
 }
 
 function renderStatus() {
     let s = DB.get('status');
-    let store = DB.get('store');
-    
-    // Checkboxes
     for(let k in s) {
         const el = document.getElementById(k);
-        if(el && s[k].val !== undefined && !k.includes('ref_')) { // Exclude fridges here, handled separately
-            el.className = `box ${s[k].alert?'alert':'ok'} ${k.includes('s_')?'priority':''}`;
-            el.innerHTML = `${s[k].name}<br><small>${s[k].alert?'⚠️ 異常':'✅ '+s[k].user+' '+s[k].time}</small>
-            ${me.shift==='主管' ? `<div class="reset-btn" onclick="resetCheck('${k}');event.stopPropagation()">↻</div>` : ''}
-            <div class="del-item-btn" onclick="delConfItem('${k.includes('stk')?'stock':'fridge'}',${k.split('_')[1]}); event.stopPropagation()">-</div>`;
+        if(el && s[k]) {
+            el.className = `box ${s[k].alert'alert''done'} ${k.includes('s_')'priority'''}`;
+            el.innerHTML = `${s[k].name}brsmall${s[k].alert'⚠️ 異常''✅ '+s[k].user+' '+s[k].time}small
+            ${me.shift==='主管'  `div class=reset-btn onclick=resetCheck('${k}');event.stopPropagation()↻div`  ''}`;
         }
     }
-    
-    // Fridge Status (Color if all done for today? or just show pending)
-    // Simplified: Just show pending unless last check was recent
-    
-    document.getElementById('in-cash').value = store.cash||0;
-    document.getElementById('in-vault').value = store.vault||0;
-    if(store.cards) {
-        for(let k in store.cards) {
-            let el = document.getElementById(`cd_l_${k}`);
-            if(el) el.placeholder = `上:${store.cards[k]}`;
-        }
-    }
+    let st=DB.get('store');
+    document.getElementById('in-cash').value=st.cash0; document.getElementById('in-vault').value=st.vault0;
+    if(st.cards) for(let k in st.cards) document.getElementById(`cd_l_${k}`).placeholder = `上${st.cards[k]}`;
 }
 
-// --- Tab ---
-function tab(t) {
-    document.querySelectorAll('.nav div').forEach(e=>e.classList.remove('active'));
-    document.getElementById('n-'+t).classList.add('active');
-    ['stock','expiry','temp','count','svc','mgr'].forEach(x=>document.getElementById('v-'+x).classList.add('hide'));
-    document.getElementById('v-'+t).classList.remove('hide');
-}
-
-// --- Check Logic ---
-function doCheck(id, name) {
-    let s = DB.get('status');
-    if(s[id] && !s[id].alert && !confirm("已完成，覆蓋？")) return;
-    if(!s[id] && !confirm(`${name} 完成？`)) return;
-    s[id] = {name, user:me.name, time:new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}), alert:false};
-    DB.set('status', s);
-    renderStatus();
-}
-function resetCheck(id) {
-    if(!confirm("重置？")) return;
-    let s = DB.get('status'); delete s[id]; DB.set('status', s);
-    if(id.includes('stk_')) renderStock(); else {
-        const el = document.getElementById(id);
-        el.className = `box alert ${id.includes('s_')?'priority':''}`;
-        el.innerHTML = `${el.innerText.split('\n')[0]}<br><small>待處理</small>`;
-    }
-    renderStatus();
-}
-
-// --- 2. Fridge Time Slots ---
-function openFridgeModal(id, name, type) {
-    const modal = document.getElementById('modal-overlay');
-    const body = document.getElementById('modal-body');
-    modal.style.display = 'flex';
-    
-    let s = DB.get('status');
-    let html = `<h3>${name} 溫度檢核</h3><div class="time-grid">`;
-    
-    fridgeTimes.forEach(time => {
-        // Key format: ref_0_1030
-        const key = `${id}_${time.replace(':','')}`;
-        const data = s[key];
-        const statusClass = data ? (data.alert ? 'btn-r' : 'btn-g') : '';
-        const info = data ? `${data.val} (${data.user})` : '待測';
-        
-        html += `<div class="time-btn ${statusClass}" onclick="saveFridgeTemp('${key}','${time}','${name}','${type}')">
-            ${time}<br><small>${info}</small>
-        </div>`;
-    });
-    html += `</div><button style="margin-top:15px; width:100%; background:#777" onclick="document.getElementById('modal-overlay').style.display='none'">關閉</button>`;
-    body.innerHTML = html;
-}
-
-function saveFridgeTemp(key, time, name, type) {
-    const v = prompt(`${name} ${time} 溫度:`, type==='f'?'-':'');
-    if(v===null) return;
-    if(v.trim()==="" || isNaN(Number(v))) return alert("❌ 無效輸入");
-    
-    const n = parseFloat(v);
-    let alertFlag = false;
-    if((type==='c' && (n<0 || n>7)) || (type==='f' && (n>-10 || n<-30))) { 
-        alert("🚨 溫度異常！"); alertFlag=true; 
-    }
-    
-    let s = DB.get('status');
-    s[key] = {name: `${name} ${time}`, user:me.name, val:v+"°C", time:new Date().toLocaleTimeString(), alert:alertFlag};
-    DB.set('status', s);
-    openFridgeModal(key.split('_').slice(0,2).join('_'), name, type); // Refresh modal
-}
-
-// --- Map (Editor & Color) ---
-function toggleMapEdit() {
-    isMapEditMode = !isMapEditMode;
-    document.getElementById('map-mode-txt').innerText = isMapEditMode ? "編輯:開" : "編輯:關";
-    drawMap();
-}
-
-// 5. User Color Generator
-function getUserColor(name) {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
-    return "#" + "00000".substring(0, 6 - c.length) + c;
-}
+ --- 2. Map Editor (Full Control) ---
+function toggleMapEdit() { isMapEdit = !isMapEdit; document.getElementById('map-mode-txt').innerText = isMapEdit編輯開編輯關; drawMap(); }
 
 function drawMap() {
-    const area = document.getElementById('map-area');
-    area.innerHTML = "";
+    const area = document.getElementById('map-area'); area.innerHTML = ;
     shapes = DB.arr('map_shapes');
-    
-    shapes.forEach((s, i) => {
+    shapes.forEach((s, i) = {
         const el = document.createElement('div');
-        el.className = `map-box ${s.done?'done':''} ${selShapeIdx===i && isMapEditMode?'selected':''}`;
-        el.style.left = s.x + 'px'; el.style.top = s.y + 'px';
-        el.style.width = (s.w||60) + 'px'; el.style.height = (s.h||60) + 'px';
+        el.className = `map-box ${s.done'done'''} ${selShapeIdx===i && isMapEdit'selected'''}`;
+        el.style.left=s.x+'px'; el.style.top=s.y+'px'; el.style.width=(s.w60)+'px'; el.style.height=(s.h60)+'px';
         
-        // 5. Check Info & Color
-        let bgStyle = s.done ? `background:${getUserColor(s.checker)}40; border-color:${getUserColor(s.checker)}` : '';
-        if(bgStyle) el.style.cssText += bgStyle;
-
-        let timerHtml = "";
+        let info = s.name;
         if(s.date) {
-            const daysLeft = Math.ceil((new Date(s.date) - new Date()) / (1000 * 60 * 60 * 24));
-            timerHtml = `<div class="timer-badge" style="background:${daysLeft<3?'red':(daysLeft<7?'orange':'green')}">${daysLeft}天</div>`;
+            const days = Math.ceil((new Date(s.date)-new Date())(1000606024));
+            info += `brspan style=color${days3'red''green'}${days}天span`;
         }
+        if(s.done) info += `brspan style=font-size9px✅${s.checker} ${s.checkTime}span`;
+        if(s.done) el.style.background = getUserColor(s.checker);  5. Different user color
 
-        el.innerHTML = `<span>${s.name}</span>${timerHtml}${s.done?`<br><span style="font-size:9px">${s.checkTime}</span>`:''}`;
+        el.innerHTML = info;
         
-        el.onclick = (e) => {
+        el.onclick = (e) = {
             e.stopPropagation();
-            if(isMapEditMode && me.shift==='主管') {
-                selShapeIdx = i;
-                editShapeProps(i); // 1. Click to edit in Edit Mode
+            if(isMapEdit && me.shift==='主管') {
+                selShapeIdx = i; editMapBox(); drawMap();
             } else {
-                if(confirm(`${s.name} 檢查完成？`)) { 
-                    s.done=true; s.checker=me.name; s.checkTime=new Date().toLocaleString(); 
-                    saveMapData(); 
-                }
+                if(confirm(`${s.name} 檢查完成？`)) { s.done=true; s.checker=me.name; s.checkTime=new Date().toLocaleTimeString(); saveMap(); }
             }
         };
-        // Drag
-        if(isMapEditMode && me.shift==='主管') {
-            el.onmousedown = (e) => {
-                const sx = e.clientX - s.x, sy = e.clientY - s.y;
-                document.onmousemove = (ev) => { s.x=ev.clientX-sx; s.y=ev.clientY-sy; el.style.left=s.x+'px'; el.style.top=s.y+'px'; };
-                document.onmouseup = () => { document.onmousemove=null; saveMapData(); };
+         Drag
+        if(isMapEdit && me.shift==='主管') {
+            el.onmousedown = (e) = {
+                const sx=e.clientX-s.x, sy=e.clientY-s.y;
+                document.onmousemove = (ev) = { s.x=ev.clientX-sx; s.y=ev.clientY-sy; el.style.left=s.x+'px'; el.style.top=s.y+'px'; };
+                document.onmouseup = () = { document.onmousemove=null; saveMap(); };
             };
         }
         area.appendChild(el);
     });
 }
-
-function editShapeProps(i) {
-    const action = prompt("編輯方格 (輸入數字):\n1.改名\n2.大小\n3.期限\n4.刪除");
-    if(action==='1') { const n=prompt("名:", shapes[i].name); if(n) shapes[i].name=n; }
-    else if(action==='2') { const w=prompt("寬:", shapes[i].w); const h=prompt("高:", shapes[i].h); if(w) shapes[i].w=parseInt(w); if(h) shapes[i].h=parseInt(h); }
-    else if(action==='3') { const d=prompt("日期 (YYYY-MM-DD):", shapes[i].date); if(d) shapes[i].date=d; }
-    else if(action==='4') { if(confirm("刪除?")) shapes.splice(i,1); }
-    saveMapData();
+function editMapBox() {
+    const action = prompt(編輯方格n1.改名 2.大小 3.期限 4.刪除);
+    if(action==='1') { const n=prompt(名,shapes[selShapeIdx].name); if(n) shapes[selShapeIdx].name=n; }
+    else if(action==='2') { const w=prompt(寬,shapes[selShapeIdx].w), h=prompt(高,shapes[selShapeIdx].h); if(w) shapes[selShapeIdx].w=parseInt(w); if(h) shapes[selShapeIdx].h=parseInt(h); }
+    else if(action==='3') { const d=prompt(日期(YYYY-MM-DD),shapes[selShapeIdx].date); if(d) shapes[selShapeIdx].date=d; }
+    else if(action==='4') { if(confirm(刪)) shapes.splice(selShapeIdx,1); }
+    saveMap();
 }
-function addMapBox() { const n = prompt("名稱:"); if(n) { shapes.push({name:n, x:50, y:50, w:60, h:60, done:false}); saveMapData(); }}
-function saveMapData() { localStorage.setItem('map_shapes', JSON.stringify(shapes)); drawMap(); }
-function resetMapAll() { if(confirm("全重置?")) { shapes.forEach(s=>s.done=false); saveMapData(); }}
+function addMapBox() { const n=prompt(名); if(n) { shapes.push({namen,x50,y50,w60,h60,donefalse}); saveMap(); }}
+function saveMap() { localStorage.setItem('map_shapes', JSON.stringify(shapes)); drawMap(); }
+function getUserColor(name) {
+    let hash = 0; for (let i = 0; i  name.length; i++) hash = name.charCodeAt(i) + ((hash  5) - hash);
+    return `hsla(${hash % 360}, 70%, 80%, 0.9)`;
+}
 
-// --- Svc ---
-let curSvcType=""; 
-function popSvc(t) {
-    curSvcType=t; 
+ --- 4. Fridge Time Logic ---
+function renderFridge() {
+    const list = JSON.parse(localStorage.getItem('v44_fridge'));
+    document.getElementById('fridge-list').innerHTML = list.map((f,i) = `
+        div class=box alert id=ref_${i} onclick=openFridgeModal('ref_${i}','${f.n}','${f.t}')
+            ${f.n}brsmall待測small
+            ${me.shift==='主管'  `div class=reset-btn onclick=delConfItem('fridge',${i});event.stopPropagation()-div`  ''}
+        div
+    `).join('');
+}
+
+function openFridgeModal(id, name, type) {
     document.getElementById('modal-overlay').style.display='flex';
-    const body = document.getElementById('modal-body');
+    let s = DB.get('status');
+    const now = new Date();
+    const curMin = now.getHours()60 + now.getMinutes();
     
-    // Generate Form HTML
-    let html = `<h3 style="margin-top:0">${t}</h3><div id="modal-fields">`;
-    if(t==='客訂') html+=`<input id="f1" placeholder="品名"><input id="f2" placeholder="條碼"><input id="f3" placeholder="數量"><input id="f4" placeholder="售價"><hr><input id="f5" placeholder="客名"><input id="f6" placeholder="電話"><input id="f7" placeholder="LINE"><input id="f8" placeholder="時間">`;
-    else if(t==='維修') html+=`<input id="f1" placeholder="品名"><input id="f2" placeholder="原因"><input id="f3" placeholder="購買日"><input id="f4" placeholder="條碼"><hr><input id="f5" placeholder="客名"><input id="f6" placeholder="電話"><input id="f7" placeholder="LINE"><input id="f8" placeholder="時間">`;
-    else html+=`<textarea id="f1" placeholder="請輸入內容..." style="height:100px"></textarea>`;
-    
-    html += `</div>
-        <div style="margin-top:15px; padding-top:10px; border-top:1px solid #eee;">
-            <label>📷 拍照上傳：</label>
-            <input type="file" id="modal-img" accept="image/*" onchange="previewImg()">
-            <img id="preview-box" style="width:100px; display:none; margin-top:5px; border:1px solid #ccc;">
-        </div>
-        <div style="margin-top:20px; display:flex; gap:10px;">
-            <button class="btn-g" style="flex:1" onclick="submitSvc()">送出</button>
-            <button style="flex:1; background:#666;" onclick="document.getElementById('modal-overlay').style.display='none'">取消</button>
-        </div>`;
-    
-    body.innerHTML = html;
-    imgBase64=""; // 3. Clear prev image
-}
-
-function previewImg() {
-    const file = document.getElementById('modal-img').files[0];
-    if(file) {
-        // 3. Compress / Read
-        const r = new FileReader();
-        r.onload = e => { imgBase64 = e.target.result; document.getElementById('preview-box').src = imgBase64; document.getElementById('preview-box').style.display='block'; };
-        r.readAsDataURL(file);
-    }
-}
-
-function submitSvc() {
-    let txt=""; document.querySelectorAll('#modal-fields input, #modal-fields textarea').forEach(i=>{ if(i.value) txt+=`${i.placeholder}: ${i.value}<br>`; });
-    if(!txt && !imgBase64) return alert("❌ 空白");
-    DB.push('feeds', {type:curSvcType, txt, img:imgBase64, user:me.name, time:new Date().toLocaleString(), done:false});
-    alert("✅ 成功"); document.getElementById('modal-overlay').style.display='none'; renderFeed();
-}
-
-function renderFeed() {
-    const d=document.getElementById('feed-area'); d.innerHTML="";
-    const feeds = DB.arr('feeds');
-    let unread=0;
-    feeds.forEach((f,i)=>{
-        if(!f.done) unread++;
-        d.innerHTML += `<div class="feed-item ${f.done?'done':'pending'}">
-            <div class="feed-meta"><span>${f.type} | ${f.user}</span> <span>${f.time}</span></div>
-            <div>${f.txt}</div>
-            ${f.img ? `<img src="${f.img}" style="width:80px; margin-top:5px; border-radius:4px;" onclick="document.getElementById('big-img').src='${f.img}';document.getElementById('img-zoom').style.display='flex'">` : ''}
-            <div style="text-align:right; margin-top:5px;">
-                <button class="btn-sm btn-g" onclick="let fs=DB.arr('feeds');fs[${i}].done=!fs[${i}].done;localStorage.setItem('feeds',JSON.stringify(fs));renderFeed();">${f.done?'重開':'完成'}</button>
-            </div>
-        </div>`;
+    let html = `h3${name}h3div class=time-grid`;
+    fridgeTimes.forEach(time = {
+        const key = `${id}_${time.replace('','')}`;
+        const tParts = time.split('');
+        const tMin = parseInt(tParts[0])60 + parseInt(tParts[1]);
+        const data = s[key];
+        
+         Logic Missed if  60 mins past
+        let status = '';
+        if(data) status = data.alert  'alert'  'checked';
+        else if (curMin  tMin + 60) status = 'missed';
+        
+        html += `div class=time-btn ${status} onclick=${status==='missed''alert('逾時無法填寫')'`saveTemp('${key}','${time}','${name}','${type}')`}
+            ${time}br${status==='missed''MISS'(datadata.val'--')}
+        div`;
     });
-    document.getElementById('badge').innerText = unread;
-    document.getElementById('badge').style.display = unread>0?'block':'none';
+    html += `divbutton class=btn-r style=margin-top10px onclick=document.getElementById('modal-overlay').style.display='none'關閉button`;
+    document.getElementById('modal-body').innerHTML = html;
 }
-function gotoSvc() { tab('svc'); }
 
-// --- Finance, Users, Rating (Standard) ---
-function renderMoney(){ document.getElementById('money-table').innerHTML=[500,100,50,10,5,1].map(u=>`<tr><td>${u}</td><td><input type="number" class="inp-money" id="mr_${u}" oninput="cM()"></td><td><input type="number" class="inp-money" id="mv_${u}" oninput="cM()"></td><td id="sub_${u}">0</td></tr>`).join(''); }
-function renderCards(){ document.getElementById('card-list').innerHTML=["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"].map(c=>`<div class="box" style="padding:5px;"><b>${c}</b><div style="display:flex;gap:5px"><input type="number" placeholder="銷" style="width:50%"><input type="number" placeholder="存" style="width:50%"></div></div>`).join(''); }
-function cM(){ let t=0; [500,100,50,10,5,1].forEach(u=>{ let r=Number(document.getElementById(`mr_${u}`).value)||0, v=Number(document.getElementById(`mv_${u}`).value)||0; document.getElementById(`sub_${u}`).innerText=(r+v)*u; t+=(r+v)*u; }); document.getElementById('total-money').innerText=t; doCalc(); }
+function saveTemp(key, time, name, type) {
+    const v = prompt(`${name} ${time} 溫度`, type==='f''-''');
+    if(v===null) return;
+    if(v.trim()===  isNaN(Number(v))) return alert(❌ 無效數字);
+    const n=parseFloat(v);
+    let alertFlag=false;
+    if((type==='c' && (n0  n7))  (type==='f' && (n-10  n-30))) { alert(🚨 溫度異常); alertFlag=true; }
+    
+    let s=DB.get('status');
+    s[key] = {name`${name} ${time}`, userme.name, valv+°C, alertalertFlag};
+    DB.set('status', s);
+    openFridgeModal(key.split('_').slice(0,2).join('_'), name, type);
+}
+
+ --- 3. Svc & Image ---
+function popSvc(t) {
+    document.getElementById('modal-overlay').style.display='flex';
+    let html = `h3${t}h3div id=modal-fields`;
+    if(t==='客訂') html+=`input id=f1 placeholder=品名input id=f2 placeholder=條碼input id=f3 placeholder=數量input id=f4 placeholder=售價hrinput id=f5 placeholder=客名input id=f6 placeholder=電話`;
+    else html+=`textarea id=f1 placeholder=內容... style=height100pxtextarea`;
+    html += `divdiv style=margin-top10pxinput type=file id=modal-img accept=image onchange=readImg()div
+    button onclick=saveSvc('${t}')送出buttonbutton class=btn-s onclick=document.getElementById('modal-overlay').style.display='none'取消button`;
+    document.getElementById('modal-body').innerHTML = html;
+    imgBase64=;
+}
+function readImg() {
+    const f=document.getElementById('modal-img').files[0];
+    if(f) { const r=new FileReader(); r.onload=e={ imgBase64=e.target.result; }; r.readAsDataURL(f); }
+}
+function saveSvc(t) {
+    let txt=; document.querySelectorAll('#modal-fields input, #modal-fields textarea').forEach(i={ if(i.value) txt+=i.placeholder++i.value+br; });
+    if(!txt && !imgBase64) return alert(空白);
+    DB.push('feeds', {typet, txt, imgimgBase64, userme.name, timenew Date().toLocaleString(), donefalse});
+    alert(成功); document.getElementById('modal-overlay').style.display='none'; renderFeed();
+}
+function renderFeed() {
+    const d=document.getElementById('feed-area'); d.innerHTML=;
+    DB.arr('feeds').forEach((f,i)={
+        d.innerHTML += `div class=feed-item ${f.done'done''pending'}
+            b${f.type}b ${f.user} ${f.time}br${f.txt}
+            ${f.img`img src=${f.img} style=width60px;margin-top5px onclick=document.getElementById('big-img').src='${f.img}';document.getElementById('img-zoom').style.display='flex'`''}
+            div style=text-alignrightbutton class=btn-s onclick=let fs=DB.arr('feeds');fs[${i}].done=!fs[${i}].done;localStorage.setItem('feeds',JSON.stringify(fs));renderFeed()${f.done'重開''完成'}buttondiv
+        div`;
+    });
+}
+
+ --- Finance ---
+function renderMoney(){ document.getElementById('money-table').innerHTML=[500,100,50,10,5,1].map(u=`trtd${u}tdtdinput type=number class=inp-money id=mr_${u} oninput=cM()tdtdinput type=number class=inp-money id=mv_${u} oninput=cM()tdtd id=sub_${u} style=colorblue0tdtr`).join(''); }
+function renderCards(){ document.getElementById('card-list').innerHTML=[IF499,OK499,中華499,IF599,OK599,中華599,旺卡].map(c=`div class=box style=padding5pxb${c}bdiv style=displayflex;gap5pxinput type=number id=cd_s_${c} placeholder=銷 style=width50%input type=number id=cd_l_${c} placeholder=存 style=width50%divdiv`).join(''); }
+function cM(){ let t=0; [500,100,50,10,5,1].forEach(u={ let r=Number(document.getElementById(`mr_${u}`).value)0, v=Number(document.getElementById(`mv_${u}`).value)0; document.getElementById(`sub_${u}`).innerText=(r+v)u; t+=(r+v)u; }); document.getElementById('total-money').innerText=t; doCalc(); }
 function doCalc(){ 
-    const inC=Number(document.getElementById('in-cash').value)||0, inV=Number(document.getElementById('in-vault').value)||0, cnt=Number(document.getElementById('total-money').innerText)||0, rev=Number(document.getElementById('v-rev').value)||0; 
-    let diff=cnt-(inC+inV+rev); document.getElementById('diff-show').innerText=diff; document.getElementById('diff-show').style.color=diff===0?'green':'red'; 
+    const inC=Number(document.getElementById('in-cash').value)0, inV=Number(document.getElementById('in-vault').value)0, cnt=Number(document.getElementById('total-money').innerText)0, rev=Number(document.getElementById('v-rev').value)0; 
+    let diff=cnt-(inC+inV+rev); document.getElementById('diff-show').innerText=diff; document.getElementById('diff-show').style.color=diff===0'green''red'; 
 }
 function unlockIn(){ document.getElementById('in-cash').disabled=false; document.getElementById('in-vault').disabled=false; }
-function saveIn(){ DB.set('store', {cash:document.getElementById('in-cash').value, vault:document.getElementById('in-vault').value}); alert("已儲存"); }
-function addEx(t){ let a=prompt("額:"); if(a) document.getElementById('ex-list').innerHTML+=`<div>${t=='in'?'收':'支'} $${a}</div>`; }
-function toggleEdit(id){ document.getElementById(id).classList.toggle('editing'); document.getElementById(id==='stock-list'?'add-stock-area':'add-fridge-area').classList.toggle('hide'); }
-function addItem(t){ let k=`v43_${t}`, l=JSON.parse(localStorage.getItem(k)); let n=prompt("名:"); if(n) { if(t=='fridge') l.push({n,t:'c'}); else l.push(n); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
-function delConfItem(t,i){ if(confirm("刪?")) { let k=`v43_${t}`, l=JSON.parse(localStorage.getItem(k)); l.splice(i,1); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
-function loadUserList(){ let u=DB.get('users'), s=document.getElementById('mgr-users'); for(let k in u) if(u[k].shift!=='主管'){ let o=document.createElement('option'); o.value=k; o.innerText=u[k].name; s.appendChild(o); }}
-function rate(s,e){ s.parentNode.querySelectorAll('span').forEach((el,i)=>el.className=i<e.target.cellIndex?'gold':''); }
-function saveRating(){ if(!document.getElementById('mgr-users').value) return alert("選員工"); alert("已儲存"); }
-</script>
-</body>
-</html>
+function saveIn(){ DB.set('store', {cashdocument.getElementById('in-cash').value, vaultdocument.getElementById('in-vault').value}); alert(已儲存); }
+function submitShift(){ 
+    let s=DB.get('store'); s.cash=parseFloat(document.getElementById('total-money').innerText); 
+    [IF499,OK499,中華499,IF599,OK599,中華599,旺卡].forEach(c={ if(!s.cards) s.cards={}; s.cards[c]=document.getElementById(`cd_l_${c}`).value0; });
+    DB.set('store',s); alert(交班成功); location.reload(); 
+}
+
+ --- 4. Rating ---
+function loadUserList(){ let u=DB.get('users'),s=document.getElementById('mgr-users'); for(let k in u) if(u[k].shift!=='主管'){ let o=document.createElement('option'); o.value=k; o.innerText=u[k].name; s.appendChild(o); }}
+function rate(s,e){ s.parentNode.querySelectorAll('span').forEach((el,i)=el.className=ie.target.cellIndex'gold'''); }
+function saveRating(){ if(!document.getElementById('mgr-users').value) return alert(選員工); alert(評分已儲存); }
+function addEx(t){ let a=prompt(額); if(a) document.getElementById('ex-list').innerHTML+=`div${t=='in''收''支'} $${a}div`; }
+function addItem(t){ let k=`v44_${t}`, l=JSON.parse(localStorage.getItem(k)); let n=prompt(名); if(n) { if(t=='fridge') l.push({n,t'c'}); else l.push(n); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
+function delConfItem(t,i){ if(confirm(刪)) { let k=`v44_${t}`, l=JSON.parse(localStorage.getItem(k)); l.splice(i,1); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
+function gotoSvc(){ tab('svc'); }
+function closeZoom(){ document.getElementById('img-zoom').style.display='none'; }
+script
+body
+html
