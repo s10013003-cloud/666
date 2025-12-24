@@ -3,23 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧門市 V48 (Safe Mode)</title>
+    <title>智慧門市 V49 (Stable Fix)</title>
     <style>
-        /* --- 系統核心樣式 --- */
+        /* --- PX Mart Style System --- */
         :root { --primary: #005eb8; --accent: #e3001b; --success: #28a745; --bg: #f4f7f6; --white: #fff; }
         body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: var(--bg); padding-bottom: 120px; color: #333; user-select: none; }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.08); position: relative; z-index: 1; }
-
-        /* --- 🔴 緊急救援面板 (預設顯示，JS 成功後隱藏) --- */
-        #crash-guard { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #fff; z-index: 9999; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            text-align: center; padding: 20px; box-sizing: border-box;
-        }
-        #crash-guard h2 { color: var(--accent); margin-bottom: 10px; }
-        #crash-guard p { color: #666; margin-bottom: 20px; }
-        .btn-rescue { background: var(--accent); color: white; padding: 15px 30px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.08); }
 
         /* Nav */
         .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 2px solid #eee; z-index: 100; overflow-x: auto; }
@@ -29,7 +18,7 @@
         /* Headers */
         .head { background: #fff; padding: 12px 15px; margin: 10px 0; font-weight: 800; border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
         
-        /* Grid */
+        /* Grid & Box */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px; }
         .box { border: 1px solid #ccc; padding: 15px; text-align: center; border-radius: 6px; cursor: pointer; background: #fff; min-height: 70px; display:flex; flex-direction:column; justify-content:center; align-items:center; position: relative; transition:0.2s; }
         .box:active { transform: scale(0.97); }
@@ -76,7 +65,7 @@
         #img-zoom { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:3000; display:none; justify-content:center; align-items:center; }
         #img-zoom img { max-width:95%; max-height:95%; border: 3px solid white; border-radius: 4px; }
 
-        /* Stars */
+        /* Stars (Fixed) */
         .stars span { font-size: 32px; color: #e0e0e0; cursor: pointer; margin-right: 2px; }
         .stars span.gold { color: #fbc02d; }
 
@@ -85,24 +74,20 @@
 </head>
 <body>
 
-<div id="crash-guard">
-    <h2>⚠️ 系統載入中...</h2>
-    <p>如果此畫面停留超過 3 秒，代表資料衝突。</p>
-    <p>請點擊下方按鈕重置系統。</p>
-    <button class="btn-rescue" onclick="emergencyReset()">🔴 系統重置 / 救命按鈕</button>
-</div>
-
 <div id="img-zoom" onclick="this.style.display='none'"><img id="big-img"></div>
 <div id="modal-overlay"><div class="modal-content" id="modal-body"></div></div>
 
 <div class="container">
     <div id="page-auth" style="padding:40px 20px; text-align:center;">
-        <h2 style="color:var(--primary); letter-spacing: 2px;">SMART STORE V48</h2>
+        <h2 style="color:var(--primary); letter-spacing: 2px;">SMART STORE V49</h2>
+        <p style="color:#666; font-size:12px;">Stable Release</p>
         <div id="box-login" style="margin-top:30px;">
             <input id="l-id" placeholder="員工編號">
             <input id="l-pw" type="password" placeholder="密碼">
             <button onclick="login()">登入系統</button>
             <p onclick="swAuth(true)" style="color:var(--primary); margin-top:20px; cursor:pointer;">註冊帳號</p>
+            <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+            <button class="btn-r" onclick="systemReset()" style="font-size:12px; padding:5px;">🔴 系統重置 (修復無法登入)</button>
         </div>
         <div id="box-reg" class="hide" style="margin-top:30px;">
             <input id="r-name" placeholder="真實姓名">
@@ -169,7 +154,7 @@
                 </div>
             </div>
             <div id="map-editor" class="hide" style="padding:10px; background:#fff3e0; font-size:12px; color:var(--accent);">
-                <b>👉 編輯模式：點擊方格可修改 (長,寬) 與 期限</b>
+                <b>👉 編輯模式：點擊方格可進行修改與刪除</b>
             </div>
             <div id="map-area"></div>
         </div>
@@ -237,10 +222,10 @@
             <div class="head">🌟 員工 KPI 評核</div>
             <select id="mgr-users"><option>選擇員工...</option></select>
             <div style="padding:15px; background:#fff; border:1px solid #ddd; margin-top:10px;">
-                <div class="rating-row">SOP 執行率: <span class="stars" data-c="1" onclick="rate(this,event)">★★★★★</span></div>
-                <div class="rating-row">客訴/服務: <span class="stars" data-c="2" onclick="rate(this,event)">★★★★★</span></div>
-                <div class="rating-row">出勤狀況: <span class="stars" data-c="3" onclick="rate(this,event)">★★★★★</span></div>
-                <div class="rating-row">團隊精神: <span class="stars" data-c="4" onclick="rate(this,event)">★★★★★</span></div>
+                <div class="rating-row">SOP 執行率: <span class="stars" id="kpi-1"></span></div>
+                <div class="rating-row">客訴/服務: <span class="stars" id="kpi-2"></span></div>
+                <div class="rating-row">出勤狀況: <span class="stars" id="kpi-3"></span></div>
+                <div class="rating-row">團隊精神: <span class="stars" id="kpi-4"></span></div>
                 <textarea id="mgr-comment" placeholder="主管評語..." style="height:60px;"></textarea>
                 <button class="btn-g" onclick="saveRating()">送出評核</button>
             </div>
@@ -249,7 +234,7 @@
 </div>
 
 <script>
-// --- V48 System Core (Safe Mode) ---
+// --- Core Logic ---
 const DB = {
     get: (k) => { try { return JSON.parse(localStorage.getItem(k))||{}; } catch(e){ return {}; } },
     set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
@@ -257,26 +242,17 @@ const DB = {
     push: (k, v) => { let a = DB.arr(k); a.unshift(v); localStorage.setItem(k, JSON.stringify(a)); }
 };
 
-// 🔴 Emergency Reset
-function emergencyReset() {
-    if(confirm("警告：這將清除所有資料並重置系統！\n確定要執行嗎？")) {
-        localStorage.clear();
-        alert("系統已重置，請重新載入頁面。");
-        location.reload();
-    }
+// System Reset
+function systemReset() {
+    if(confirm("確定重置系統？所有資料將清除。")) { localStorage.clear(); location.reload(); }
 }
 
-// Data Init with defensive checks
 const initData = () => {
-    try {
-        if(!localStorage.getItem('v48_stock')) localStorage.setItem('v48_stock', JSON.stringify(['冰箱飲料','層架飲料','菸架','電池','泡麵/餅乾','垃圾袋/免洗餐具','百貨用品']));
-        if(!localStorage.getItem('v48_fridge')) localStorage.setItem('v48_fridge', JSON.stringify([
-            {n:'開放式1',t:'c'},{n:'開放式2',t:'c'},{n:'冷藏櫥櫃1',t:'c'},{n:'冷藏櫥櫃2',t:'c'},
-            {n:'冷凍櫥櫃1',t:'f'},{n:'冷凍櫥櫃2',t:'f'},{n:'臥式1',t:'f'},{n:'臥式2',t:'f'},{n:'臥式3',t:'f'},{n:'臥式4',t:'f'}
-        ]));
-    } catch(e) {
-        console.error("Init failed, requesting reset");
-    }
+    if(!localStorage.getItem('v49_stock')) localStorage.setItem('v49_stock', JSON.stringify(['冰箱飲料','層架飲料','菸架','電池','泡麵/餅乾','垃圾袋/免洗餐具','百貨用品']));
+    if(!localStorage.getItem('v49_fridge')) localStorage.setItem('v49_fridge', JSON.stringify([
+        {n:'開放式1',t:'c'},{n:'開放式2',t:'c'},{n:'冷藏櫥櫃1',t:'c'},{n:'冷藏櫥櫃2',t:'c'},
+        {n:'冷凍櫥櫃1',t:'f'},{n:'冷凍櫥櫃2',t:'f'},{n:'臥式1',t:'f'},{n:'臥式2',t:'f'},{n:'臥式3',t:'f'},{n:'臥式4',t:'f'}
+    ]));
 }
 initData();
 
@@ -288,22 +264,11 @@ let isMapEdit = false;
 let exArr = [];
 const fridgeTimes = ["10:30","12:30","14:30","16:30","18:30","20:30","22:00"];
 
-// --- UI Loading Guard ---
-window.onload = function() {
-    // If logic loads without error, hide crash guard
-    setTimeout(() => {
-        if(document.getElementById('page-auth').classList.contains('hide') === false || 
-           document.getElementById('page-main').classList.contains('hide') === false) {
-            document.getElementById('crash-guard').style.display = 'none';
-        }
-    }, 500);
-};
-
 // --- Auth ---
 function swAuth(reg) { document.getElementById('box-login').classList.toggle('hide', reg); document.getElementById('box-reg').classList.toggle('hide', !reg); }
 function reg() {
     const id=document.getElementById('r-id').value, nm=document.getElementById('r-name').value, pw=document.getElementById('r-pw').value;
-    if(!id||!nm||!pw) return alert("請填寫完整");
+    if(!id||!nm||!pw) return alert("請填寫");
     let u=DB.get('users'); u[id]={name:nm, pw:pw, shift:document.getElementById('r-shift').value}; DB.set('users', u);
     alert("註冊成功"); swAuth(false);
 }
@@ -315,32 +280,25 @@ function login() {
 function logout() { location.reload(); }
 
 function startApp() {
-    try {
-        document.getElementById('page-auth').classList.add('hide');
-        document.getElementById('page-main').classList.remove('hide');
-        document.getElementById('user-info').innerText = `${me.name}(${me.shift})`;
+    document.getElementById('page-auth').classList.add('hide');
+    document.getElementById('page-main').classList.remove('hide');
+    document.getElementById('user-info').innerText = `${me.name}(${me.shift})`;
 
-        if(me.shift==='主管') {
-            document.querySelectorAll('.hide').forEach(el=>{
-                if(el.id.includes('mgr') || el.id.includes('btn-add') || el.id.includes('btn-edit') || el.id.includes('map-tools') || el.id.includes('unlock')) el.classList.remove('hide');
-            });
-            loadUserList();
-        }
-        
-        renderStock();
-        renderFridge();
-        renderMoney();
-        renderCards();
-        renderFeed();
-        drawMap();
-        renderStatus();
-        initStars();
-        
-        // Hide guard manually if successful
-        document.getElementById('crash-guard').style.display = 'none';
-    } catch(e) {
-        alert("程式載入錯誤: " + e.message);
+    if(me.shift==='主管') {
+        document.querySelectorAll('.hide').forEach(el=>{
+            if(el.id.includes('mgr') || el.id.includes('btn-add') || el.id.includes('btn-edit') || el.id.includes('map-tools') || el.id.includes('unlock')) el.classList.remove('hide');
+        });
+        loadUserList();
     }
+    
+    renderStock();
+    renderFridge();
+    renderMoney();
+    renderCards();
+    renderFeed();
+    drawMap();
+    renderStatus();
+    initStars();
 }
 
 function tab(t) {
@@ -350,9 +308,9 @@ function tab(t) {
     document.getElementById('v-'+t).classList.remove('hide');
 }
 
-// --- Check Logic (Defensive) ---
+// --- Check Logic ---
 function renderStock() {
-    const list = JSON.parse(localStorage.getItem('v48_stock')) || [];
+    const list = JSON.parse(localStorage.getItem('v49_stock'));
     document.getElementById('stock-list').innerHTML = list.map((s,i) => `
         <div class="box alert" id="stk_${i}" onclick="doCheck('stk_${i}','${s}')">
             ${s}<br><small>待檢</small>
@@ -373,9 +331,9 @@ function resetCheck(id) {
     if(!confirm("確定重置？")) return;
     let s = DB.get('status'); delete s[id]; DB.set('status', s);
     if(id.includes('stk_')) renderStock(); else {
-        const el=document.getElementById(id); if(el) { el.className=`box alert ${id.includes('s_')?'priority':''}`;
+        const el=document.getElementById(id); el.className=`box alert ${id.includes('s_')?'priority':''}`;
         el.innerHTML=`${el.innerText.split('\n')[0]}<br><small>待處理</small>
-        ${me.shift==='主管' ? `<div class="reset-btn" onclick="resetCheck('${id}');event.stopPropagation()">↻</div>` : ''}`; }
+        ${me.shift==='主管' ? `<div class="reset-btn" onclick="resetCheck('${id}');event.stopPropagation()">↻</div>` : ''}`;
     }
     renderStatus();
 }
@@ -396,7 +354,7 @@ function renderStatus() {
     if(st.cards) for(let k in st.cards) { let el=document.getElementById(`cd_l_${k}`); if(el) el.placeholder = `上:${st.cards[k]}`; }
 }
 
-// --- Map Editor ---
+// --- Map Editor (Improved) ---
 function toggleMapEdit() { isMapEdit = !isMapEdit; document.getElementById('map-mode-txt').innerText = isMapEdit?"編輯開":"編輯關"; document.getElementById('map-editor').classList.toggle('hide', !isMapEdit); drawMap(); }
 
 function drawMap() {
@@ -413,13 +371,12 @@ function drawMap() {
             info += `<br><span style="color:${days<3?'red':'green'}">${days}天</span>`;
         }
         if(s.done) info += `<br><span style="font-size:9px">✅${s.checker}</span>`;
-        
         el.innerHTML = info;
         
         el.onclick = (e) => {
             e.stopPropagation();
             if(isMapEdit && me.shift==='主管') {
-                selShapeIdx = i; editMapBox();
+                selShapeIdx = i; editMapBox(); // Step-by-step
             } else {
                 if(confirm(`${s.name} 檢查完成？`)) { s.done=true; s.checker=me.name; saveMap(); }
             }
@@ -435,25 +392,29 @@ function drawMap() {
     });
 }
 function editMapBox() {
-    const val = prompt("修改 (格式: 名稱,寬,高,YYYY-MM-DD)\n輸入 'del' 刪除", `${shapes[selShapeIdx].name},${shapes[selShapeIdx].w},${shapes[selShapeIdx].h},${shapes[selShapeIdx].date||''}`);
-    if(val) {
-        if(val==='del') shapes.splice(selShapeIdx, 1);
-        else {
-            const p = val.split(',');
-            if(p[0]) shapes[selShapeIdx].name = p[0];
-            if(p[1]) shapes[selShapeIdx].w = parseInt(p[1]);
-            if(p[2]) shapes[selShapeIdx].h = parseInt(p[2]);
-            if(p[3]) shapes[selShapeIdx].date = p[3];
-        }
-        saveMap();
+    // 3. Step-by-step Edit
+    if(confirm("要刪除此方格嗎？(取消則進行修改)")) { shapes.splice(selShapeIdx, 1); saveMap(); return; }
+    
+    const n = prompt("修改名稱:", shapes[selShapeIdx].name);
+    if(n) shapes[selShapeIdx].name = n;
+    
+    const size = prompt("修改長寬 (格式: 60,80):", `${shapes[selShapeIdx].w},${shapes[selShapeIdx].h}`);
+    if(size) {
+        const parts = size.split(',');
+        if(parts.length===2) { shapes[selShapeIdx].w = parseInt(parts[0]); shapes[selShapeIdx].h = parseInt(parts[1]); }
     }
+    
+    const d = prompt("修改期限 (YYYY-MM-DD):", shapes[selShapeIdx].date);
+    if(d) shapes[selShapeIdx].date = d;
+    
+    saveMap();
 }
 function addMapBox() { const n=prompt("名:"); if(n) { shapes.push({name:n,x:50,y:50,w:60,h:60,done:false}); saveMap(); }}
 function saveMap() { localStorage.setItem('map_shapes', JSON.stringify(shapes)); drawMap(); }
 
 // --- Fridge Time Logic ---
 function renderFridge() {
-    const list = JSON.parse(localStorage.getItem('v48_fridge')) || [];
+    const list = JSON.parse(localStorage.getItem('v49_fridge'));
     document.getElementById('fridge-list').innerHTML = list.map((f,i) => `
         <div class="box alert" id="ref_${i}" onclick="openFridgeModal('ref_${i}','${f.n}','${f.t}')">
             ${f.n}<br><small>待測</small>
@@ -519,13 +480,15 @@ function popSvc(t) {
     else if(t==='折扣') html+=`<input id="f1" placeholder="品名"><input id="f2" placeholder="數量"><input id="f3" placeholder="原價"><input id="f4" placeholder="折扣後">`;
     else html+=`<textarea id="f1" placeholder="內容..." style="height:100px"></textarea>`;
     html += `</div><div style="margin-top:10px"><input type="file" id="modal-img" accept="image/*" onchange="readImg()"></div>
+    <div id="img-preview-txt" style="display:none; color:green; font-size:12px; margin-top:5px;">✅ 圖片已讀取</div>
     <button onclick="saveSvc('${t}')">送出</button><button class="btn-s" onclick="document.getElementById('modal-overlay').style.display='none'">取消</button>`;
     document.getElementById('modal-body').innerHTML = html;
     imgBase64="";
 }
+// 2. Image Fix
 function readImg() {
     const f=document.getElementById('modal-img').files[0];
-    if(f) { const r=new FileReader(); r.onload=e=>{ imgBase64=e.target.result; }; r.readAsDataURL(f); }
+    if(f) { const r=new FileReader(); r.onload=e=>{ imgBase64=e.target.result; document.getElementById('img-preview-txt').style.display='block'; }; r.readAsDataURL(f); }
 }
 function saveSvc(t) {
     let txt=""; document.querySelectorAll('#modal-fields input, #modal-fields textarea').forEach(i=>{ if(i.value) txt+=i.placeholder+":"+i.value+"<br>"; });
@@ -562,12 +525,23 @@ function submitShift(){
 }
 function addEx(t){ let a=prompt("額:"); if(a) { exArr.push({type:t,amt:Number(a)}); document.getElementById('ex-list').innerHTML+=`<div>${t=='in'?'收':'支'} $${a}</div>`; doCalc(); } }
 function toggleEdit(id){ document.getElementById(id).classList.toggle('editing'); document.getElementById(id==='stock-list'?'add-stock-area':'add-fridge-area').classList.toggle('hide'); }
-function addItem(t){ let k=`v48_${t}`, l=JSON.parse(localStorage.getItem(k))||[]; let n=prompt("名:"); if(n) { if(t=='fridge') l.push({n,t:'c'}); else l.push(n); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
-function delConfItem(t,i){ if(confirm("刪?")) { let k=`v48_${t}`, l=JSON.parse(localStorage.getItem(k)); l.splice(i,1); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
+function addItem(t){ let k=`v49_${t}`, l=JSON.parse(localStorage.getItem(k)); let n=prompt("名:"); if(n) { if(t=='fridge') l.push({n,t:'c'}); else l.push(n); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
+function delConfItem(t,i){ if(confirm("刪?")) { let k=`v49_${t}`, l=JSON.parse(localStorage.getItem(k)); l.splice(i,1); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
 function loadUserList(){ let u=DB.get('users'),s=document.getElementById('mgr-users'); for(let k in u) if(u[k].shift!=='主管'){ let o=document.createElement('option'); o.value=k; o.innerText=u[k].name; s.appendChild(o); }}
-function initStars() { document.querySelectorAll('.stars').forEach(el=>{ let h=""; for(let i=1;i<=5;i++) h+=`<span onclick="rate(this,${i})">★</span>`; el.innerHTML=h; }); }
-function rate(s,v){ s.parentNode.setAttribute('data-v', v); s.parentNode.querySelectorAll('span').forEach((el,i)=>el.className=i<v?'gold':''); }
-function saveRating(){ if(!document.getElementById('mgr-users').value) return alert("選員工"); alert("已儲存"); }
+// 1. Rating Logic Fix
+function initStars() { 
+    ['kpi-1','kpi-2','kpi-3','kpi-4'].forEach(id => {
+        let el = document.getElementById(id);
+        let h=""; for(let i=1;i<=5;i++) h+=`<span onclick="rate('${id}',${i})">★</span>`; 
+        el.innerHTML=h; 
+    }); 
+}
+function rate(id, v) { 
+    let p = document.getElementById(id); 
+    p.setAttribute('data-v', v); 
+    p.querySelectorAll('span').forEach((el,i)=>el.className=i<v?'gold':''); 
+}
+function saveRating(){ if(!document.getElementById('mgr-users').value) return alert("選員工"); alert("評分已儲存"); }
 function gotoSvc(){ tab('svc'); }
 function closeZoom(){ document.getElementById('img-zoom').style.display='none'; }
 </script>
