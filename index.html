@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧門市 V45 (System Update)</title>
+    <title>智慧門市 V46 (RC Edition)</title>
     <style>
-        /* --- PX Mart Style: Blue & Red --- */
-        :root { --primary: #005eb8; --accent: #e3001b; --success: #28a745; --gray: #f0f2f5; --white: #fff; }
-        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: var(--gray); padding-bottom: 120px; color: #333; user-select: none; }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        /* --- PX Mart Style System --- */
+        :root { --primary: #005eb8; --accent: #e3001b; --success: #28a745; --bg: #f4f7f6; --white: #fff; }
+        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; background: var(--bg); padding-bottom: 120px; color: #333; user-select: none; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.08); }
 
         /* Nav */
         .nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 2px solid #eee; z-index: 100; overflow-x: auto; }
-        .nav div { flex: 0 0 auto; padding: 14px 18px; font-weight: bold; color: #777; cursor: pointer; white-space: nowrap; font-size: 15px; }
+        .nav div { flex: 0 0 auto; padding: 14px 18px; font-weight: bold; color: #666; cursor: pointer; white-space: nowrap; font-size: 15px; }
         .nav div.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: #f0f8ff; }
 
         /* Headers */
@@ -26,25 +26,26 @@
         .box.alert { background: #ffebee !important; border-color: var(--accent) !important; color: #c62828; font-weight: bold; animation: pulse 2s infinite; }
         .box.priority { border: 2px solid var(--accent); }
 
+        /* Map */
+        #map-area { position: relative; width: 94%; height: 400px; background: #eceff1; margin: 10px auto; overflow: hidden; border: 2px solid #b0bec5; border-radius: 4px; }
+        .map-box { position: absolute; background: rgba(255,255,255,0.95); border: 2px solid #546e7a; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: 0.1s; }
+        .map-box.done { border-color: var(--success); background: #e8f5e9; color: var(--success); }
+        .map-box.selected { border: 3px solid var(--accent); z-index: 50; transform: scale(1.05); }
+        .timer-badge { font-size: 10px; background: #333; color: white; padding: 2px 5px; border-radius: 4px; margin-top: 2px; }
+
         /* Controls */
         .reset-btn { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; background: #fff; border: 1px solid #ccc; border-radius: 50%; color: #666; font-size: 14px; line-height: 22px; z-index: 10; display:flex; justify-content:center; align-items:center; }
         .del-item-btn { position: absolute; top: -8px; left: -8px; width: 20px; height: 20px; background: var(--accent); color: white; border-radius: 50%; font-size: 12px; display: none; align-items: center; justify-content: center; border: 2px solid white; z-index: 10; }
         .editing .del-item-btn { display: flex; }
         .editing .box { border: 2px dashed var(--primary); opacity: 0.9; }
 
-        /* Map */
-        #map-area { position: relative; width: 94%; height: 400px; background: #eceff1; margin: 10px auto; overflow: hidden; border: 2px solid #b0bec5; border-radius: 4px; }
-        .map-box { position: absolute; background: rgba(255,255,255,0.9); border: 2px solid #546e7a; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: 0.2s; }
-        .map-box.done { border-color: var(--success); background: #e8f5e9; color: var(--success); }
-        .map-box.selected { border: 3px solid var(--accent); z-index: 50; transform: scale(1.05); }
-
         /* Fridge Time Slots */
         .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
         .time-btn { padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: #fff; text-align: center; cursor: pointer; font-size: 12px; }
         .time-btn.checked { background: var(--success); color: white; border-color: var(--success); }
-        .time-btn.missed { background: #cfd8dc; color: #fff; border-color: #b0bec5; cursor: not-allowed; font-weight: bold; } /* 逾時 */
-        .time-btn.future { opacity: 0.5; cursor: not-allowed; background: #f0f0f0; } /* 未來 */
-        .time-btn.alert { background: var(--accent); color: white; } /* 異常 */
+        .time-btn.missed { background: #cfd8dc; color: #fff; border-color: #b0bec5; cursor: not-allowed; font-weight: bold; }
+        .time-btn.future { opacity: 0.5; cursor: not-allowed; background: #f0f0f0; }
+        .time-btn.alert { background: var(--accent); color: white; }
 
         /* Feed */
         .feed-item { padding: 12px; border: 1px solid #eee; margin-bottom: 10px; border-radius: 6px; background: #fff; border-left: 5px solid #ccc; }
@@ -58,25 +59,27 @@
         .btn-r { background: var(--accent); } .btn-o { background: #f39c12; }
         .hide { display: none !important; }
         
-        /* Rating */
-        .rating-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
-        .stars span { font-size: 32px; color: #e0e0e0; cursor: pointer; margin-right: 2px; }
-        .stars span.gold { color: #fbc02d; }
-
         /* Modal */
         #modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; display:none; justify-content:center; align-items:center; }
         .modal-content { background:white; width:90%; max-height:90%; overflow-y:auto; padding:20px; border-radius:8px; }
-        
+        #img-zoom { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:3000; display:none; justify-content:center; align-items:center; }
+        #img-zoom img { max-width:95%; max-height:95%; border: 3px solid white; border-radius: 4px; }
+
+        /* Stars */
+        .stars span { font-size: 32px; color: #e0e0e0; cursor: pointer; margin-right: 2px; }
+        .stars span.gold { color: #fbc02d; }
+
         @keyframes pulse { 0%{box-shadow: 0 0 0 0 rgba(227, 0, 27, 0.4);} 70%{box-shadow: 0 0 0 10px rgba(227, 0, 27, 0);} 100%{box-shadow: 0 0 0 0 rgba(227, 0, 27, 0);} }
     </style>
 </head>
 <body>
 
+<div id="img-zoom" onclick="this.style.display='none'"><img id="big-img"></div>
 <div id="modal-overlay"><div class="modal-content" id="modal-body"></div></div>
 
 <div class="container">
     <div id="page-auth" style="padding:40px 20px; text-align:center;">
-        <h2 style="color:var(--primary); letter-spacing: 2px;">SMART STORE V45</h2>
+        <h2 style="color:var(--primary); letter-spacing: 2px;">SMART STORE V46</h2>
         <div id="box-login" style="margin-top:30px;">
             <input id="l-id" placeholder="員工編號">
             <input id="l-pw" type="password" placeholder="密碼">
@@ -95,7 +98,7 @@
 
     <div id="page-main" class="hide">
         <div style="background:#333; color:white; padding:10px; display:flex; justify-content:space-between; align-items:center;">
-            <span>👤 <span id="user-info">--</span></span>
+            <span>🏪 <span id="user-info">--</span></span>
             <button onclick="logout()" class="btn-s">登出</button>
         </div>
 
@@ -138,15 +141,15 @@
                     <button class="btn-s btn-o" onclick="toggleMapEdit()">✏️ <span id="map-mode-txt">編輯關</span></button>
                 </div>
             </div>
-            <div id="map-editor" class="hide" style="padding:10px; background:#e0f7fa; font-size:12px;">
-                <b style="color:red">選取方格後操作：</b>
+            <div id="map-editor" class="hide" style="padding:10px; background:#fff3e0; font-size:12px; color:var(--accent);">
+                <b>👉 請點擊方格進行編輯 (修改大小/日期/名稱/刪除)</b>
             </div>
             <div id="map-area"></div>
         </div>
 
         <div id="v-temp" class="hide">
             <div class="head">
-                ❄️ 冰箱溫度 (時段鎖定)
+                ❄️ 冰箱溫度 (時段檢核)
                 <div>
                     <button id="btn-add-fridge" class="hide btn-s" onclick="addItem('fridge')">+新增</button>
                     <button id="btn-edit-fridge" class="hide btn-s btn-o" onclick="toggleEdit('fridge-list')">管理</button>
@@ -156,7 +159,7 @@
         </div>
 
         <div id="v-count" class="hide">
-            <div class="head">📥 上班留存 (主管可修)</div>
+            <div class="head">📥 進櫃 (主管可修)</div>
             <div style="padding:10px; background:#fff; margin:10px; border:1px solid #ccc;">
                 收銀留底：<input type="number" id="in-cash" disabled style="width:100px; display:inline-block">
                 金庫留底：<input type="number" id="in-vault" disabled style="width:100px; display:inline-block">
@@ -181,11 +184,19 @@
                 <input type="text" id="v-avg" placeholder="客單價" readonly style="background:#eee;">
             </div>
             
+            <div class="head">➕ 額外收支</div>
+            <div class="grid">
+                <button class="btn-g" onclick="addEx('in')">+ 收入</button>
+                <button class="btn-r" onclick="addEx('out')">+ 支出</button>
+            </div>
+            <div id="ex-list" style="padding:10px;"></div>
+
             <div class="head">誤差：<span id="diff-show" style="font-weight:bold;">0</span></div>
             <button class="btn-g" onclick="submitShift()">✅ 提交交班報表</button>
         </div>
 
         <div id="v-svc" class="hide">
+            <div class="head">🤝 客服與內務</div>
             <div class="grid">
                 <button onclick="popSvc('交接')">📝 交接事項</button>
                 <button onclick="popSvc('客訂')">🛒 客訂登記</button>
@@ -199,10 +210,10 @@
             <div class="head">🌟 員工 KPI 評核</div>
             <select id="mgr-users"><option>選擇員工...</option></select>
             <div style="padding:15px; background:#fff; border:1px solid #ddd; margin-top:10px;">
-                <div class="rating-row">SOP 執行率: <span class="stars" id="star-1" data-v="0"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></span></div>
-                <div class="rating-row">客訴/服務: <span class="stars" id="star-2" data-v="0"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></span></div>
-                <div class="rating-row">出勤狀況: <span class="stars" id="star-3" data-v="0"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></span></div>
-                <div class="rating-row">團隊精神: <span class="stars" id="star-4" data-v="0"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></span></div>
+                <div class="rating-row">SOP 執行率: <span class="stars" data-c="1" onclick="rate(this,event)">★★★★★</span></div>
+                <div class="rating-row">客訴/服務: <span class="stars" data-c="2" onclick="rate(this,event)">★★★★★</span></div>
+                <div class="rating-row">出勤狀況: <span class="stars" data-c="3" onclick="rate(this,event)">★★★★★</span></div>
+                <div class="rating-row">團隊精神: <span class="stars" data-c="4" onclick="rate(this,event)">★★★★★</span></div>
                 <textarea id="mgr-comment" placeholder="主管評語..." style="height:60px;"></textarea>
                 <button class="btn-g" onclick="saveRating()">送出評核</button>
             </div>
@@ -211,7 +222,7 @@
 </div>
 
 <script>
-// --- Core Logic ---
+// --- Core ---
 const DB = {
     get: (k) => JSON.parse(localStorage.getItem(k) || '{}'),
     set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
@@ -220,8 +231,8 @@ const DB = {
 };
 
 const initData = () => {
-    if(!localStorage.getItem('v45_stock')) localStorage.setItem('v45_stock', JSON.stringify(['冰箱飲料','層架飲料','菸架','電池','泡麵/餅乾','垃圾袋/免洗餐具','百貨用品']));
-    if(!localStorage.getItem('v45_fridge')) localStorage.setItem('v45_fridge', JSON.stringify([
+    if(!localStorage.getItem('v46_stock')) localStorage.setItem('v46_stock', JSON.stringify(['冰箱飲料','層架飲料','菸架','電池','泡麵/餅乾','垃圾袋/免洗餐具','百貨用品']));
+    if(!localStorage.getItem('v46_fridge')) localStorage.setItem('v46_fridge', JSON.stringify([
         {n:'開放式1',t:'c'},{n:'開放式2',t:'c'},{n:'冷藏櫥櫃1',t:'c'},{n:'冷藏櫥櫃2',t:'c'},
         {n:'冷凍櫥櫃1',t:'f'},{n:'冷凍櫥櫃2',t:'f'},{n:'臥式1',t:'f'},{n:'臥式2',t:'f'},{n:'臥式3',t:'f'},{n:'臥式4',t:'f'}
     ]));
@@ -233,6 +244,7 @@ let shapes = DB.arr('map_shapes');
 let selShapeIdx = null;
 let imgBase64 = "";
 let isMapEdit = false;
+let exArr = []; // 2. 額外收支
 const fridgeTimes = ["10:30","12:30","14:30","16:30","18:30","20:30","22:00"];
 
 // --- Auth ---
@@ -279,9 +291,9 @@ function tab(t) {
     document.getElementById('v-'+t).classList.remove('hide');
 }
 
-// --- 1. Stock Check/Reset ---
+// --- Check/Reset ---
 function renderStock() {
-    const list = JSON.parse(localStorage.getItem('v45_stock'));
+    const list = JSON.parse(localStorage.getItem('v46_stock'));
     document.getElementById('stock-list').innerHTML = list.map((s,i) => `
         <div class="box alert" id="stk_${i}" onclick="doCheck('stk_${i}','${s}')">
             ${s}<br><small>待檢</small>
@@ -325,13 +337,8 @@ function renderStatus() {
     if(st.cards) for(let k in st.cards) document.getElementById(`cd_l_${k}`).placeholder = `上:${st.cards[k]}`;
 }
 
-// --- 2. Map Editor (Fixed) ---
-function toggleMapEdit() { 
-    isMapEdit = !isMapEdit; 
-    document.getElementById('map-mode-txt').innerText = isMapEdit?"編輯開":"編輯關"; 
-    document.getElementById('map-editor').classList.toggle('hide', !isMapEdit);
-    drawMap(); 
-}
+// --- 1. Map Editor Fix ---
+function toggleMapEdit() { isMapEdit = !isMapEdit; document.getElementById('map-mode-txt').innerText = isMapEdit?"編輯開":"編輯關"; document.getElementById('map-editor').classList.toggle('hide', !isMapEdit); drawMap(); }
 
 function drawMap() {
     const area = document.getElementById('map-area'); area.innerHTML = "";
@@ -340,17 +347,24 @@ function drawMap() {
         const el = document.createElement('div');
         el.className = `map-box ${s.done?'done':''} ${selShapeIdx===i && isMapEdit?'selected':''}`;
         el.style.left=s.x+'px'; el.style.top=s.y+'px'; el.style.width=(s.w||60)+'px'; el.style.height=(s.h||60)+'px';
-        el.innerHTML = `<span>${s.name}</span><br><small>${s.done?s.checker:''}</small>`;
+        
+        let info = s.name;
+        if(s.date) {
+            const days = Math.ceil((new Date(s.date)-new Date())/(1000*60*60*24));
+            info += `<br><span style="color:${days<3?'red':'green'}">${days}天</span>`;
+        }
+        if(s.done) info += `<br><span style="font-size:9px">✅${s.checker}</span>`;
+        
+        el.innerHTML = info;
         
         el.onclick = (e) => {
             e.stopPropagation();
             if(isMapEdit && me.shift==='主管') {
-                selShapeIdx = i; editMapBox(); // Open Prompt
+                selShapeIdx = i; editMapBox(); // Pop-up Editor
             } else {
                 if(confirm(`${s.name} 檢查完成？`)) { s.done=true; s.checker=me.name; saveMap(); }
             }
         };
-        // Drag
         if(isMapEdit && me.shift==='主管') {
             el.onmousedown = (e) => {
                 const sx=e.clientX-s.x, sy=e.clientY-s.y;
@@ -362,15 +376,15 @@ function drawMap() {
     });
 }
 function editMapBox() {
-    // 1. Edit Full Properties
-    const val = prompt("修改 (格式: 名稱,寬,高)\n輸入 'del' 刪除", `${shapes[selShapeIdx].name},${shapes[selShapeIdx].w},${shapes[selShapeIdx].h}`);
+    const val = prompt("修改方格 (名稱,寬,高,YYYY-MM-DD)\n輸入 'del' 刪除", `${shapes[selShapeIdx].name},${shapes[selShapeIdx].w},${shapes[selShapeIdx].h},${shapes[selShapeIdx].date||''}`);
     if(val) {
-        if(val === 'del') shapes.splice(selShapeIdx, 1);
+        if(val==='del') shapes.splice(selShapeIdx, 1);
         else {
             const p = val.split(',');
             if(p[0]) shapes[selShapeIdx].name = p[0];
             if(p[1]) shapes[selShapeIdx].w = parseInt(p[1]);
             if(p[2]) shapes[selShapeIdx].h = parseInt(p[2]);
+            if(p[3]) shapes[selShapeIdx].date = p[3];
         }
         saveMap();
     }
@@ -378,9 +392,9 @@ function editMapBox() {
 function addMapBox() { const n=prompt("名:"); if(n) { shapes.push({name:n,x:50,y:50,w:60,h:60,done:false}); saveMap(); }}
 function saveMap() { localStorage.setItem('map_shapes', JSON.stringify(shapes)); drawMap(); }
 
-// --- 3. Fridge Time Logic (Strict) ---
+// --- Fridge Time Logic ---
 function renderFridge() {
-    const list = JSON.parse(localStorage.getItem('v44_fridge'));
+    const list = JSON.parse(localStorage.getItem('v46_fridge'));
     document.getElementById('fridge-list').innerHTML = list.map((f,i) => `
         <div class="box alert" id="ref_${i}" onclick="openFridgeModal('ref_${i}','${f.n}','${f.t}')">
             ${f.n}<br><small>待測</small>
@@ -392,26 +406,25 @@ function openFridgeModal(id, name, type) {
     document.getElementById('modal-overlay').style.display='flex';
     let s = DB.get('status');
     const now = new Date();
-    const curMin = now.getHours()*60 + now.getMinutes(); // Current minutes from 00:00
+    const curMin = now.getHours()*60 + now.getMinutes();
     
     let html = `<h3>${name}</h3><div class="time-grid">`;
     fridgeTimes.forEach(time => {
         const key = `${id}_${time.replace(':','')}`;
         const tParts = time.split(':');
-        const slotMin = parseInt(tParts[0])*60 + parseInt(tParts[1]);
+        const tMin = parseInt(tParts[0])*60 + parseInt(tParts[1]);
         const data = s[key];
         
+        // Strict Time Logic: Missed if > 60 mins late, Future if > 30 mins early
         let status = '';
         let label = data ? data.val : '--';
         
         if (data) status = data.alert ? 'alert' : 'checked';
         else {
-            // Time Logic
-            if (curMin > slotMin + 60) { status = 'missed'; label = 'MISS'; } // Over 1 hour late
-            else if (curMin < slotMin - 30) { status = 'future'; label = '未到'; } // Too early
+            if (curMin > tMin + 60) { status = 'missed'; label = 'MISS'; }
+            else if (curMin < tMin - 30) { status = 'future'; label = '未到'; }
         }
         
-        // Onclick logic
         let action = "";
         if(status === 'missed') action = "alert('逾時無法填寫')";
         else if(status === 'future') action = "alert('時間未到')";
@@ -439,7 +452,7 @@ function saveTemp(key, time, name, type) {
     openFridgeModal(key.split('_').slice(0,2).join('_'), name, type);
 }
 
-// --- 4. Svc Image Fix ---
+// --- 3. Svc Image Fix ---
 function popSvc(t) {
     document.getElementById('modal-overlay').style.display='flex';
     let html = `<h3>${t}</h3><div id="modal-fields">`;
@@ -471,47 +484,17 @@ function renderFeed() {
     });
 }
 
-// --- 5. Rating Fix ---
-function initStars() {
-    document.querySelectorAll('.stars').forEach(el => {
-        let h=""; for(let i=1;i<=5;i++) h+=`<span onclick="rate(this,${i})">★</span>`; el.innerHTML=h;
-    });
-}
-function rate(span, v) {
-    const p = span.parentNode;
-    p.setAttribute('data-v', v); // Store value
-    p.querySelectorAll('span').forEach((s,i) => s.className = i<v ? 'gold' : '');
-}
-function saveRating() {
-    if(document.getElementById('mgr-users').value === '選擇員工...') return alert("請選員工");
-    // Collect scores
-    let scores = [];
-    document.querySelectorAll('.stars').forEach(s => scores.push(s.getAttribute('data-v') || 0));
-    alert(`評分已送出: ${scores.join(', ')}`);
-}
-
-// --- Common ---
+// --- Finance ---
 function renderMoney(){ document.getElementById('money-table').innerHTML=[500,100,50,10,5,1].map(u=>`<tr><td>${u}</td><td><input type="number" class="inp-money" id="mr_${u}" oninput="cM()"></td><td><input type="number" class="inp-money" id="mv_${u}" oninput="cM()"></td><td id="sub_${u}" style="color:blue">0</td></tr>`).join(''); }
 function renderCards(){ document.getElementById('card-list').innerHTML=["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"].map(c=>`<div class="box" style="padding:5px"><b>${c}</b><div style="display:flex;gap:5px"><input type="number" id="cd_s_${c}" placeholder="銷" style="width:50%"><input type="number" id="cd_l_${c}" placeholder="存" style="width:50%"></div></div>`).join(''); }
 function cM(){ let t=0; [500,100,50,10,5,1].forEach(u=>{ let r=Number(document.getElementById(`mr_${u}`).value)||0, v=Number(document.getElementById(`mv_${u}`).value)||0; document.getElementById(`sub_${u}`).innerText=(r+v)*u; t+=(r+v)*u; }); document.getElementById('total-money').innerText=t; doCalc(); }
 function doCalc(){ 
     const inC=Number(document.getElementById('in-cash').value)||0, inV=Number(document.getElementById('in-vault').value)||0, cnt=Number(document.getElementById('total-money').innerText)||0, rev=Number(document.getElementById('v-rev').value)||0; 
-    let diff=cnt-(inC+inV+rev); document.getElementById('diff-show').innerText=diff; document.getElementById('diff-show').style.color=diff===0?'green':'red'; 
+    let ext=0; exArr.forEach(x=>{ if(x.type=='in') ext+=x.amt; else ext-=x.amt; });
+    let diff=cnt-(inC+inV+rev+ext); document.getElementById('diff-show').innerText=diff; document.getElementById('diff-show').style.color=diff===0?'green':'red'; 
 }
 function unlockIn(){ document.getElementById('in-cash').disabled=false; document.getElementById('in-vault').disabled=false; }
 function saveIn(){ DB.set('store', {cash:document.getElementById('in-cash').value, vault:document.getElementById('in-vault').value}); alert("已儲存"); }
 function submitShift(){ 
     let s=DB.get('store'); s.cash=parseFloat(document.getElementById('total-money').innerText); 
-    ["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"].forEach(c=>{ if(!s.cards) s.cards={}; s.cards[c]=document.getElementById(`cd_l_${c}`).value||0; });
-    DB.set('store',s); alert("交班成功"); location.reload(); 
-}
-function addEx(t){ let a=prompt("額:"); if(a) document.getElementById('ex-list').innerHTML+=`<div>${t=='in'?'收':'支'} $${a}</div>`; }
-function toggleEdit(id){ document.getElementById(id).classList.toggle('editing'); document.getElementById(id==='stock-list'?'add-stock-area':'add-fridge-area').classList.toggle('hide'); }
-function addItem(t){ let k=`v44_${t}`, l=JSON.parse(localStorage.getItem(k)); let n=prompt("名:"); if(n) { if(t=='fridge') l.push({n,t:'c'}); else l.push(n); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
-function delConfItem(t,i){ if(confirm("刪?")) { let k=`v44_${t}`, l=JSON.parse(localStorage.getItem(k)); l.splice(i,1); localStorage.setItem(k,JSON.stringify(l)); startApp(); }}
-function loadUserList(){ let u=DB.get('users'),s=document.getElementById('mgr-users'); for(let k in u) if(u[k].shift!=='主管'){ let o=document.createElement('option'); o.value=k; o.innerText=u[k].name; s.appendChild(o); }}
-function gotoSvc(){ tab('svc'); }
-function closeZoom(){ document.getElementById('img-zoom').style.display='none'; }
-</script>
-</body>
-</html>
+    ["IF499","OK499","中華499","IF599","OK599","中華599","旺卡"].forEach(c=>{ if(!s.cards) s.cards={}; s.cards[c]=document.getElementById(`cd_l_${c
